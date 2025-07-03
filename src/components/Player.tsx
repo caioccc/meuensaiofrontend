@@ -302,7 +302,7 @@ export default function Player({ song }: PlayerProps) {
           <Button onClick={isPlaying ? pause : play} leftSection={isPlaying ? <IconPlayerPause size={18} /> : <IconPlayerPlay size={18} />}>
             {isPlaying ? 'Pause' : 'Play'}
           </Button>
-          <Switch checked={metronomeOn} onChange={e => setMetronomeOn(e.currentTarget.checked)} label="Metrônomo" disabled={!metroLoaded && !metronomeOn} />
+          {/* <Switch checked={metronomeOn} onChange={e => setMetronomeOn(e.currentTarget.checked)} label="Metrônomo" disabled={!metroLoaded && !metronomeOn} /> */}
         </Group>
         {/* Linha do tempo de acordes */}
         <div
@@ -411,7 +411,7 @@ export default function Player({ song }: PlayerProps) {
           <Slider min={0} max={100} value={ytVolume} onChange={setYtVolume} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
         </Group>
         {/* Canal Metrônomo */}
-        <Group spacing="xs" align="center">
+        {/* <Group spacing="xs" align="center">
           <Tooltip label="Metrônomo">
             <IconWaveSine size={28} color="#228be6" />
           </Tooltip>
@@ -422,7 +422,7 @@ export default function Player({ song }: PlayerProps) {
             <Button variant={metroSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setMetroSolo(s => !s)}>S</Button>
           </Tooltip>
           <Slider min={0} max={100} value={metroVolume} onChange={setMetroVolume} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
-        </Group>
+        </Group> */}
         {/* Canal PAD Cloud */}
         <Group spacing="xs" align="center">
           <Tooltip label="Pad Cloud">

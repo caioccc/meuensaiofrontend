@@ -1,6 +1,6 @@
 "use client";
 import { useForm } from "react-hook-form";
-import { TextInput, PasswordInput, Button, Box, Title, Stack, Text, Loader } from "@mantine/core";
+import { TextInput, PasswordInput, Button, Box, Title, Stack, Text, Loader, Container } from "@mantine/core";
 import { useState } from "react";
 import api from "../../lib/axios";
 import { useRouter } from "next/navigation";
@@ -56,7 +56,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <Box maw={400} mx="auto" mt={60}>
+    <Container size={420} maw={400} mx="auto" mt={60}>
       <Title order={2} mb="md">Criar Conta</Title>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Stack>
@@ -104,6 +104,6 @@ export default function RegisterPage() {
           </Button>
         </Stack>
       </form>
-    </Box>
+    </Container>
   );
 }

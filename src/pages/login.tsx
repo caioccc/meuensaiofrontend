@@ -1,5 +1,5 @@
 import { useForm } from 'react-hook-form';
-import { Button, TextInput, Paper, Title, Container, Divider, Group, Loader } from '@mantine/core';
+import { Button, TextInput, Paper, Title, Container, Divider, Group, Loader, PasswordInput } from '@mantine/core';
 import { GoogleLogin } from '@react-oauth/google';
 import { useState, useEffect } from 'react';
 import axios from '../../lib/axios';
@@ -42,14 +42,15 @@ export default function LoginPage() {
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
         <form onSubmit={handleSubmit(onSubmit)}>
           <TextInput label="E-mail" placeholder="seu@email.com" {...register('email', { required: true })} error={errors.email && 'Campo obrigatório'} />
-          <TextInput label="Senha" type="password" mt="md" {...register('password', { required: true })} error={errors.password && 'Campo obrigatório'} />
+          <PasswordInput
+           label="Senha" type="password" mt="md" {...register('password', { required: true })} error={errors.password && 'Campo obrigatório'} />
           {error && <div style={{ color: 'red', marginTop: 8 }}>{error}</div>}
           <Button fullWidth mt="xl" type="submit" loading={loading} disabled={loading} leftSection={loading ? <Loader size={18} color="white" /> : undefined}>
             {loading ? <Loader size={18} color="white" /> : "Entrar"}
           </Button>
         </form>
         <Divider my="lg" label="ou" labelPosition="center" />
-        <Group position="center" style={{ width: '100%' }}>
+        {/* <Group position="center" style={{ width: '100%' }}>
           <div style={{ width: '100%' }}>
             <GoogleLogin
               onSuccess={credentialResponse => {
@@ -66,7 +67,7 @@ export default function LoginPage() {
               clientId="917555710750-n61p9e7knksgrno9ggquh7ipcdiqq0b8.apps.googleusercontent.com"
             />
           </div>
-        </Group>
+        </Group> */}
         <Button
           variant="subtle"
           fullWidth

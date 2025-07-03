@@ -13,11 +13,16 @@ import {
   TextInput, Title,
   Tooltip
 } from '@mantine/core';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { showNotification } from '@mantine/notifications';
 import { IconCheck, IconPlaylist, IconPlus, IconSearch, IconX } from '@tabler/icons-react';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import api from '../../../lib/axios';
+import { useMediaQuery } from '@mantine/hooks';
+import { ptBR } from 'date-fns/locale';
 
 export default function AddSetlistPage() {
   const [active, setActive] = useState(0);
@@ -30,7 +35,9 @@ export default function AddSetlistPage() {
   const [enriched, setEnriched] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [source, setSource] = useState<'saved' | 'new' | null>(null);
+  const [date, setDate] = useState<Date | null>(null);
   const router = useRouter();
+  const isMobile = useMediaQuery('(max-width: 48em)');
 
   // Limpa o modal sempre que abrir
   useEffect(() => {
@@ -97,13 +104,13 @@ export default function AddSetlistPage() {
     try {
       if (source === 'saved') {
         const songIds = selected.map((s) => s.id);
-        const res = await api.post('/setlists/', { name, description, songs_ids: songIds });
+        const res = await api.post('/setlists/', { name, description, date: date ? date.toISOString().slice(0, 10) : undefined, songs_ids: songIds });
         if (res.status !== 201) {
           showNotification({ color: 'red', message: 'Erro ao salvar setlist' });
           return;
         }
       } else {
-        const res = await api.post('/setlists/', { name, description, songs_data: enriched });
+        const res = await api.post('/setlists/', { name, description, date: date ? date.toISOString().slice(0, 10) : undefined, songs_data: enriched });
         if (res.status !== 201) {
           showNotification({ color: 'red', message: 'Erro ao salvar setlist' });
           return;
@@ -201,6 +208,15 @@ export default function AddSetlistPage() {
             </Stepper.Step>
             <Stepper.Step label="Nome" description="Defina o nome">
               <TextInput label="Nome do setlist" value={name} onChange={(e) => setName(e.currentTarget.value)} autoFocus required />
+              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+                <DatePicker
+                  label="Data do setlist (opcional)"
+                  value={date}
+                  onChange={setDate}
+                  slotProps={{ textField: { fullWidth: true, size: 'small', margin: 'normal', placeholder: 'Selecione a data' } }}
+                  format="dd/MM/yyyy"
+                />
+              </LocalizationProvider>
               <TextInput label="Descrição" value={description} onChange={(e) => setDescription(e.currentTarget.value)} mt="md" />
               <Group mt="md" style={{ justifyContent: 'flex-end' }}>
                 <Button variant="default" onClick={() => setActive(0)}>Voltar</Button>
@@ -238,26 +254,45 @@ export default function AddSetlistPage() {
                     </>
                   ) : (
                     <>
-                      <Group mb="md">
-                        <TextInput
-                          icon={<IconSearch size={16} />}
-                          placeholder="Buscar músicas"
-                          value={search}
-                          onChange={(e) => setSearch(e.currentTarget.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                          style={{ flex: 1 }}
-                        />
-                        <Button onClick={handleSearch} loading={searchLoading}>Buscar</Button>
-                      </Group>
+                      {isMobile ? (
+                        <Stack mb="md">
+                          <TextInput
+                            icon={<IconSearch size={16} />}
+                            placeholder="Buscar músicas"
+                            value={search}
+                            onChange={(e) => setSearch(e.currentTarget.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                          />
+                          <Button onClick={handleSearch} loading={searchLoading} fullWidth>Buscar</Button>
+                        </Stack>
+                      ) : (
+                        <Group mb="md">
+                          <TextInput
+                            icon={<IconSearch size={16} />}
+                            placeholder="Buscar músicas"
+                            value={search}
+                            onChange={(e) => setSearch(e.currentTarget.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                            style={{ flex: 1 }}
+                          />
+                          <Button onClick={handleSearch} loading={searchLoading}>Buscar</Button>
+                        </Group>
+                      )}
                       <ScrollArea h={320} mb="md">
                         <Group spacing="md" noWrap style={{ flexWrap: 'wrap' }}>
                           {searchResults.map((song) => (
-                            <Card key={song.youtube_id} shadow="xs" withBorder style={{ width: 220, marginBottom: 12 }}>
-                              <Image src={song.thumbnail_url} width={200} height={120} radius="sm" alt={song.title} />
-                              <Text weight={500} mt={4}>{song.title}</Text>
-                              <Text size="xs" color="dimmed">{song.artist || song.channel_name}</Text>
-                              <Text size="xs">{song.duration} | {song.view_count}</Text>
-                              <Button size="xs" mt={8} fullWidth onClick={() => addSong(song)} leftIcon={<IconCheck size={14} />}>Selecionar</Button>
+                            <Card key={song.youtube_id} shadow="xs" withBorder style={{ width: 180, minWidth: 0, padding: 8, marginBottom: 0 }}>
+                              <Group noWrap align="center" spacing="md">
+                                <Image src={song.thumbnail_url} width={80} height={80} radius="sm" alt={song.title} />
+                                <div style={{ flex: 1 }}>
+                                  <Text weight={500} size="sm" lineClamp={1}>{song.title}</Text>
+                                  <Text size="xs" color="dimmed" lineClamp={1}>{song.artist || song.channel_name}</Text>
+                                  <Text size="xs" lineClamp={1}>{song.duration} | {song.view_count}</Text>
+                                </div>
+                              </Group>
+                              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: 48 }}>
+                                <Button size="xs" style={{ alignSelf: 'flex-end' }} onClick={() => addSong(song)} leftIcon={<IconCheck size={14} />}>Selecionar</Button>
+                              </div>
                             </Card>
                           ))}
                         </Group>
@@ -270,19 +305,19 @@ export default function AddSetlistPage() {
                   <>
                     <Divider orientation="vertical" mx="lg" style={{ height: 320 }} />
                     <div style={{ flex: 1, minWidth: 260, maxWidth: 340 }}>
-                      <Title order={5} mb="xs">Selecionadas</Title>
+                      <Title order={5} mb="xs">Selecionadas ({selected.length})</Title>
                       <ScrollArea h={320}>
                         <Stack spacing="sm">
                           {selected.map((song) => (
-                            <Card key={song.id || song.youtube_id} shadow="xs" withBorder>
+                            <Card key={song.id || song.youtube_id} shadow="xs" withBorder style={{ width: '100%', minWidth: 0, padding: 8 }}>
                               <Group noWrap align="center" spacing="md">
-                                <Image src={song.thumbnail_url} width={60} height={60} radius="sm" alt={song.title} />
+                                <Image src={song.thumbnail_url} width={48} height={48} radius="sm" alt={song.title} />
                                 <div style={{ flex: 1 }}>
-                                  <Text weight={500}>{song.title}</Text>
-                                  <Text size="xs" color="dimmed">{song.artist || song.channel_name}</Text>
-                                  <Text size="xs">{song.duration} | {song.view_count}</Text>
+                                  <Text weight={500} size="sm" lineClamp={1}>{song.title}</Text>
+                                  <Text size="xs" color="dimmed" lineClamp={1}>{song.artist || song.channel_name}</Text>
+                                  <Text size="xs" lineClamp={1}>{song.duration} | {song.view_count}</Text>
                                 </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: 60 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: 48 }}>
                                   <Button size="xs" color="red" style={{ alignSelf: 'flex-end' }} onClick={() => removeSong(song.id || song.youtube_id)} leftIcon={<IconX size={14} />}>Remover</Button>
                                 </div>
                               </Group>

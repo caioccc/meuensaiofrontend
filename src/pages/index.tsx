@@ -8,6 +8,7 @@ import api from "../../lib/axios";
 import AddMusicModal from "../components/AddMusicModal";
 import MusicCard, { MusicCardProps } from "../components/MusicCard";
 import MusicPreviewModal from "../components/MusicPreviewModal";
+import { useMediaQuery } from "@mantine/hooks";
 
 interface SongApi {
   id: number;
@@ -43,7 +44,9 @@ export default function DashboardPage() {
   const [setlists, setSetlists] = useState<SetlistApi[]>([]);
   const [selectedSetlists, setSelectedSetlists] = useState<string[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const [addModalOpen, setAddModalOpen] = useState(false);
+
+  const isMobile = useMediaQuery('(max-width: 48em)'); // 768px
+  const isTablet = useMediaQuery('(max-width: 64em)'); // 1024px
 
   const router = useRouter();
 

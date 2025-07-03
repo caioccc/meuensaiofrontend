@@ -1,12 +1,14 @@
 import { Carousel } from '@mantine/carousel';
-import { Badge, Box, Button, Card, Center, Group, Modal, Text } from '@mantine/core';
+import { Badge, Box, Button, Card, Center, Group, Modal, Text, ActionIcon } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
 import { IconEye, IconMusic, IconTrash } from '@tabler/icons-react';
 import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
+import { useMediaQuery } from '@mantine/hooks';
 import api from '../../lib/axios';
+import { format } from 'date-fns';
 
 
 interface Song {
@@ -25,6 +27,7 @@ interface Setlist {
 
 export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, onRemoved?: () => void }) {
   const router = useRouter();
+  const isMobile = useMediaQuery('(max-width: 48em)');
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState(setlist.processing_status || 'PROCESSADO');
@@ -70,36 +73,41 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
   }}));
 
   return (
-    <Card shadow="sm" padding="lg" radius="md" withBorder>
-      <Group noWrap align="center">
-        <Box style={{ minWidth: 120, maxWidth: 140 }}>
-          <Carousel slideSize="100%" align="start" slidesToScroll={1}
-            slideGap="xs"
-            controlsOffset="xs"
-            withControls={false}
-            withIndicators
-            plugins={[autoplay.current]}
-            onMouseEnter={autoplay.current.stop}
-            onMouseLeave={() => autoplay.current.play()}
+    <Card shadow="sm" padding="lg" radius="md" withBorder style={isMobile ? { position: 'relative', minHeight: 220 } : {}}>
+      {isMobile ? (
+        <>
+          <Card.Section>
+            {hasImages ? (
+              <Image src={localSetlist.songs[0]?.thumbnail_url || ''} width={400} height={120} alt={localSetlist.name} style={{ width: '100%', height: 120, objectFit: 'cover' }} />
+            ) : (
+              <Center style={{ width: '100%', height: 120, background: '#f3f3f3', borderRadius: 8 }}>
+                <IconMusic size={48} color="#bbb" />
+              </Center>
+            )}
+          </Card.Section>
+          {/* Botão de remover no topo direito */}
+          <ActionIcon
+            color="red"
+            variant="filled"
+            size="lg"
+            style={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}
+            onClick={() => setModalOpen(true)}
+            aria-label="Remover setlist"
+            loading={loading}
           >
-            {hasImages
-              ? localSetlist.songs.slice(0, 5).map((song) => (
-                <Carousel.Slide key={song.id}>
-                  <Image src={song.thumbnail_url || ''} width={120} height={90} alt={song.title} style={{ borderRadius: 8, objectFit: 'cover' }} />
-                </Carousel.Slide>
-              ))
-              : (
-                <Carousel.Slide key="default">
-                  <Center style={{ width: 120, height: 90, background: '#f3f3f3', borderRadius: 8 }}>
-                    <IconMusic size={48} color="#bbb" />
-                  </Center>
-                </Carousel.Slide>
-              )}
-          </Carousel>
-        </Box>
-        <Box style={{ flex: 1, marginLeft: 16, position: 'relative', minHeight: 90, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div>
+            <IconTrash size={20} />
+          </ActionIcon>
+          <Box style={{ padding: 12, paddingTop: 16, paddingBottom: 54 }}>
             <Text weight={600} mb={4}>{localSetlist.name}</Text>
+            {localSetlist.date && (
+              <Text size="xs" color="dimmed" mb={4}>
+                {(() => {
+                  const [ano, mes, dia] = localSetlist.date.split('-');
+                  const dataLocal = new Date(Number(ano), Number(mes) - 1, Number(dia));
+                  return format(dataLocal, 'dd/MM/yyyy');
+                })()}
+              </Text>
+            )}
             <Badge color="blue" variant="light" mb={8}>{localSetlist.songs.length} músicas</Badge>
             <Box mt={4} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {localSetlist.songs.slice(0, 3).map((s, idx) => (
@@ -111,30 +119,103 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
                 <Text size="sm" color="dimmed">...</Text>
               )}
             </Box>
-          </div>
-          <Group position="right" spacing={8} style={{ position: 'absolute', right: 0, bottom: 0 }}>
-            <Button
-              variant="light"
-              color="blue"
-              size="xs"
-              onClick={() => router.push(`/setlists/${localSetlist.id}`)}
-            >
-              <IconEye size={16} />
-              Acessar
-            </Button>
-            <Button
-              variant="light"
-              color="red"
-              size="xs"
-              onClick={() => setModalOpen(true)}
-              loading={loading}
-              disabled={loading}
-            >
-              <IconTrash size={16} />
-            </Button>
-          </Group>
-        </Box>
-      </Group>
+          </Box>
+          <Button
+            variant="light"
+            color="blue"
+            size="xs"
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, borderRadius: 0, zIndex: 2, height: 38 }}
+            onClick={() => router.push(`/setlists/${localSetlist.id}`)}
+          >
+            <IconEye size={16} />
+            Acessar
+          </Button>
+        </>
+      ) : (
+        <Group noWrap align="center">
+          <Box style={{ minWidth: 120, maxWidth: 140 }}>
+            {hasImages && localSetlist.songs.length > 0 ? (
+              <Carousel
+                slideSize="100%"
+                align="start"
+                slidesToScroll={1}
+                slideGap="xs"
+                controlsOffset="xs"
+                withControls={false}
+                withIndicators
+                plugins={localSetlist.songs.length > 1 ? [autoplay.current] : []}
+                onMouseEnter={localSetlist.songs.length > 1 ? autoplay.current.stop : undefined}
+                onMouseLeave={localSetlist.songs.length > 1 ? () => autoplay.current && autoplay.current.play && autoplay.current.play() : undefined}
+              >
+                {localSetlist.songs.slice(0, 5).map((song) => (
+                  <Carousel.Slide key={song.id}>
+                    <Image src={song.thumbnail_url || ''} width={120} height={90} alt={song.title} style={{ borderRadius: 8, objectFit: 'cover' }} />
+                  </Carousel.Slide>
+                ))}
+              </Carousel>
+            ) : (
+              <Carousel slideSize="100%" align="start" slidesToScroll={1}
+                slideGap="xs"
+                controlsOffset="xs"
+                withControls={false}
+                withIndicators={false}
+              >
+                <Carousel.Slide key="default">
+                  <Center style={{ width: 120, height: 90, background: '#f3f3f3', borderRadius: 8 }}>
+                    <IconMusic size={48} color="#bbb" />
+                  </Center>
+                </Carousel.Slide>
+              </Carousel>
+            )}
+          </Box>
+          <Box style={{ flex: 1, marginLeft: 16, position: 'relative', minHeight: 90, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div>
+              <Text weight={600} mb={4}>{localSetlist.name}</Text>
+              {localSetlist.date && (
+                <Text size="xs" color="dimmed" mb={4}>
+                  {(() => {
+                    const [ano, mes, dia] = localSetlist.date.split('-');
+                    const dataLocal = new Date(Number(ano), Number(mes) - 1, Number(dia));
+                    return format(dataLocal, 'dd/MM/yyyy');
+                  })()}
+                </Text>
+              )}
+              <Badge color="blue" variant="light" mb={8}>{localSetlist.songs.length} músicas</Badge>
+              <Box mt={4} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {localSetlist.songs.slice(0, 3).map((s, idx) => (
+                  <Text key={s.id} size="sm" color="dimmed" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 220 }}>
+                    {`${idx + 1}. ${s.title.length > 35 ? s.title.slice(0, 35) + '…' : s.title}`}
+                  </Text>
+                ))}
+                {localSetlist.songs.length > 3 && (
+                  <Text size="sm" color="dimmed">...</Text>
+                )}
+              </Box>
+            </div>
+            <Group position="right" spacing={8} style={{ position: 'absolute', right: 0, bottom: 0 }}>
+              <Button
+                variant="light"
+                color="blue"
+                size="xs"
+                onClick={() => router.push(`/setlists/${localSetlist.id}`)}
+              >
+                <IconEye size={16} />
+                Acessar
+              </Button>
+              <Button
+                variant="light"
+                color="red"
+                size="xs"
+                onClick={() => setModalOpen(true)}
+                loading={loading}
+                disabled={loading}
+              >
+                <IconTrash size={16} />
+              </Button>
+            </Group>
+          </Box>
+        </Group>
+      )}
       <Modal opened={modalOpen} onClose={() => setModalOpen(false)} title="Remover setlist" centered>
         <Text>Tem certeza que deseja remover este setlist?</Text>
         <Group mt="md" position="right">

@@ -5,6 +5,8 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import api from '../../../lib/axios';
 import MusicCard from '../../components/MusicCard';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 export default function SetlistViewPage() {
   const router = useRouter();
@@ -42,6 +44,15 @@ export default function SetlistViewPage() {
           <Text>Visualizar</Text>
         </Breadcrumbs>
         <Title order={2} mb="lg">Setlist: {setlist?.name}</Title>
+        {setlist?.date && (
+          <Text size="sm" color="dimmed" mb="md">
+            {(() => {
+              const [ano, mes, dia] = setlist.date.split('-');
+              const dataLocal = new Date(Number(ano), Number(mes) - 1, Number(dia));
+              return format(dataLocal, 'dd/MM/yyyy', { locale: ptBR });
+            })()}
+          </Text>
+        )}
         <TextInput
           icon={<IconSearch size={16} />}
           placeholder="Buscar música por nome ou artista"
