@@ -1,10 +1,11 @@
-import { Card, Image, Text, Group, Badge, ActionIcon, Tooltip, Modal, Button, Menu, TextInput, NumberInput, Stack, Loader, Timeline, ScrollArea } from '@mantine/core';
-import { IconMusic, IconClock, IconWaveSine, IconEye, IconTrash, IconPlayerPlay, IconDotsVertical, IconEdit } from '@tabler/icons-react';
-import { useState, useEffect } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { ActionIcon, Badge, Button, Card, Group, Image, Loader, Menu, Modal, NumberInput, ScrollArea, Stack, Text, TextInput, Timeline } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { useRouter } from 'next/router';
-import api from '../../lib/axios';
+import { IconClock, IconDotsVertical, IconEdit, IconEye, IconMusic, IconPlayerPlay, IconTrash, IconWaveSine } from '@tabler/icons-react';
 import { format } from 'date-fns';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import api from '../../lib/axios';
 
 export interface MusicCardProps {
   id?: number;
@@ -19,7 +20,7 @@ export interface MusicCardProps {
   compact?: boolean;
 }
 
-export default function MusicCard({ id, title, artist, duration, bpm, thumbnail_url, songKey, view_count, onDelete, compact, custom_bpm, custom_key }: MusicCardProps & { custom_bpm?: number | null, custom_key?: string }) {
+export default function MusicCard({ id, title, duration, bpm, thumbnail_url, songKey, onDelete, compact, custom_bpm, custom_key }: MusicCardProps & { custom_bpm?: number | null, custom_key?: string }) {
   const [hovered, setHovered] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -208,7 +209,7 @@ export default function MusicCard({ id, title, artist, duration, bpm, thumbnail_
                         {
                           setlist.songs && setlist.songs.length > 0 ? (
                             <Text size="xs" color="dimmed">
-                              {setlist.songs.map((s, i) => s.title).join(', ')}
+                              {setlist.songs.map((s) => s.title).join(', ')}
                             </Text>
                           ) : (
                             <Text size="xs" color="dimmed">Nenhuma música registrada</Text>

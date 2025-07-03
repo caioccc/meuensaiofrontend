@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Carousel } from '@mantine/carousel';
 import { Badge, Box, Button, Card, Center, Group, Modal, Text, ActionIcon } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
@@ -46,7 +47,10 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
           const res = await api.get(`/setlists/${localSetlist.id}/`);
           setStatus(res.data.processing_status);
           setLocalSetlist(res.data);
-        } catch (e) { }
+        } catch (e) {
+          console.error('Erro ao atualizar status do setlist:', e);
+          clearInterval(interval);
+        }
       }, 30000);
       return () => clearInterval(interval);
     }
@@ -68,9 +72,11 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
   };
 
   const getRandomDelay = () => Math.floor(Math.random() * 16) * 100 + 1000;
-  const autoplay = useRef(Autoplay({ delay: getRandomDelay(), stopOnInteraction: false, onTransitionEnd: (emblaApi) => {
-    autoplay.current.options.delay = getRandomDelay();
-  }}));
+  const autoplay = useRef(Autoplay({
+    delay: getRandomDelay(), stopOnInteraction: false, onTransitionEnd: () => {
+      autoplay.current.options.delay = getRandomDelay();
+    }
+  }));
 
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder style={isMobile ? { position: 'relative', minHeight: 220 } : {}}>

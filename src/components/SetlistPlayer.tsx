@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Button, Group, Slider, Text, Stack, Tooltip, Loader, Paper, LoadingOverlay } from '@mantine/core';
-import { IconPlayerPlay, IconPlayerPause, IconPlayerStop, IconPlayerTrackNext, IconPlayerTrackPrev, IconBrandYoutube } from '@tabler/icons-react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Button, Group, Loader, LoadingOverlay, Paper, Slider, Stack, Text, Tooltip } from '@mantine/core';
+import { IconBrandYoutube, IconPlayerPause, IconPlayerPlay, IconPlayerStop, IconPlayerTrackNext, IconPlayerTrackPrev } from '@tabler/icons-react';
+import { useEffect, useRef, useState } from 'react';
 import api from '../../lib/axios';
 
 interface Song {
@@ -120,7 +121,7 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
 
   return (
     <Stack style={{ position: 'relative' }}>
-      <LoadingOverlay visible={loading} zIndex={1000} overlayBlur={2} overlayProps={{ radius: "sm", blur: 2 }}/>
+      <LoadingOverlay visible={loading} zIndex={1000} overlayBlur={2} overlayProps={{ radius: "sm", blur: 2 }} />
       <Text fw={700} size="lg" mb="xs">Setlist: {setlistName}</Text>
       {/* Controles principais */}
       <Group mb="md">
@@ -143,7 +144,7 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
         <Text fw={500}>Sequência da setlist:</Text>
         {songs.map((s, idx) => (
           <Paper key={s.id} shadow={idx === currentIdx ? "md" : "xs"} p="xs" withBorder style={{ background: idx === currentIdx ? '#e7f5ff' : undefined, cursor: 'pointer' }} onClick={() => goTo(idx)}>
-            <Text size="sm" fw={idx === currentIdx ? 700 : 400} color={idx === currentIdx ? 'blue' : undefined}>{idx + 1}. {s.title} - {s.artist}</Text>
+            <Text size="sm" fw={idx === currentIdx ? 700 : 400} color={idx === currentIdx ? 'blue' : undefined}>{idx + 1}. {s.title} - {s.bpm} - {s.key}</Text>
           </Paper>
         ))}
       </Stack>

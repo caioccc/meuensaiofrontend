@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import AppLayout from '@/components/AppLayout';
-import { useEffect, useState } from 'react';
 import { useMediaQuery } from '@mantine/hooks';
+import { useEffect, useState } from 'react';
 
 import { Anchor, Breadcrumbs, Button, Card, Container, Grid, Group, Image, Loader, Paper, Select, Stack, Stepper, Text, TextInput, Title } from "@mantine/core";
 import { notifications } from '@mantine/notifications';
@@ -20,7 +21,6 @@ interface YoutubeResult {
 
 export default function AddMusicPage() {
   const [setlists, setSetlists] = useState([]);
-  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     api.get('/setlists/').then(res => setSetlists(res.data.results || res.data));
@@ -193,7 +193,7 @@ export default function AddMusicPage() {
               <Text mb="xs">Selecione a música desejada dos resultados abaixo:</Text>
               {loading ? <Loader /> : (
                 <Grid gutter="md">
-                  {results.map((r, idx) => (
+                  {results.map((r) => (
                     <Grid.Col span={{ base: 12, sm: 12, md: 6, lg: 4, xl: 3 }} key={r.youtube_id}>
                       <Card
                         shadow={selected?.youtube_id === r.youtube_id ? "lg" : "sm"}
@@ -302,7 +302,7 @@ export default function AddMusicPage() {
                 }
                 {
                   active < 2 && active > 0 && (
-                    <Button  fullWidth rightSection={<IconChevronRight size={16} />} onClick={handleNext} disabled={active === 0 || (active === 1 && !selected) || (active === 1 && fetchingDetails)} loading={fetchingDetails}>
+                    <Button fullWidth rightSection={<IconChevronRight size={16} />} onClick={handleNext} disabled={active === 0 || (active === 1 && !selected) || (active === 1 && fetchingDetails)} loading={fetchingDetails}>
                       Próximo
                     </Button>
                   )

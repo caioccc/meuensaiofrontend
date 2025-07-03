@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useForm } from "react-hook-form";
-import { TextInput, PasswordInput, Button, Box, Title, Stack, Text, Loader, Container } from "@mantine/core";
-import { useState } from "react";
-import api from "../../lib/axios";
-import { useRouter } from "next/navigation";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { IconArrowLeft, IconUser, IconLock, IconMail } from "@tabler/icons-react";
+import { Button, Container, Loader, PasswordInput, Stack, Text, TextInput, Title } from "@mantine/core";
+import { IconArrowLeft, IconLock, IconMail, IconUser } from "@tabler/icons-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import api from "../../lib/axios";
 
 interface RegisterForm {
   first_name: string;
@@ -49,6 +50,7 @@ export default function RegisterPage() {
       });
       router.push("/login");
     } catch (err: any) {
+      console.error("Erro ao registrar usuário:", err);
       setError("Não foi possível realizar o cadastro. Verifique seus dados ou tente novamente mais tarde.");
     } finally {
       setLoading(false);

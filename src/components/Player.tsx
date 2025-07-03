@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Button, Group, Slider, Text, Stack, Switch, Tooltip, Loader, LoadingOverlay } from '@mantine/core';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Button, Group, LoadingOverlay, Slider, Stack, Text, Tooltip } from '@mantine/core';
+import { IconBrandYoutube, IconGuitarPick, IconMusic, IconPlayerPause, IconPlayerPlay, IconVolumeOff, IconWaveSine } from '@tabler/icons-react';
+import { useEffect, useRef, useState } from 'react';
 import * as Tone from 'tone';
-import AppLayout from './AppLayout';
-import { IconPlayerPlay, IconPlayerPause, IconVolume, IconVolumeOff, IconHeadphones, IconBrandYoutube, IconWaveSine, IconMusic, IconGuitarPick } from '@tabler/icons-react';
-import { padSamples, shimmerSamples, guitarSamples } from '../constants/padMaps';
+import { guitarSamples, padSamples, shimmerSamples } from '../constants/padMaps';
 
 interface PlayerProps {
   song: {
@@ -27,28 +27,15 @@ interface PlayerProps {
   };
 }
 
-const pad_types = { default: padSamples, shimmer: shimmerSamples, guitar: guitarSamples };
-
 export default function Player({ song }: PlayerProps) {
   const playerRef = useRef<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [metronomeOn, setMetronomeOn] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [playbackRate, setPlaybackRate] = useState(1);
   const [ytVolume, setYtVolume] = useState(60);
-  const [metroVolume, setMetroVolume] = useState(50);
-  const [bpmState, setBpmState] = useState(song.bpm || 120);
-  const [transpose, setTranspose] = useState(0);
-  const [padCloudLoaded, setPadCloudLoaded] = useState(false);
-  const [padShimmerLoaded, setPadShimmerLoaded] = useState(false);
-  const [padGuitarLoaded, setPadGuitarLoaded] = useState(false);
   const [padsLoading, setPadsLoading] = useState(true);
   const [padCloudVol, setPadCloudVol] = useState(80);
   const [padShimmerVol, setPadShimmerVol] = useState(80);
   const [padGuitarVol, setPadGuitarVol] = useState(80);
-  const [metroLoaded, setMetroLoaded] = useState(false);
-  const metronome = useRef<Tone.Player | null>(null);
-  const metroLoop = useRef<Tone.Loop | null>(null);
   const padCloudPlayer = useRef<Tone.Player | null>(null);
   const padShimmerPlayer = useRef<Tone.Player | null>(null);
   const padGuitarPlayer = useRef<Tone.Player | null>(null);
@@ -58,8 +45,6 @@ export default function Player({ song }: PlayerProps) {
   // Estados de mute/solo
   const [ytMute, setYtMute] = useState(false);
   const [ytSolo, setYtSolo] = useState(false);
-  const [metroMute, setMetroMute] = useState(false);
-  const [metroSolo, setMetroSolo] = useState(false);
   const [padCloudMute, setPadCloudMute] = useState(false);
   const [padCloudSolo, setPadCloudSolo] = useState(false);
   const [padShimmerMute, setPadShimmerMute] = useState(false);
@@ -68,7 +53,7 @@ export default function Player({ song }: PlayerProps) {
   const [padGuitarSolo, setPadGuitarSolo] = useState(false);
 
   // Lógica de solo/mute
-  const anySolo = ytSolo || metroSolo || padCloudSolo || padShimmerSolo || padGuitarSolo;
+  const anySolo = ytSolo || padCloudSolo || padShimmerSolo || padGuitarSolo;
   const isChannelActive = (mute: boolean, solo: boolean) => {
     if (anySolo) return solo;
     return !mute;
@@ -128,38 +113,6 @@ export default function Player({ song }: PlayerProps) {
     }
   }, [ytVolume, ytReady, isPlaying]);
 
-  // Controle de metrônomo
-  useEffect(() => {
-    if (!metronomeOn) {
-      metroLoop.current?.stop();
-      return;
-    }
-    if (!metronome.current) {
-      metronome.current = new Tone.Player({
-        url: 'https://cdn.jsdelivr.net/gh/gleitz/midi-js-soundfonts/FluidR3_GM/percussion/56.mp3',
-        autostart: false,
-        onload: () => setMetroLoaded(true),
-      }).toDestination();
-    }
-    if (!metroLoaded) return;
-    metroLoop.current = new Tone.Loop(time => {
-      if (metronome.current && metroLoaded) {
-        metronome.current.start(time);
-      }
-    }, (60 / bpmState));
-    Tone.Transport.bpm.value = bpmState;
-    Tone.Transport.start();
-    metroLoop.current.start(0);
-    return () => {
-      metroLoop.current?.stop();
-      Tone.Transport.stop();
-    };
-  }, [metronomeOn, bpmState, metroLoaded]);
-
-  // Reset metroLoaded ao desligar metrônomo
-  useEffect(() => {
-    if (!metronomeOn) setMetroLoaded(false);
-  }, [metronomeOn]);
 
   // Sincronização de acordes
   useEffect(() => {
@@ -175,23 +128,6 @@ export default function Player({ song }: PlayerProps) {
   // Funções de controle
   const play = () => playerRef.current?.playVideo();
   const pause = () => playerRef.current?.pauseVideo();
-  const seekTo = (t: number) => playerRef.current?.seekTo(t, true);
-  const setRate = (r: number) => {
-    setPlaybackRate(r);
-    playerRef.current?.setPlaybackRate(r);
-  };
-
-  // Transposição visual dos acordes
-  const transposeChord = (chord: string) => {
-    // Função simples de transposição (exemplo)
-    const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-    const match = chord.match(/([A-G]#?)(m?)/);
-    if (!match) return chord;
-    let idx = notes.indexOf(match[1]);
-    if (idx === -1) return chord;
-    idx = (idx + transpose + 12) % 12;
-    return notes[idx] + match[2];
-  };
 
   // Encontrar acorde ativo pelo tempo
   const activeChordIdx = song.chords_formatada?.findIndex(
@@ -273,15 +209,11 @@ export default function Player({ song }: PlayerProps) {
         playerRef.current.setVolume(0);
       }
     }
-    // Metrônomo
-    if (metronome.current) {
-      metronome.current.volume.value = isChannelActive(metroMute, metroSolo) ? (metroVolume - 100) : -100;
-    }
     // Pads
     if (padCloudPlayer.current) padCloudPlayer.current.volume.value = isChannelActive(padCloudMute, padCloudSolo) ? (padCloudVol - 100) : -100;
     if (padShimmerPlayer.current) padShimmerPlayer.current.volume.value = isChannelActive(padShimmerMute, padShimmerSolo) ? (padShimmerVol - 100) : -100;
     if (padGuitarPlayer.current) padGuitarPlayer.current.volume.value = isChannelActive(padGuitarMute, padGuitarSolo) ? (padGuitarVol - 100) : -100;
-  }, [ytMute, ytSolo, ytVolume, metroMute, metroSolo, metroVolume, padCloudMute, padCloudSolo, padCloudVol, padShimmerMute, padShimmerSolo, padShimmerVol, padGuitarMute, padGuitarSolo, padGuitarVol, anySolo]);
+  }, [ytMute, ytSolo, ytVolume, padCloudMute, padCloudSolo, padCloudVol, padShimmerMute, padShimmerSolo, padShimmerVol, padGuitarMute, padGuitarSolo, padGuitarVol, anySolo]);
 
   const [loading, setLoading] = useState(false);
 
@@ -294,7 +226,7 @@ export default function Player({ song }: PlayerProps) {
 
   return (
     <Stack style={{ position: 'relative' }}>
-      <LoadingOverlay visible={loading} zIndex={1000} overlayBlur={2} overlayProps={{ radius: "sm", blur: 2 }}/>
+      <LoadingOverlay visible={loading} zIndex={1000} overlayBlur={2} overlayProps={{ radius: "sm", blur: 2 }} />
       {/* Características da música */}
       <Group spacing="xl" align="center" style={{ marginBottom: 16, marginTop: 8 }}>
         <Text size="md" fw={600} color="#228be6">
@@ -360,7 +292,7 @@ export default function Player({ song }: PlayerProps) {
                 >
                   <img src={c.image} alt={c.note_fmt} width={36} height={48} style={{ filter: 'drop-shadow(0 0 6px #228be6)' }} />
                   <Text color="white" fw={700} size="lg" span style={{ position: 'absolute', bottom: 4, left: 0, right: 0, textAlign: 'center', textShadow: '0 2px 8px #228be6' }}>
-                    {transposeChord(c.note_fmt)}
+                    {c.note_fmt}
                   </Text>
                 </div>
               );
@@ -385,7 +317,7 @@ export default function Player({ song }: PlayerProps) {
                     transition: 'all 0.2s',
                   }}
                 >
-                  {transposeChord(c.note_fmt)}
+                  {c.note_fmt}
                 </div>
               );
             } else {

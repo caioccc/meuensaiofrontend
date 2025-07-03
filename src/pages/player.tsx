@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import AppLayout from "@/components/AppLayout";
 import { Title, Container, Text, Loader } from "@mantine/core";
 import { useRouter } from "next/router";
@@ -7,7 +8,7 @@ import api from "../../lib/axios";
 
 export default function PlayerPage() {
   const router = useRouter();
-  const { youtubeId, id } = router.query;
+  const { id } = router.query;
   const [song, setSong] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 

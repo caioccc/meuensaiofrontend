@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import AppLayout from '@/components/AppLayout';
 import {
   Anchor,
@@ -13,16 +14,16 @@ import {
   TextInput, Title,
   Tooltip
 } from '@mantine/core';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { useMediaQuery } from '@mantine/hooks';
 import { showNotification } from '@mantine/notifications';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { IconCheck, IconPlaylist, IconPlus, IconSearch, IconX } from '@tabler/icons-react';
+import { ptBR } from 'date-fns/locale';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import api from '../../../lib/axios';
-import { useMediaQuery } from '@mantine/hooks';
-import { ptBR } from 'date-fns/locale';
 
 export default function AddSetlistPage() {
   const [active, setActive] = useState(0);

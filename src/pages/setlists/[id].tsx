@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import AppLayout from '@/components/AppLayout';
-import { Container, Title, TextInput, Loader, SimpleGrid, Group, Pagination, Text, Grid, Breadcrumbs, Anchor } from '@mantine/core';
+import { Anchor, Breadcrumbs, Container, Grid, Loader, Text, TextInput, Title } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import api from '../../../lib/axios';
 import MusicCard from '../../components/MusicCard';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 
 export default function SetlistViewPage() {
   const router = useRouter();
@@ -15,8 +16,6 @@ export default function SetlistViewPage() {
   const [songs, setSongs] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(1);
 
   useEffect(() => {
     if (!id) return;
@@ -24,7 +23,6 @@ export default function SetlistViewPage() {
     api.get(`/setlists/${id}/`).then(res => {
       setSetlist(res.data);
       setSongs(res.data.songs || []);
-      setTotal(1);
       setLoading(false);
     });
   }, [id]);

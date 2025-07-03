@@ -1,9 +1,9 @@
-import { useForm } from 'react-hook-form';
-import { Button, TextInput, Paper, Title, Container, Divider, Group, Loader, PasswordInput } from '@mantine/core';
-import { GoogleLogin } from '@react-oauth/google';
-import { useState, useEffect } from 'react';
-import axios from '../../lib/axios';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Button, Container, Divider, Loader, Paper, PasswordInput, TextInput, Title } from '@mantine/core';
 import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import axios from '../../lib/axios';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function LoginPage() {
@@ -30,6 +30,7 @@ export default function LoginPage() {
       login(res.data.access, res.data.refresh);
       router.push('/');
     } catch (err: any) {
+      console.error('Erro ao fazer login:', err);
       setError('Usuário ou senha inválidos');
     } finally {
       setLoading(false);

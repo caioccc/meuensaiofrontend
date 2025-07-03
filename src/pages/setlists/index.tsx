@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import AppLayout from "@/components/AppLayout";
 import { Button, Container, Group, Loader, Pagination, SimpleGrid, TextInput, Title, Breadcrumbs, Anchor } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
@@ -92,7 +93,7 @@ export default function SetlistsPage() {
             breakpoints={[{ maxWidth: "sm", cols: 1 }]}
           >
             {setlists.map((setlist) => (
-              <SetlistCard key={setlist.id} setlist={setlist} onRemoved={fetchSetlists} showPlayerButton />
+              <SetlistCard key={setlist.id} setlist={setlist} onRemoved={fetchSetlists} />
             ))}
           </SimpleGrid>
         )}
