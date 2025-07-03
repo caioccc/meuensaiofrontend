@@ -37,7 +37,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
       footer={{ height: 40 }}
     >
       <AppShell.Header>
-        <Group h="100%" px="md" position="apart">
+        <Group h="100%" px="md" justify="space-between">
           {/* Botão de menu só no mobile */}
           <ActionIcon
             variant="subtle"
@@ -57,14 +57,14 @@ export default function AppLayout({ children }: AppLayoutProps) {
             component={Link}
             href="/"
             label="Início"
-            icon={<IconLayoutDashboard size={18} />}
+            leftSection={<IconLayoutDashboard size={18} />}
             active={pathname === "/"}
           />
           <NavLink
             component={Link}
             href="/setlists"
             label="Setlists"
-            icon={<IconTable size={18} />}
+            leftSection={<IconTable size={18} />}
             active={pathname === "/setlists" || pathname.startsWith("/setlists/")}
           />
         </AppShell.Section>
@@ -85,7 +85,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         {children}
       </AppShell.Main>
       <AppShell.Footer>
-        <Group h="100%" px="md" position="apart">
+        <Group h="100%" px="md" justify="space-between">
           <Text size="sm">&copy; {new Date().getFullYear()} Meu Ensaio</Text>
         </Group>
       </AppShell.Footer>

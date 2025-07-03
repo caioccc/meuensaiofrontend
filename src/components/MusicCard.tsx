@@ -103,7 +103,7 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
       <Card.Section>
         <Image src={thumbnail_url} height={compact ? 70 : 160} alt={title} fallbackSrc="/no-image.png" />
       </Card.Section>
-      <Group position="apart" mt="md" mb="xs">
+      <Group justify="space-between" mt="md" mb="xs">
         <Text fw={700} size={compact ? 'sm' : undefined} lineClamp={2}>{title}</Text>
       </Group>
       {/* Meatball menu no topo direito, visível ao hover */}
@@ -128,7 +128,7 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
         </Menu>
       )}
       {/* Badges responsivos, quebram linha se necessário */}
-      <Group spacing={4} wrap="wrap" style={{ rowGap: 4, columnGap: 4, marginBottom: compact ? 0 : 36 }}>
+      <Group gap={4} wrap="wrap" style={{ rowGap: 4, columnGap: 4, marginBottom: compact ? 0 : 36 }}>
         {bpm && (
           <Badge color={compact ? 'gray' : 'blue'} leftSection={<IconWaveSine size={14} />}>{bpm} BPM</Badge>
         )}
@@ -157,7 +157,7 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
       {/* Modal de remover */}
       <Modal opened={modalOpen} onClose={() => setModalOpen(false)} title="Remover música" centered>
         <Text>Tem certeza que deseja remover esta música?</Text>
-        <Group mt="md" position="right">
+        <Group mt="md" justify="flex-end">
           <Button variant="default" onClick={() => setModalOpen(false)}>Cancelar</Button>
           <Button color="red" loading={loadingDelete} onClick={handleDelete}>Remover</Button>
         </Group>

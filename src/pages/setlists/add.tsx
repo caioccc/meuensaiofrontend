@@ -159,7 +159,7 @@ export default function AddSetlistPage() {
         <Paper shadow="md" p="xl" radius="md" withBorder>
           <Stepper active={active} onStepClick={setActive} breakpoint="sm">
             <Stepper.Step label="Fonte" description="Escolha a fonte das músicas">
-              <Group position="center" spacing="xl" mt="xl" style={{ justifyContent: 'center', width: '100%' }}>
+              <Group justify="center" spacing="xl" mt="xl" style={{ justifyContent: 'center', width: '100%' }}>
                 <Card
                   shadow={source === 'saved' ? 'md' : 'xs'}
                   withBorder
@@ -237,7 +237,7 @@ export default function AddSetlistPage() {
                         mb="md"
                       />
                       <ScrollArea h={250} mb="md">
-                        <Group spacing="md" noWrap style={{ flexWrap: 'wrap' }}>
+                        <Group gap="md" noWrap style={{ flexWrap: 'wrap' }}>
                           {savedLoading ? <Loader /> : savedSongs.filter(song =>
                             song.title.toLowerCase().includes(savedSearch.toLowerCase()) ||
                             (song.artist && song.artist.toLowerCase().includes(savedSearch.toLowerCase()))
@@ -280,7 +280,7 @@ export default function AddSetlistPage() {
                         </Group>
                       )}
                       <ScrollArea h={320} mb="md">
-                        <Group spacing="md" noWrap style={{ flexWrap: 'wrap' }}>
+                        <Group gap="md" noWrap style={{ flexWrap: 'wrap' }}>
                           {searchResults.map((song) => (
                             <Card key={song.youtube_id} shadow="xs" withBorder style={{ width: 180, minWidth: 0, padding: 8, marginBottom: 0 }}>
                               <Group noWrap align="center" spacing="md">
@@ -338,7 +338,7 @@ export default function AddSetlistPage() {
             <Stepper.Step label="Preview" description="Confirme e salve">
               <Title order={4} mb="md">Preview do Setlist</Title>
               <ScrollArea>
-                <Group spacing="md" noWrap style={{ flexWrap: 'wrap' }}>
+                <Group gap="md" noWrap style={{ flexWrap: 'wrap' }}>
                   {(source === 'saved' ? selected : enriched).map((song) => {
                     const missingData = !song.derivedBpm || !song.derivedKey;
                     return (

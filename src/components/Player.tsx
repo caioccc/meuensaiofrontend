@@ -228,7 +228,7 @@ export default function Player({ song }: PlayerProps) {
     <Stack style={{ position: 'relative' }}>
       <LoadingOverlay visible={loading} zIndex={1000} overlayBlur={2} overlayProps={{ radius: "sm", blur: 2 }} />
       {/* Características da música */}
-      <Group spacing="xl" align="center" style={{ marginBottom: 16, marginTop: 8 }}>
+      <Group gap="xl" align="center" style={{ marginBottom: 16, marginTop: 8 }}>
         <Text size="md" fw={600} color="#228be6">
           TOM: <span style={{ fontWeight: 700 }}>{song.key || '-'}</span>
         </Text>
@@ -342,7 +342,7 @@ export default function Player({ song }: PlayerProps) {
       {/* Seção de controles de volume abaixo */}
       <Stack spacing="md" className="player-controls-stack" style={{ width: '100%', marginTop: 32 }}>
         {/* Canal YouTube */}
-        <Group spacing="xs" align="center">
+        <Group gap="xs" align="center">
           <Tooltip label="YouTube">
             <IconBrandYoutube size={28} color="#e63946" />
           </Tooltip>
@@ -355,7 +355,7 @@ export default function Player({ song }: PlayerProps) {
           <Slider min={0} max={100} value={ytVolume} onChange={setYtVolume} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
         </Group>
         {/* Canal Metrônomo */}
-        {/* <Group spacing="xs" align="center">
+        {/* <Group gap="xs" align="center">
           <Tooltip label="Metrônomo">
             <IconWaveSine size={28} color="#228be6" />
           </Tooltip>
@@ -368,7 +368,7 @@ export default function Player({ song }: PlayerProps) {
           <Slider min={0} max={100} value={metroVolume} onChange={setMetroVolume} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
         </Group> */}
         {/* Canal PAD Cloud */}
-        <Group spacing="xs" align="center">
+        <Group gap="xs" align="center">
           <Tooltip label="Pad Cloud">
             <IconMusic size={28} color="#51cf66" />
           </Tooltip>
@@ -381,7 +381,7 @@ export default function Player({ song }: PlayerProps) {
           <Slider min={0} max={100} value={padCloudVol} onChange={setPadCloudVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
         </Group>
         {/* Canal Pad Shimmer */}
-        <Group spacing="xs" align="center">
+        <Group gap="xs" align="center">
           <Tooltip label="Pad Shimmer">
             <IconWaveSine size={28} color="#845ef7" />
           </Tooltip>
@@ -394,7 +394,7 @@ export default function Player({ song }: PlayerProps) {
           <Slider min={0} max={100} value={padShimmerVol} onChange={setPadShimmerVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
         </Group>
         {/* Canal Pad Guitar */}
-        <Group spacing="xs" align="center">
+        <Group gap="xs" align="center">
           <Tooltip label="Pad Guitar">
             <IconGuitarPick size={28} color="#fab005" />
           </Tooltip>

@@ -198,7 +198,7 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
                 )}
               </Box>
             </div>
-            <Group position="right" spacing={8} style={{ position: 'absolute', right: 0, bottom: 0 }}>
+            <Group justify="flex-end" spacing={8} style={{ position: 'absolute', right: 0, bottom: 0 }}>
               <Button
                 variant="light"
                 color="blue"

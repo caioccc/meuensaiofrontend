@@ -51,7 +51,7 @@ export default function LoginPage() {
           </Button>
         </form>
         <Divider my="lg" label="ou" labelPosition="center" />
-        {/* <Group position="center" style={{ width: '100%' }}>
+        {/* <Group justify="center" style={{ width: '100%' }}>
           <div style={{ width: '100%' }}>
             <GoogleLogin
               onSuccess={credentialResponse => {

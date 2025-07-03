@@ -133,14 +133,14 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
       {/* Player YouTube */}
       <div id="ytplayer" style={{ width: '100%', height: 360, borderRadius: 12, overflow: 'hidden', boxShadow: '0 2px 12px #0001' }} />
       {/* Volume YouTube */}
-      <Group spacing="xs" align="center" mt="md">
+      <Group gap="xs" align="center" mt="md">
         <Tooltip label="YouTube">
           <IconBrandYoutube size={28} color="#e63946" />
         </Tooltip>
         <Slider min={0} max={100} value={ytVolume} onChange={setYtVolume} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
       </Group>
       {/* Sequência de músicas */}
-      <Stack mt="xl" spacing="xs">
+      <Stack mt="xl" gap="xs">
         <Text fw={500}>Sequência da setlist:</Text>
         {songs.map((s, idx) => (
           <Paper key={s.id} shadow={idx === currentIdx ? "md" : "xs"} p="xs" withBorder style={{ background: idx === currentIdx ? '#e7f5ff' : undefined, cursor: 'pointer' }} onClick={() => goTo(idx)}>

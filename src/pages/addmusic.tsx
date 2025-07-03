@@ -208,7 +208,7 @@ export default function AddMusicPage() {
                         </Card.Section>
                         <Text fw={700} size="sm" mt="xs" lineClamp={2}>{r.title}</Text>
                         <Text size="xs" color="dimmed">{r.channel_name}</Text>
-                        <Group spacing={4} mt="xs">
+                        <Group gap={4} mt="xs">
                           <Text size="xs">{r.duration}</Text>
                           {r.view_count && <Text size="xs" color="dimmed">{r.view_count}</Text>}
                           <Button component="a" href={r.link} target="_blank" size="xs" variant="subtle" leftSection={<IconMusic size={14} />}>YouTube</Button>

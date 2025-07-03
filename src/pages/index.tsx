@@ -72,7 +72,7 @@ export default function DashboardPage() {
     <ProtectedRoute>
       <AppLayout>
         <Container size="100%" py="md">
-          <Group position="apart" mb="md" style={{ flexWrap: 'wrap' }}>
+          <Group justify="space-between" mb="md" style={{ flexWrap: 'wrap' }}>
             <Title order={2}>Minhas Músicas</Title>
             <Button
               leftSection={<IconPlus />}
@@ -152,7 +152,7 @@ export default function DashboardPage() {
             </Stack>
           </Modal>
           {loading ? (
-            <Group position="center" py="xl"><Loader /></Group>
+            <Group justify="center" py="xl"><Loader /></Group>
           ) : songs.length === 0 ? (
             <Text align="center" color="dimmed">Nenhuma música encontrada.</Text>
           ) : (
@@ -179,7 +179,7 @@ export default function DashboardPage() {
               ))}
             </Grid>
           )}
-          <Group position="center" mt="md">
+          <Group justify="center" mt="md">
             <Pagination value={page} onChange={setPage} total={total} />
           </Group>
           <MusicPreviewModal opened={!!preview} onClose={() => setPreview(null)} music={preview} />

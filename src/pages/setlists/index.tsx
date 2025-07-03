@@ -62,7 +62,7 @@ export default function SetlistsPage() {
           <Anchor onClick={() => router.push('/')}>Início</Anchor>
           <Anchor onClick={() => router.push('/setlists')}>Setlists</Anchor>
         </Breadcrumbs>
-        <Group position="apart" mb="md" align="center" style={{ width: '100%' }}>
+        <Group justify="space-between" mb="md" align="center" style={{ width: '100%' }}>
           <Title order={2}>Setlists</Title>
           <Button
             leftSection={<IconPlus size={18} />}
