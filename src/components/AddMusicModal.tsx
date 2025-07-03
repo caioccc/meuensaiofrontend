@@ -178,7 +178,7 @@ export default function AddMusicModal({ opened, onClose, setlists, onSuccess }: 
           {loading ? <Loader /> : (
             <Grid gutter="md">
               {results.map((r, idx) => (
-                <Grid.Col span={{ base: 6, sm: 4, md: 3, lg: 3 }} key={r.youtube_id}>
+                <Grid.Col span={{ base: 12, sm: 12, md: 6, lg: 4, xl: 3 }} key={r.youtube_id}>
                   <Card
                     shadow={selected?.youtube_id === r.youtube_id ? "lg" : "sm"}
                     padding="xs"
