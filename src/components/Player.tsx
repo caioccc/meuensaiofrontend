@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, Group, Slider, Text, Stack, Switch, Tooltip, Loader } from '@mantine/core';
+import { Button, Group, Slider, Text, Stack, Switch, Tooltip, Loader, LoadingOverlay } from '@mantine/core';
 import * as Tone from 'tone';
 import AppLayout from './AppLayout';
 import { IconPlayerPlay, IconPlayerPause, IconVolume, IconVolumeOff, IconHeadphones, IconBrandYoutube, IconWaveSine, IconMusic, IconGuitarPick } from '@tabler/icons-react';
@@ -98,6 +98,8 @@ export default function Player({ song }: PlayerProps) {
             if (playerRef.current && typeof playerRef.current.setVolume === 'function') {
               playerRef.current.setVolume(ytVolume);
             }
+            // Toca automaticamente ao renderizar
+            ytPlayer?.playVideo?.();
           },
           onStateChange: (e: any) => setIsPlaying(e.data === 1),
         },
@@ -281,8 +283,18 @@ export default function Player({ song }: PlayerProps) {
     if (padGuitarPlayer.current) padGuitarPlayer.current.volume.value = isChannelActive(padGuitarMute, padGuitarSolo) ? (padGuitarVol - 100) : -100;
   }, [ytMute, ytSolo, ytVolume, metroMute, metroSolo, metroVolume, padCloudMute, padCloudSolo, padCloudVol, padShimmerMute, padShimmerSolo, padShimmerVol, padGuitarMute, padGuitarSolo, padGuitarVol, anySolo]);
 
+  const [loading, setLoading] = useState(false);
+
+  // Simula carregamento do player (ajuste conforme necessário)
+  useEffect(() => {
+    setLoading(true);
+    const timeout = setTimeout(() => setLoading(false), 800);
+    return () => clearTimeout(timeout);
+  }, [song.youtube_id]);
+
   return (
-    <Stack>
+    <Stack style={{ position: 'relative' }}>
+      <LoadingOverlay visible={loading} zIndex={1000} overlayBlur={2} overlayProps={{ radius: "sm", blur: 2 }}/>
       {/* Características da música */}
       <Group spacing="xl" align="center" style={{ marginBottom: 16, marginTop: 8 }}>
         <Text size="md" fw={600} color="#228be6">

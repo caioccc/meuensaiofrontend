@@ -204,6 +204,14 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
               </Button>
               <Button
                 variant="light"
+                color="green"
+                size="xs"
+                onClick={() => router.push(`/player/setlist/${localSetlist.id}`)}
+              >
+                Tocar
+              </Button>
+              <Button
+                variant="light"
                 color="red"
                 size="xs"
                 onClick={() => setModalOpen(true)}

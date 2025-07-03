@@ -92,7 +92,7 @@ export default function SetlistsPage() {
             breakpoints={[{ maxWidth: "sm", cols: 1 }]}
           >
             {setlists.map((setlist) => (
-              <SetlistCard key={setlist.id} setlist={setlist} onRemoved={fetchSetlists} />
+              <SetlistCard key={setlist.id} setlist={setlist} onRemoved={fetchSetlists} showPlayerButton />
             ))}
           </SimpleGrid>
         )}
