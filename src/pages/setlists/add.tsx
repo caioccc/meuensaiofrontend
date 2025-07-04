@@ -22,8 +22,9 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { IconCheck, IconPlaylist, IconPlus, IconSearch, IconX } from '@tabler/icons-react';
 import { ptBR } from 'date-fns/locale';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import api from '../../../lib/axios';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 export default function AddSetlistPage() {
   const [active, setActive] = useState(0);
@@ -39,6 +40,7 @@ export default function AddSetlistPage() {
   const [date, setDate] = useState<Date | null>(null);
   const router = useRouter();
   const isMobile = useMediaQuery('(max-width: 48em)');
+  const searchResultsRef = useRef<HTMLDivElement | null>(null);
 
   // Limpa o modal sempre que abrir
   useEffect(() => {
@@ -63,6 +65,10 @@ export default function AddSetlistPage() {
     try {
       const res = await api.get(`/search/?q=${encodeURIComponent(search)}`);
       setSearchResults(res.data.results || []);
+      // Scrolla para o topo APENAS após busca
+      setTimeout(() => {
+        if (searchResultsRef.current) searchResultsRef.current.scrollTop = 0;
+      }, 0);
     } finally {
       setSearchLoading(false);
     }
@@ -130,23 +136,49 @@ export default function AddSetlistPage() {
   const [savedSongs, setSavedSongs] = useState<any[]>([]);
   const [savedLoading, setSavedLoading] = useState(false);
   const [savedSearch, setSavedSearch] = useState('');
+  const [savedPage, setSavedPage] = useState(1);
+  const [savedHasMore, setSavedHasMore] = useState(true);
+  const SAVED_LIMIT = 20;
 
-  const fetchSavedSongs = async () => {
+  const fetchSavedSongs = async (reset = false) => {
     setSavedLoading(true);
     try {
-      const res = await api.get('/songs/?limit=1000');
-      setSavedSongs(res.data.results || []);
+      const page = reset ? 1 : savedPage;
+      const params = new URLSearchParams({
+        limit: SAVED_LIMIT.toString(),
+        page: page.toString(),
+      });
+      if (savedSearch) params.append('search', savedSearch);
+      const res = await api.get(`/songs/?${params.toString()}`);
+      const results = res.data.results || [];
+      if (reset) {
+        setSavedSongs(results);
+        setSavedPage(2);
+      } else {
+        setSavedSongs(prev => [...prev, ...results]);
+        setSavedPage(prev => prev + 1);
+      }
+      setSavedHasMore(!!res.data.next);
     } finally {
       setSavedLoading(false);
     }
   };
 
-  // Carrega músicas salvas ao entrar no passo 3 se fonte for 'saved'
+  // Atualiza busca ao abrir ou ao buscar
   useEffect(() => {
-    if (active === 2 && source === 'saved' && savedSongs.length === 0) {
-      fetchSavedSongs();
+    if (active === 2 && source === 'saved') {
+      fetchSavedSongs(true);
     }
+    // eslint-disable-next-line
   }, [active, source]);
+
+  // Atualiza busca ao digitar na busca
+  useEffect(() => {
+    if (active === 2 && source === 'saved') {
+      fetchSavedSongs(true);
+    }
+    // eslint-disable-next-line
+  }, [savedSearch]);
 
   return (
     <AppLayout>
@@ -176,10 +208,16 @@ export default function AddSetlistPage() {
                     justifyContent: 'center',
                     transition: 'border-width 0.2s',
                   }}
-                  onClick={() => setSource('saved')}
+                  onClick={() => {
+                    setSource('saved');
+                    setSelected([]);
+                    setEnriched([]);
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       setSource('saved');
+                      setSelected([]);
+                      setEnriched([]);
                       setTimeout(() => {
                         if (source === 'saved') setActive(1);
                       }, 0);
@@ -206,10 +244,16 @@ export default function AddSetlistPage() {
                     justifyContent: 'center',
                     transition: 'border-width 0.2s',
                   }}
-                  onClick={() => setSource('new')}
+                  onClick={() => {
+                    setSource('new');
+                    setSelected([]);
+                    setEnriched([]);
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       setSource('new');
+                      setSelected([]);
+                      setEnriched([]);
                       setTimeout(() => {
                         if (source === 'new') setActive(1);
                       }, 0);
@@ -256,40 +300,45 @@ export default function AddSetlistPage() {
                         onChange={e => setSavedSearch(e.currentTarget.value)}
                         mb="md"
                       />
-                      <ScrollArea h={250} mb="xs">
-                        <Group gap="xs" noWrap style={{ flexWrap: 'wrap' }}>
-                          {savedLoading ? <Loader /> : savedSongs.filter(song =>
-                            song.title.toLowerCase().includes(savedSearch.toLowerCase()) ||
-                            (song.artist && song.artist.toLowerCase().includes(savedSearch.toLowerCase()))
-                          ).map(song => (
-                            <Card
-                              key={song.id}
-                              shadow="xs"
-                              onClick={() =>
-                                selected.find(s => s.id === song.id)
-                                  ? removeSong(song.id)
-                                  : setSelected([...selected, song])
-                              }
-                              withBorder
-                              style={{
-                                width: 220,
-                                marginBottom: 12,
-                                borderColor: selected.find(s => s.id === song.id) ? '#228be6' : undefined,
-                                borderWidth: selected.find(s => s.id === song.id) ? 2 : 1,
-                                cursor: 'pointer', // Adiciona o ícone de mouse de seleção
-                              }}
-                            >
-                              <Card.Section>
-                                <Image src={song.thumbnail_url} height={120} alt={song.title} fallbackSrc="/no-image.png" />
-                              </Card.Section>
-                              <Text weight={500} mt={4}>{song.title}</Text>
-                              <Text size="xs" color="dimmed">{song.artist}</Text>
-                              <Text size="xs">{song.duration} | {song.view_count}</Text>
-                            </Card>
-                          ))
-                          }
-                        </Group>
-                      </ScrollArea>
+                      <div id="scrollableSavedSongs" style={{ height: 250, overflow: 'auto' }}>
+                        <InfiniteScroll
+                          dataLength={savedSongs.length}
+                          next={() => fetchSavedSongs()}
+                          hasMore={savedHasMore}
+                          loader={<Loader />}
+                          scrollableTarget="scrollableSavedSongs"
+                          style={{ overflow: 'visible' }}
+                        >
+                          <Group gap="xs" noWrap style={{ flexWrap: 'wrap' }}>
+                            {savedSongs.map(song => (
+                              <Card
+                                key={song.id}
+                                shadow="xs"
+                                onClick={() =>
+                                  selected.find(s => s.id === song.id)
+                                    ? removeSong(song.id)
+                                    : setSelected([...selected, song])
+                                }
+                                withBorder
+                                style={{
+                                  width: 220,
+                                  marginBottom: 12,
+                                  borderColor: selected.find(s => s.id === song.id) ? '#228be6' : undefined,
+                                  borderWidth: selected.find(s => s.id === song.id) ? 2 : 1,
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                <Card.Section>
+                                  <Image src={song.thumbnail_url} height={120} alt={song.title} fallbackSrc="/no-image.png" />
+                                </Card.Section>
+                                <Text weight={500} mt={4}>{song.title}</Text>
+                                <Text size="xs" color="dimmed">{song.artist}</Text>
+                                <Text size="xs">{song.duration} | {song.view_count}</Text>
+                              </Card>
+                            ))}
+                          </Group>
+                        </InfiniteScroll>
+                      </div>
                     </>
                   ) : (
                     <>
@@ -317,7 +366,7 @@ export default function AddSetlistPage() {
                           <Button onClick={handleSearch} loading={searchLoading}>Buscar</Button>
                         </Group>
                       )}
-                      <ScrollArea h={320} mb="xs">
+                      <ScrollArea h={320} mb="xs" viewportRef={searchResultsRef}>
                         <Group gap="xs" noWrap style={{ flexWrap: 'wrap' }}>
                           {searchResults.map((song) => (
                             <Card
