@@ -19,7 +19,7 @@ export default function OrderSelect({ value, onChange, options, label }: OrderSe
       placeholder="Ordenar por..."
       data={options}
       value={value}
-      onChange={onChange}
+      onChange={(value) => onChange(value ?? "")}
       clearable={false}
       style={{ minWidth: 180 }}
       size="sm"

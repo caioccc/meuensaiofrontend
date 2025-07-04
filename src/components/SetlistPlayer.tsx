@@ -3,6 +3,7 @@ import { Anchor, Breadcrumbs, Button, Group, Loader, LoadingOverlay, Paper, Slid
 import { IconBrandYoutube, IconPlayerPause, IconPlayerPlay, IconPlayerStop, IconPlayerTrackNext, IconPlayerTrackPrev } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 import api from '../../lib/axios';
+import { useRouter } from 'next/router';
 
 interface Song {
   id: number;
@@ -38,6 +39,7 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const playerRef = useRef<any>(null);
   const [ytVolume, setYtVolume] = useState(100);
+  const router = useRouter();
 
   useEffect(() => {
     setLoading(true);
@@ -127,7 +129,7 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
         <Text>Player</Text>
         <Text>{setlistName}</Text>
       </Breadcrumbs>
-      <LoadingOverlay visible={loading} zIndex={1000} overlayBlur={2} overlayProps={{ radius: "sm", blur: 2 }} />
+      <LoadingOverlay visible={loading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
       <Text fw={700} size="lg" mb="xs">Setlist: {setlistName}</Text>
       {/* Controles principais */}
       <Group mb="md">

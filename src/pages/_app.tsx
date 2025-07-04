@@ -11,7 +11,7 @@ import { Notifications } from '@mantine/notifications';
 export default function MyApp({ Component, pageProps }: AppProps) {
   return (
     <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
-      <MantineProvider withGlobalStyles withNormalizeCSS>
+      <MantineProvider>
         <Notifications />
         <AuthProvider>
           <ProtectedRoute>

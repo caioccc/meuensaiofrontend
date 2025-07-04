@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Carousel } from '@mantine/carousel';
-import { Badge, Box, Button, Card, Center, Group, Modal, Text, ActionIcon, Menu } from '@mantine/core';
+import { ActionIcon, Badge, Box, Button, Card, Center, Group, Menu, Modal, Text } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
 import { showNotification } from '@mantine/notifications';
-import { IconDotsVertical, IconEye, IconMeat, IconMusic, IconPlayerPlay, IconTrash } from '@tabler/icons-react';
+import { IconDotsVertical, IconEye, IconMusic, IconPlayerPlay, IconTrash } from '@tabler/icons-react';
+import { format } from 'date-fns';
 import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
-import { useMediaQuery } from '@mantine/hooks';
 import api from '../../lib/axios';
-import { format } from 'date-fns';
 
 
 interface Song {
@@ -24,6 +24,7 @@ interface Setlist {
   name: string;
   songs: Song[];
   processing_status?: string;
+  date?: string; // Formato 'YYYY-MM-DD'
 }
 
 export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, onRemoved?: () => void }) {
@@ -74,9 +75,7 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
 
   const getRandomDelay = () => Math.floor(Math.random() * 16) * 100 + 1000;
   const autoplay = useRef(Autoplay({
-    delay: getRandomDelay(), stopOnInteraction: false, onTransitionEnd: () => {
-      autoplay.current.options.delay = getRandomDelay();
-    }
+    delay: getRandomDelay(), stopOnInteraction: false
   }));
 
   return (
@@ -108,7 +107,6 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
           <Menu
             opened={menuOpened}
             onClose={() => setMenuOpened(false)}
-            position="bottom-end"
             withinPortal
           >
             <Menu.Target>
@@ -127,7 +125,7 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
             </Menu.Dropdown>
           </Menu>
           <Box style={{ padding: 12, paddingTop: 16, paddingBottom: 54 }}>
-            <Text weight={600} mb={4}>{localSetlist.name}</Text>
+            <Text mb={4}>{localSetlist.name}</Text>
             {localSetlist.date && (
               <Text size="xs" color="dimmed" mb={4}>
                 {(() => {
@@ -161,13 +159,11 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
           </Button>
         </>
       ) : (
-        <Group noWrap align="center">
+        <Group align="center">
           <Box style={{ minWidth: 140, maxWidth: 200 }}>
             {hasImages && localSetlist.songs.length > 0 ? (
               <Carousel
                 slideSize="100%"
-                align="start"
-                slidesToScroll={1}
                 slideGap="xs"
                 controlsOffset="xs"
                 withControls={false}
@@ -183,7 +179,7 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
                 ))}
               </Carousel>
             ) : (
-              <Carousel slideSize="100%" align="start" slidesToScroll={1}
+              <Carousel slideSize="100%"
                 slideGap="xs"
                 controlsOffset="xs"
                 withControls={false}
@@ -215,7 +211,6 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
             <Menu
               opened={menuOpened}
               onClose={() => setMenuOpened(false)}
-              position="bottom-end"
               withinPortal
             >
               <Menu.Target>
@@ -244,7 +239,7 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
               Tocar
             </Button>
             <div>
-              <Text weight={600} mb={4}>{localSetlist.name}</Text>
+              <Text mb={4}>{localSetlist.name}</Text>
               {localSetlist.date && (
                 <Text size="xs" color="dimmed" mb={4}>
                   {(() => {
@@ -271,7 +266,7 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
       )}
       <Modal opened={modalOpen} onClose={() => setModalOpen(false)} title="Remover setlist" centered>
         <Text>Tem certeza que deseja remover este setlist?</Text>
-        <Group mt="md" position="right">
+        <Group mt="md" justify="flex-end">
           <Button variant="default" onClick={() => setModalOpen(false)}>Cancelar</Button>
           <Button color="red" loading={loading} onClick={handleRemove}>Remover</Button>
         </Group>

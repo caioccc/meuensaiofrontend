@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 
 import { Anchor, Breadcrumbs, Button, Card, Container, Grid, Group, Image, Loader, Paper, Select, Stack, Stepper, Text, TextInput, Title } from "@mantine/core";
 import { notifications } from '@mantine/notifications';
-import { IconCheck, IconChevronLeft, IconChevronRight, IconMusic, IconPlaylistAdd, IconSearch, IconX } from "@tabler/icons-react";
+import { IconCheck, IconChevronLeft, IconChevronRight, IconMusic, IconSearch, IconX } from "@tabler/icons-react";
 import { useRouter } from "next/router";
 import api from "../../lib/axios";
 
@@ -20,11 +20,8 @@ interface YoutubeResult {
 }
 
 export default function AddMusicPage() {
-  const [setlists, setSetlists] = useState([]);
 
   useEffect(() => {
-    api.get('/setlists/').then(res => setSetlists(res.data.results || res.data));
-
     setActive(0);
     setSearch("");
     setLoading(false);
@@ -57,6 +54,7 @@ export default function AddMusicPage() {
     setLoading(true);
     setResults([]);
     setSelected(null);
+
     try {
       const res = await api.get(`/search/?q=${encodeURIComponent(search)}`);
       console.log(res.data);
@@ -157,7 +155,7 @@ export default function AddMusicPage() {
         </Breadcrumbs>
         <Title order={2} mb="lg">Adicionar Música</Title>
         <Paper shadow="md" p="xl" radius="md" withBorder>
-          <Stepper active={active} onStepClick={setActive} breakpoint="sm">
+          <Stepper active={active} onStepClick={setActive}>
             <Stepper.Step label="Buscar" description="YouTube">
               <Text mb="xs">Busque por uma música no YouTube. Apenas o primeiro resultado será adicionado.</Text>
               {isMobile ? (
@@ -224,25 +222,25 @@ export default function AddMusicPage() {
                 <Stack>
                   {isMobile ? (
                     <Card withBorder shadow="sm" p="md">
-                      <Group align="center" spacing="md" noWrap>
+                      <Group align="center" gap="md">
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginRight: 8 }}>
                           <Image src={selected.thumbnail_url} width={100} height={100} radius="sm" alt={selected.title} />
                         </div>
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                          <Text weight={500}>{selected.title}</Text>
-                          <Text size="xs" color="dimmed">{selected.artist || selected.channel_name}</Text>
+                          <Text>{selected.title}</Text>
+                          <Text size="xs" color="dimmed">{selected.channel_name}</Text>
                           <Text size="xs">Duração: {selected.duration} | {selected.view_count}</Text>
                         </div>
                       </Group>
                     </Card>
                   ) : (
-                    <Group align="center" spacing="md">
+                    <Group align="center" gap="md">
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginRight: 8 }}>
                         <Image src={selected.thumbnail_url} width={100} height={100} radius="sm" alt={selected.title} />
                       </div>
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                        <Text weight={500}>{selected.title}</Text>
-                        <Text size="xs" color="dimmed">{selected.artist || selected.channel_name}</Text>
+                        <Text>{selected.title}</Text>
+                        <Text size="xs" color="dimmed">{selected.channel_name}</Text>
                         <Text size="xs">Duração: {selected.duration} | {selected.view_count}</Text>
                       </div>
                     </Group>
@@ -264,17 +262,6 @@ export default function AddMusicPage() {
                       leftSection={<IconMusic size={16} />}
                     />
                   </Group>
-                  {setlists.length > 0 && (
-                    <Select
-                      label="Adicionar a um setlist (opcional)"
-                      placeholder="Selecione um setlist"
-                      data={setlists.map(s => ({ value: String(s.id), label: s.name }))}
-                      value={setlistId}
-                      onChange={v => setSetlistId(v)}
-                      leftSection={<IconPlaylistAdd size={16} />}
-                      clearable
-                    />
-                  )}
                 </Stack>
               )}
             </Stepper.Step>

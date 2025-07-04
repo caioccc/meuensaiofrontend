@@ -8,8 +8,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import api from "../../lib/axios";
 import InfiniteScrollWrapper from "../components/InfiniteScrollWrapper";
-import MusicCard, { MusicCardProps } from "../components/MusicCard";
-import MusicPreviewModal from "../components/MusicPreviewModal";
+import MusicCard from "../components/MusicCard";
 import OrderSelect from "../components/OrderSelect";
 
 interface SongApi {
@@ -39,8 +38,6 @@ export default function DashboardPage() {
   const [search, setSearch] = useState(""); // valor realmente buscado
   const [searchInput, setSearchInput] = useState(""); // valor do input
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(1);
-  const [preview, setPreview] = useState<MusicCardProps | null>(null);
   const [artist, setArtist] = useState("");
   const [key, setKey] = useState<string | null>(null);
   const [bpm, setBpm] = useState<[number, number]>([40, 220]);
@@ -87,7 +84,6 @@ export default function DashboardPage() {
           setSongs(res.data.results || res.data);
         }
         setHasMore(!!res.data.next);
-        setTotal(res.data.count ? Math.ceil(res.data.count / 10) : 1);
       })
       .finally(() => setLoading(false));
   };
@@ -194,7 +190,7 @@ export default function DashboardPage() {
                 clearable
                 mb="sm"
               />
-              <Group mt="md" position="right">
+              <Group mt="md" justify="flex-end">
                 <Button variant="default" onClick={() => setModalOpen(false)}>Cancelar</Button>
                 <Button variant="outline" color="gray" onClick={() => {
                   setArtist("");
@@ -208,10 +204,10 @@ export default function DashboardPage() {
           </Modal>
           {loading && page === 1 ? (
             <Group justify="center" py="xl"><LoadingOverlay
-              visible={loading} zIndex={1000} overlayBlur={2} overlayProps={{ radius: "sm", blur: 2 }}
+              visible={loading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }}
             /></Group>
           ) : songs.length === 0 ? (
-            <Text align="center" color="dimmed">Nenhuma música encontrada.</Text>
+            <Text ta="center" color="dimmed">Nenhuma música encontrada.</Text>
           ) : (
             <InfiniteScrollWrapper
               dataLength={songs.length}
@@ -224,17 +220,6 @@ export default function DashboardPage() {
                 //esconder os scroll
                 scrollbarWidth: 'none', // Firefox
                 msOverflowStyle: 'none', // Internet Explorer 10+
-                '&::-webkit-scrollbar': {
-                  display: 'none', // Chrome, Safari e Opera
-                },
-                '&::-webkit-scrollbar-track':
-                  { background: 'transparent' }, // Chrome, Safari e Opera
-                '&::-webkit-scrollbar-thumb':
-                  { background: 'transparent' }, // Chrome, Safari e Opera
-                '&::-webkit-scrollbar-thumb:hover':
-                  { background: 'transparent' }, // Chrome, Safari e Opera
-                '&::-webkit-scrollbar-thumb:active':
-                  { background: 'transparent' }, // Chrome, Safari e Opera
               }}
               loader={<LoadingOverlay />}>
               <Grid>
@@ -243,14 +228,10 @@ export default function DashboardPage() {
                     <MusicCard
                       id={song.id}
                       title={song.title}
-                      artist={song.artist}
                       duration={song.duration}
                       bpm={song.bpm}
-                      chords_url={song.chords_url}
                       thumbnail_url={song.thumbnail_url}
                       songKey={song.key}
-                      view_count={song.view_count}
-                      onPlay={() => window.open(song.link, '_blank')}
                       onDelete={async () => {
                         await api.delete(`songs/${song.id}/`);
                         setSongs(songs => songs.filter(s => s.id !== song.id));
@@ -261,7 +242,6 @@ export default function DashboardPage() {
               </Grid>
             </InfiniteScrollWrapper>
           )}
-          <MusicPreviewModal opened={!!preview} onClose={() => setPreview(null)} music={preview} />
         </Container>
       </AppLayout>
     </ProtectedRoute>

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import AppLayout from '@/components/AppLayout';
 import SetlistPlayer from '@/components/SetlistPlayer';
-import { Anchor, Breadcrumbs, Container, Loader, Text } from '@mantine/core';
+import { Container, Loader } from '@mantine/core';
 import { useRouter } from 'next/router';
 
 export default function SetlistPlayerPage() {

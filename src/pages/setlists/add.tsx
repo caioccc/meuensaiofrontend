@@ -7,7 +7,7 @@ import {
   Card, Container, Divider,
   Group,
   Image,
-  Loader, Paper, ScrollArea,
+  LoadingOverlay, Paper, ScrollArea,
   Stack,
   Stepper,
   Text,
@@ -19,12 +19,12 @@ import { showNotification } from '@mantine/notifications';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { IconCheck, IconPlaylist, IconPlus, IconSearch, IconX } from '@tabler/icons-react';
+import { IconPlaylist, IconPlus, IconSearch, IconX } from '@tabler/icons-react';
 import { ptBR } from 'date-fns/locale';
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
-import api from '../../../lib/axios';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import api from '../../../lib/axios';
 
 export default function AddSetlistPage() {
   const [active, setActive] = useState(0);
@@ -197,9 +197,9 @@ export default function AddSetlistPage() {
         </Breadcrumbs>
         <Title order={2} mb="lg">Criar novo Setlist</Title>
         <Paper shadow="md" p="xl" radius="md" withBorder>
-          <Stepper active={active} onStepClick={setActive} breakpoint="sm">
+          <Stepper active={active} onStepClick={setActive}>
             <Stepper.Step label="Fonte" description="Escolha a fonte das músicas">
-              <Group justify="center" spacing="xl" mt="xl" style={{ justifyContent: 'center', width: '100%' }}>
+              <Group justify="center" gap="xl" mt="xl" style={{ justifyContent: 'center', width: '100%' }}>
                 <Card
                   shadow={source === 'saved' ? 'md' : 'xs'}
                   withBorder
@@ -234,7 +234,7 @@ export default function AddSetlistPage() {
                 >
                   <IconPlaylist size={48} color={source === 'saved' ? '#228be6' : '#888'} />
                   <Title order={4} mb="sm" mt="md">Músicas Salvas</Title>
-                  <Text align="center">Selecionar músicas já salvas no sistema</Text>
+                  <Text ta="center">Selecionar músicas já salvas no sistema</Text>
                 </Card>
                 <Card
                   shadow={source === 'new' ? 'md' : 'xs'}
@@ -270,7 +270,7 @@ export default function AddSetlistPage() {
                 >
                   <IconPlus size={48} color={source === 'new' ? '#228be6' : '#888'} />
                   <Title order={4} mb="sm" mt="md">Novo Setlist</Title>
-                  <Text align="center">Buscar músicas novas no YouTube (processamento assíncrono)</Text>
+                  <Text ta="center">Buscar músicas novas no YouTube (processamento assíncrono)</Text>
                 </Card>
               </Group>
               <Group mt="xl" style={{ justifyContent: 'flex-end' }}>
@@ -297,12 +297,12 @@ export default function AddSetlistPage() {
               </Group>
             </Stepper.Step>
             <Stepper.Step label="Músicas" description="Escolha músicas">
-              <Group align="flex-start" noWrap>
+              <Group align="flex-start">
                 <div style={{ flex: 2, minWidth: 0 }}>
                   {source === 'saved' ? (
                     <>
                       <TextInput
-                        icon={<IconSearch size={16} />}
+                        leftSection={<IconSearch size={16} />}
                         placeholder="Buscar nas músicas salvas"
                         value={savedSearch}
                         onChange={e => setSavedSearch(e.currentTarget.value)}
@@ -313,11 +313,11 @@ export default function AddSetlistPage() {
                           dataLength={savedSongs.length}
                           next={() => fetchSavedSongs()}
                           hasMore={savedHasMore}
-                          loader={<Loader />}
+                          loader={<LoadingOverlay visible={savedLoading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />}
                           scrollableTarget="scrollableSavedSongs"
                           style={{ overflow: 'visible' }}
                         >
-                          <Group gap="xs" noWrap style={{ flexWrap: 'wrap' }}>
+                          <Group gap="xs" style={{ flexWrap: 'wrap' }}>
                             {savedSongs.map(song => (
                               <Card
                                 key={song.id}
@@ -339,8 +339,9 @@ export default function AddSetlistPage() {
                                 <Card.Section>
                                   <Image src={song.thumbnail_url} height={120} alt={song.title} fallbackSrc="/no-image.png" />
                                 </Card.Section>
-                                <Text weight={500} mt={4}>{song.title}</Text>
-                                <Text size="xs" color="dimmed">{song.artist}</Text>
+                                <Tooltip label={"" + song.title + ""} position="top" withArrow>
+                                  <Text fw={500} mt={4} lineClamp={1}>{song.title}</Text>
+                                </Tooltip>
                                 <Text size="xs">{song.duration} | {song.view_count}</Text>
                               </Card>
                             ))}
@@ -353,7 +354,7 @@ export default function AddSetlistPage() {
                       {isMobile ? (
                         <Stack mb="md">
                           <TextInput
-                            icon={<IconSearch size={16} />}
+                            leftSection={<IconSearch size={16} />}
                             placeholder="Buscar músicas"
                             value={search}
                             onChange={(e) => setSearch(e.currentTarget.value)}
@@ -364,7 +365,7 @@ export default function AddSetlistPage() {
                       ) : (
                         <Group mb="md">
                           <TextInput
-                            icon={<IconSearch size={16} />}
+                            leftSection={<IconSearch size={16} />}
                             placeholder="Buscar músicas"
                             value={search}
                             onChange={(e) => setSearch(e.currentTarget.value)}
@@ -375,7 +376,7 @@ export default function AddSetlistPage() {
                         </Group>
                       )}
                       <ScrollArea h={320} mb="xs" viewportRef={searchResultsRef}>
-                        <Group gap="xs" noWrap style={{ flexWrap: 'wrap' }}>
+                        <Group gap="xs" style={{ flexWrap: 'wrap' }}>
                           {searchResults.map((song) => (
                             <Card
                               onClick={() =>
@@ -395,10 +396,12 @@ export default function AddSetlistPage() {
                               <Card.Section>
                                 <Image src={song.thumbnail_url} height={80} radius="sm" alt={song.title} fallbackSrc="/no-image.png" />
                               </Card.Section>
-                              <Group noWrap align="center" gap="xs">
+                              <Group align="center" gap="xs">
                                 <div style={{ flex: 1 }}>
-                                  <Text weight={500} size="sm" lineClamp={1}>{song.title}</Text>
-                                  <Text size="xs" color="dimmed" lineClamp={1}>{song.artist || song.channel_name}</Text>
+                                  <Tooltip label={"" + song.title + ""} position="top" withArrow>
+                                    <Text fw={500} size="sm" lineClamp={1}>{song.title}</Text>
+                                  </Tooltip>
+                                  <Text size="sm" color="dimmed" lineClamp={1}>{song.channel_name}</Text>
                                   <Text size="xs" lineClamp={1}>{song.duration} | {song.view_count}</Text>
                                 </div>
                               </Group>
@@ -416,14 +419,16 @@ export default function AddSetlistPage() {
                     <div style={{ flex: 1, minWidth: 260, maxWidth: 340 }}>
                       <Title order={5} mb="xs">Selecionadas ({selected.length})</Title>
                       <ScrollArea h={320}>
-                        <Stack spacing="sm">
+                        <Stack gap="sm">
                           {selected.map((song) => (
                             <Card key={song.id || song.youtube_id} shadow="xs" withBorder style={{ width: '100%', minWidth: 0, padding: 8 }}>
-                              <Group noWrap align="center" spacing="md">
+                              <Group align="center" gap="md">
                                 <Image src={song.thumbnail_url} width={48} height={48} radius="sm" alt={song.title} />
                                 <div style={{ flex: 1 }}>
-                                  <Text weight={500} size="sm" lineClamp={1}>{song.title}</Text>
-                                  <Text size="xs" color="dimmed" lineClamp={1}>{song.artist || song.channel_name}</Text>
+                                  <Tooltip label={"" + song.title + ""} position="top" withArrow>
+                                    <Text fw={500} size="sm" lineClamp={1}>{song.title}</Text>
+                                  </Tooltip>
+                                  <Text size="xs" color="dimmed" lineClamp={1}>{song.channel_name}</Text>
                                   <Text size="xs" lineClamp={1}>{song.duration} | {song.view_count}</Text>
                                 </div>
                                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: 48 }}>
@@ -446,7 +451,7 @@ export default function AddSetlistPage() {
             <Stepper.Step label="Preview" description="Confirme e salve">
               <Title order={4} mb="md">Preview do Setlist</Title>
               <ScrollArea>
-                <Group gap="md" noWrap style={{ flexWrap: 'wrap' }}>
+                <Group gap="md" style={{ flexWrap: 'wrap' }}>
                   {(source === 'saved' ? selected : enriched).map((song) => {
                     const missingData = source === 'saved'
                       ? !song.bpm || !song.key
@@ -470,8 +475,10 @@ export default function AddSetlistPage() {
                           }}
                         >
                           <Image src={song.thumbnail_url} width={200} height={120} radius="sm" alt={song.title} />
-                          <Text weight={600} mt={4}>{song.title}</Text>
-                          <Text size="sm" color="dimmed">{song.artist || song.channel_name}</Text>
+                          <Tooltip label={"" + song.title + ""} position="top" withArrow>
+                            <Text fw={600} mt={4} lineClamp={1}>{song.title}</Text>
+                          </Tooltip>
+                          <Text size="sm" color="dimmed">{song.channel_name}</Text>
                           <Text size="xs">{song.duration} | {song.view_count}</Text>
                           <Text size="xs">BPM: {source === 'saved' ? song.bpm : song.derivedBpm}</Text>
                           <Text size="xs">Tom: {source === 'saved' ? song.key : song.derivedKey}</Text>

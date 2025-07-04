@@ -29,7 +29,7 @@ export default function PlayerPage() {
         <Title order={2}>Player</Title>
         {song ? (
           <>
-            <Text>{song.title} - {song.artist}</Text>
+            <Text>{song.title}</Text>
             <Player
               song={song}
             />

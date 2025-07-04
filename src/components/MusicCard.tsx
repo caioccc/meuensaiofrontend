@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ActionIcon, Badge, Button, Card, Group, Image, Loader, Menu, Modal, NumberInput, ScrollArea, Stack, Text, TextInput, Timeline } from '@mantine/core';
+import { ActionIcon, Badge, Button, Card, Group, Image, Loader, Menu, Modal, NumberInput, ScrollArea, Stack, Text, TextInput, Timeline, Tooltip } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconClock, IconDotsVertical, IconEdit, IconEye, IconMusic, IconPlayerPlay, IconTrash, IconWaveSine } from '@tabler/icons-react';
 import { format } from 'date-fns';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import api from '../../lib/axios';
+import { useMediaQuery } from '@mantine/hooks';
 
 export interface MusicCardProps {
   id?: number;
@@ -89,6 +90,8 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
     }
   }, [editModalOpen, id]);
 
+  const isMobile = useMediaQuery('(max-width: 48em)');
+
   return (
     <Card
       shadow="sm"
@@ -104,11 +107,13 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
         <Image src={thumbnail_url} height={compact ? 70 : 160} alt={title} fallbackSrc="/no-image.png" />
       </Card.Section>
       <Group justify="space-between" mt="md" mb="xs">
-        <Text fw={700} size={compact ? 'sm' : undefined} lineClamp={2}>{title}</Text>
+        <Tooltip label={title} position="top" withArrow>
+          <Text fw={700} size={compact ? 'sm' : undefined} lineClamp={2}>{title}</Text>
+        </Tooltip>
       </Group>
       {/* Meatball menu no topo direito, visível ao hover */}
       {!compact && hovered && (
-        <Menu shadow="md" width={180} position="bottom-end" withinPortal>
+        <Menu shadow="md" width={180} withinPortal>
           <Menu.Target>
             <ActionIcon color="gray" size="lg" style={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}>
               <IconDotsVertical size={22} />
@@ -163,8 +168,8 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
         </Group>
       </Modal>
       {/* Modal de editar */}
-      <Modal opened={editModalOpen} onClose={() => setEditModalOpen(false)} title="Editar música" size="xl" centered>
-        <Group align="flex-start" spacing="xl" noWrap>
+      <Modal opened={editModalOpen} onClose={() => setEditModalOpen(false)} title="Editar música" size={isMobile ? 'xl' : 'xl'} centered>
+        <Group align="flex-start" gap="xl">
           {/* Formulário de edição */}
           <Stack style={{ minWidth: 320, flex: 1 }}>
             <Text fw={600} mb="sm">{title}</Text>
@@ -178,13 +183,13 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
             <NumberInput
               label="BPM customizado"
               value={editBpm}
-              onChange={setEditBpm}
+              onChange={value => setEditBpm(value === '' ? '' : Number(value))}
               min={30}
               max={300}
               step={1}
               placeholder="Ex: 120"
             />
-            <Group mt="md" position="right">
+            <Group mt="md" justify="flex-end">
               <Button variant="default" onClick={() => setEditModalOpen(false)}>Cancelar</Button>
               <Button color="blue" loading={loadingEdit} onClick={handleEdit}>Salvar</Button>
             </Group>

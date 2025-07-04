@@ -39,7 +39,7 @@ export default function LoginPage() {
 
   return (
     <Container size={420} my={40}>
-      <Title align="center">Login</Title>
+      <Title ta="center">Login</Title>
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
         <form onSubmit={handleSubmit(onSubmit)}>
           <TextInput label="E-mail" placeholder="seu@email.com" {...register('email', { required: true })} error={errors.email && 'Campo obrigatório'} />

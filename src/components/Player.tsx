@@ -5,6 +5,13 @@ import { useEffect, useRef, useState } from 'react';
 import * as Tone from 'tone';
 import { guitarSamples, padSamples, shimmerSamples } from '../constants/padMaps';
 
+declare global {
+  interface Window {
+    YT: any;
+    onYouTubeIframeAPIReady?: () => void;
+  }
+}
+
 interface PlayerProps {
   song: {
     youtube_id: string;
@@ -226,7 +233,7 @@ export default function Player({ song }: PlayerProps) {
 
   return (
     <Stack style={{ position: 'relative' }}>
-      <LoadingOverlay visible={loading} zIndex={1000} overlayBlur={2} overlayProps={{ radius: "sm", blur: 2 }} />
+      <LoadingOverlay visible={loading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
       {/* Características da música */}
       <Group gap="xl" align="center" style={{ marginBottom: 16, marginTop: 8 }}>
         <Text size="md" fw={600} color="#228be6">
@@ -340,7 +347,7 @@ export default function Player({ song }: PlayerProps) {
         </div>
       </div>
       {/* Seção de controles de volume abaixo */}
-      <Stack spacing="md" className="player-controls-stack" style={{ width: '100%', marginTop: 32 }}>
+      <Stack gap="md" className="player-controls-stack" style={{ width: '100%', marginTop: 32 }}>
         {/* Canal YouTube */}
         <Group gap="xs" align="center">
           <Tooltip label="Volume do YouTube">

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import AppLayout from "@/components/AppLayout";
-import { Anchor, Breadcrumbs, Button, Container, Group, Loader, SimpleGrid, Stack, TextInput, Title } from "@mantine/core";
+import { Anchor, Breadcrumbs, Button, Container, Group, Loader, LoadingOverlay, SimpleGrid, Stack, TextInput, Title } from "@mantine/core";
 import { useMediaQuery } from '@mantine/hooks';
 import { showNotification } from "@mantine/notifications";
 import { IconPlus, IconSearch } from "@tabler/icons-react";
@@ -30,7 +30,6 @@ export default function SetlistsPage() {
   const [searchInput, setSearchInput] = useState(""); // valor do input
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(1);
   const [order, setOrder] = useState("-created_at");
   const [hasMore, setHasMore] = useState(true);
   const isMobile = useMediaQuery('(max-width: 48em)');
@@ -73,7 +72,6 @@ export default function SetlistsPage() {
       } else {
         setSetlists(res.data.results);
       }
-      setTotal(Math.ceil(res.data.count / 10));
       setHasMore(!!res.data.next);
     } catch (e: any) {
       showNotification({ color: "red", message: e.message });
@@ -127,7 +125,7 @@ export default function SetlistsPage() {
         {isMobile ? (
           <Stack mb="md" gap="xs">
             <TextInput
-              icon={<IconSearch size={16} />}
+              leftSection={<IconSearch size={16} />}
               placeholder="Buscar por nome do setlist ou música"
               value={searchInput}
               onChange={(e) => setSearchInput(e.currentTarget.value)}
@@ -141,7 +139,7 @@ export default function SetlistsPage() {
         ) : (
           <Group mb="md" gap="xs" align="center" style={{ width: '100%' }}>
             <TextInput
-              icon={<IconSearch size={16} />}
+              leftSection={<IconSearch size={16} />}
               placeholder="Buscar por nome do setlist ou música"
               value={searchInput}
               onChange={(e) => setSearchInput(e.currentTarget.value)}
@@ -156,7 +154,11 @@ export default function SetlistsPage() {
         )}
         {/* Bloco de conteúdo com scroll dedicado */}
         {loading && page === 1 ? (
-          <Loader />
+          <LoadingOverlay
+            visible={loading}
+            zIndex={1000}
+            overlayProps={{ radius: "sm", blur: 2 }}
+          />
         ) : (
           <InfiniteScrollWrapper
             dataLength={setlists.length}
@@ -171,22 +173,11 @@ export default function SetlistsPage() {
               //esconder os scroll
               scrollbarWidth: 'none', // Firefox
               msOverflowStyle: 'none', // Internet Explorer 10+
-              '&::-webkit-scrollbar': {
-                display: 'none', // Chrome, Safari e Opera
-              },
-              '&::-webkit-scrollbar-track':
-                { background: 'transparent' }, // Chrome, Safari e Opera
-              '&::-webkit-scrollbar-thumb':
-                { background: 'transparent' }, // Chrome, Safari e Opera
-              '&::-webkit-scrollbar-thumb:hover':
-                { background: 'transparent' }, // Chrome, Safari e Opera
-              '&::-webkit-scrollbar-thumb:active':
-                { background: 'transparent' }, // Chrome, Safari e Opera
             }}
           >
             <SimpleGrid
               cols={1}
-              spacing="md"
+              gap="md"
               breakpoints={[{ maxWidth: "sm", cols: 1 }]}
             >
               {setlists.map((setlist) => (

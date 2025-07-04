@@ -29,8 +29,7 @@ export default function SetlistViewPage() {
 
   // Filtro local (pode ser adaptado para backend se preferir)
   const filteredSongs = songs.filter(song =>
-    song.title.toLowerCase().includes(search.toLowerCase()) ||
-    (song.artist && song.artist.toLowerCase().includes(search.toLowerCase()))
+    song.title.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -52,7 +51,7 @@ export default function SetlistViewPage() {
           </Text>
         )}
         <TextInput
-          icon={<IconSearch size={16} />}
+          leftSection={<IconSearch size={16} />}
           placeholder="Buscar música por nome ou artista"
           value={search}
           onChange={e => setSearch(e.currentTarget.value)}
@@ -65,14 +64,10 @@ export default function SetlistViewPage() {
                 <MusicCard
                   id={song.id}
                   title={song.title}
-                  artist={song.artist}
                   duration={song.duration}
                   bpm={song.bpm}
-                  chords_url={song.chords_url}
                   thumbnail_url={song.thumbnail_url}
                   songKey={song.key}
-                  view_count={song.view_count}
-                  onPlay={() => window.open(song.link, '_blank')}
                   onDelete={async () => {
                     await api.delete(`songs/${song.id}/`);
                     setSongs(songs => songs.filter(s => s.id !== song.id));
@@ -83,7 +78,7 @@ export default function SetlistViewPage() {
           </Grid>
         )}
         {filteredSongs.length === 0 && !loading && (
-          <Text color="dimmed" align="center" mt="md">Nenhuma música encontrada.</Text>
+          <Text color="dimmed" ta="center" mt="md">Nenhuma música encontrada.</Text>
         )}
       </Container>
     </AppLayout>
