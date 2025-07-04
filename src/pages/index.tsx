@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import api from "../../lib/axios";
 import MusicCard, { MusicCardProps } from "../components/MusicCard";
 import MusicPreviewModal from "../components/MusicPreviewModal";
+import OrderSelect from "../components/OrderSelect";
 
 interface SongApi {
   id: number;
@@ -33,7 +34,8 @@ const KEY_OPTIONS = [
 export default function DashboardPage() {
   const [songs, setSongs] = useState<SongApi[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(""); // valor realmente buscado
+  const [searchInput, setSearchInput] = useState(""); // valor do input
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(1);
   const [preview, setPreview] = useState<MusicCardProps | null>(null);
@@ -43,12 +45,24 @@ export default function DashboardPage() {
   const [setlists, setSetlists] = useState<SetlistApi[]>([]);
   const [selectedSetlists, setSelectedSetlists] = useState<string[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [order, setOrder] = useState("-created_at");
 
   const router = useRouter();
 
   useEffect(() => {
     api.get("setlists/").then(res => setSetlists(res.data.results || res.data));
   }, []);
+
+  // Debounce para busca
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (searchInput.length === 0 || searchInput.length >= 3) {
+        setSearch(searchInput);
+        setPage(1);
+      }
+    }, 500); // 500ms debounce
+    return () => clearTimeout(handler);
+  }, [searchInput]);
 
   useEffect(() => {
     setLoading(true);
@@ -60,13 +74,19 @@ export default function DashboardPage() {
     if (bpm[1] !== 220) params.append("bpm_max", String(bpm[1]));
     if (selectedSetlists.length > 0) params.append("setlist", selectedSetlists.join(","));
     params.append("page", String(page));
+    if (order) params.append("ordering", order);
     api.get(`songs/?${params.toString()}`)
       .then(res => {
         setSongs(res.data.results || res.data);
         setTotal(res.data.count ? Math.ceil(res.data.count / 10) : 1);
       })
       .finally(() => setLoading(false));
-  }, [search, artist, key, bpm, selectedSetlists, page]);
+  }, [search, artist, key, bpm, selectedSetlists, page, order]);
+
+  const orderOptions = [
+    { value: "-created_at", label: "Mais recente" },
+    { value: "created_at", label: "Mais antigo" },
+  ];
 
   return (
     <ProtectedRoute>
@@ -85,14 +105,15 @@ export default function DashboardPage() {
               Adicionar Música
             </Button>
           </Group>
-          <Group mb="md">
+          <Group mb="md" align="center">
             <TextInput
               placeholder="Buscar por título..."
               leftSection={<IconSearch size={18} />}
-              value={search}
-              onChange={e => { setSearch(e.currentTarget.value); setPage(1); }}
+              value={searchInput}
+              onChange={e => setSearchInput(e.currentTarget.value)}
               style={{ flex: 1 }}
             />
+            <OrderSelect value={order} onChange={v => setOrder(v || "-created_at")} options={orderOptions} />
             <ActionIcon variant="light" color="blue" size="lg" onClick={() => setModalOpen(true)} title="Filtros avançados">
               <IconFilter size={20} />
             </ActionIcon>

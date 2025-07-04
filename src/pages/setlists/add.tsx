@@ -117,7 +117,8 @@ export default function AddSetlistPage() {
           return;
         }
       } else {
-        const res = await api.post('/setlists/', { name, description, date: date ? date.toISOString().slice(0, 10) : undefined, songs_data: enriched });
+        const enrichedFiltered = enriched.filter((s) => s.derivedBpm && s.derivedKey);
+        const res = await api.post('/setlists/', { name, description, date: date ? date.toISOString().slice(0, 10) : undefined, songs_data: enrichedFiltered });
         if (res.status !== 201) {
           showNotification({ color: 'red', message: 'Erro ao salvar setlist' });
           return;

@@ -61,11 +61,11 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
     setLoading(true);
     try {
       await api.delete(`/setlists/${setlist.id}/`);
-      showNotification({ color: 'green', title: 'Setlist removido', message: 'Setlist removido com sucesso!' });
+      showNotification({ color: 'green', title: 'Setlist removido', message: 'Setlist removido com sucesso!', id: 'setlist-removed' });
       if (onRemoved) onRemoved();
       setModalOpen(false);
     } catch (e: any) {
-      showNotification({ color: 'red', title: 'Erro ao remover', message: e?.response?.data?.detail || e.message || 'Erro ao remover setlist' });
+      showNotification({ color: 'red', title: 'Erro ao remover', message: e?.response?.data?.detail || e.message || 'Erro ao remover setlist', id: 'setlist-remove-error' });
       setModalOpen(false);
     } finally {
       setLoading(false);

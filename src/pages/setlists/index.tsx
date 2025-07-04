@@ -23,10 +23,22 @@ interface Setlist {
 export default function SetlistsPage() {
   const router = useRouter();
   const [setlists, setSetlists] = useState<Setlist[]>([]);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(""); // valor realmente buscado
+  const [searchInput, setSearchInput] = useState(""); // valor do input
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(1);
+
+  // Debounce para busca
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (searchInput.length === 0 || searchInput.length >= 3) {
+        setSearch(searchInput);
+        setPage(1);
+      }
+    }, 500); // 500ms debounce
+    return () => clearTimeout(handler);
+  }, [searchInput]);
 
   const fetchSetlists = async () => {
     setLoading(true);
@@ -37,6 +49,7 @@ export default function SetlistsPage() {
       if (res.status !== 200) {
         showNotification({
           color: "red",
+          id: "setlists-fetch-error",
           message: "Erro ao buscar setlists",
         });
         return;
@@ -54,6 +67,10 @@ export default function SetlistsPage() {
     fetchSetlists();
     // eslint-disable-next-line
   }, [search, page]);
+
+  const handleRemoved = () => {
+    fetchSetlists();
+  };
 
   return (
     <AppLayout>
@@ -77,11 +94,8 @@ export default function SetlistsPage() {
         <TextInput
           icon={<IconSearch size={16} />}
           placeholder="Buscar por nome do setlist ou música"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.currentTarget.value);
-            setPage(1);
-          }}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.currentTarget.value)}
           mb="md"
         />
         {loading ? (
@@ -93,7 +107,7 @@ export default function SetlistsPage() {
             breakpoints={[{ maxWidth: "sm", cols: 1 }]}
           >
             {setlists.map((setlist) => (
-              <SetlistCard key={setlist.id} setlist={setlist} onRemoved={fetchSetlists} />
+              <SetlistCard key={setlist.id} setlist={setlist} onRemoved={handleRemoved} />
             ))}
           </SimpleGrid>
         )}
