@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Carousel } from '@mantine/carousel';
-import { Badge, Box, Button, Card, Center, Group, Modal, Text, ActionIcon } from '@mantine/core';
+import { Badge, Box, Button, Card, Center, Group, Modal, Text, ActionIcon, Menu } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
-import { IconEye, IconMusic, IconTrash } from '@tabler/icons-react';
+import { IconDotsVertical, IconEye, IconMeat, IconMusic, IconPlayerPlay, IconTrash } from '@tabler/icons-react';
 import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
@@ -33,6 +33,7 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState(setlist.processing_status || 'PROCESSADO');
   const [localSetlist, setLocalSetlist] = useState(setlist);
+  const [menuOpened, setMenuOpened] = useState(false);
   const hasImages = localSetlist.songs.some(song => song.thumbnail_url);
 
   useEffect(() => {
@@ -79,7 +80,7 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
   }));
 
   return (
-    <Card shadow="sm" padding="lg" radius="md" withBorder style={isMobile ? { position: 'relative', minHeight: 220 } : {}}>
+    <Card shadow="sm" padding="xs" radius="md" withBorder style={isMobile ? { position: 'relative', minHeight: 220 } : {}}>
       {isMobile ? (
         <>
           <Card.Section>
@@ -91,18 +92,40 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
               </Center>
             )}
           </Card.Section>
-          {/* Botão de remover no topo direito */}
+          {/* Meatball menu no topo direito */}
           <ActionIcon
-            color="red"
-            variant="filled"
+            color="gray"
             size="lg"
             style={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}
-            onClick={() => setModalOpen(true)}
-            aria-label="Remover setlist"
-            loading={loading}
+            aria-label="Ações do setlist"
+            onClick={e => {
+              e.stopPropagation();
+              setMenuOpened(true);
+            }}
           >
-            <IconTrash size={20} />
+            <IconDotsVertical size={22} />
           </ActionIcon>
+          <Menu
+            opened={menuOpened}
+            onClose={() => setMenuOpened(false)}
+            position="bottom-end"
+            withinPortal
+          >
+            <Menu.Target>
+              <div />
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Item leftSection={<IconPlayerPlay size={16} />} onClick={() => router.push(`/player/setlist/${localSetlist.id}`)}>
+                Tocar
+              </Menu.Item>
+              <Menu.Item leftSection={<IconEye size={16} />} onClick={() => router.push(`/setlists/${localSetlist.id}`)}>
+                Acessar
+              </Menu.Item>
+              <Menu.Item leftSection={<IconTrash size={16} />} color="red" onClick={() => setModalOpen(true)}>
+                Remover
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
           <Box style={{ padding: 12, paddingTop: 16, paddingBottom: 54 }}>
             <Text weight={600} mb={4}>{localSetlist.name}</Text>
             {localSetlist.date && (
@@ -128,18 +151,18 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
           </Box>
           <Button
             variant="light"
-            color="blue"
+            color="green"
             size="xs"
+            leftSection={<IconPlayerPlay size={16} style={{ marginRight: 4 }} />}
             style={{ position: 'absolute', bottom: 0, left: 0, right: 0, borderRadius: 0, zIndex: 2, height: 38 }}
-            onClick={() => router.push(`/setlists/${localSetlist.id}`)}
+            onClick={() => router.push(`/player/setlist/${localSetlist.id}`)}
           >
-            <IconEye size={16} />
-            Acessar
+            Tocar
           </Button>
         </>
       ) : (
         <Group noWrap align="center">
-          <Box style={{ minWidth: 120, maxWidth: 140 }}>
+          <Box style={{ minWidth: 140, maxWidth: 200 }}>
             {hasImages && localSetlist.songs.length > 0 ? (
               <Carousel
                 slideSize="100%"
@@ -155,7 +178,7 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
               >
                 {localSetlist.songs.slice(0, 5).map((song) => (
                   <Carousel.Slide key={song.id}>
-                    <Image src={song.thumbnail_url || ''} width={120} height={90} alt={song.title} style={{ borderRadius: 8, objectFit: 'cover' }} />
+                    <Image src={song.thumbnail_url || ''} width={200} height={200} alt={song.title} style={{ borderRadius: 10, objectFit: 'cover', width: 180, height: 150 }} />
                   </Carousel.Slide>
                 ))}
               </Carousel>
@@ -167,14 +190,59 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
                 withIndicators={false}
               >
                 <Carousel.Slide key="default">
-                  <Center style={{ width: 120, height: 90, background: '#f3f3f3', borderRadius: 8 }}>
-                    <IconMusic size={48} color="#bbb" />
+                  <Center style={{ width: 200, height: 200, background: '#f3f3f3', borderRadius: 10 }}>
+                    <IconMusic size={64} color="#bbb" />
                   </Center>
                 </Carousel.Slide>
               </Carousel>
             )}
           </Box>
-          <Box style={{ flex: 1, marginLeft: 16, position: 'relative', minHeight: 90, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <Box style={{ flex: 1, position: 'relative', minHeight: 90, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            {/* Meatball menu no topo direito */}
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              size="lg"
+              style={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}
+              aria-label="Ações do setlist"
+              onClick={e => {
+                e.stopPropagation();
+                setMenuOpened(true);
+              }}
+            >
+              <IconDotsVertical size={22} />
+            </ActionIcon>
+            <Menu
+              opened={menuOpened}
+              onClose={() => setMenuOpened(false)}
+              position="bottom-end"
+              withinPortal
+            >
+              <Menu.Target>
+                <div />
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Item leftSection={<IconEye size={16} />} onClick={() => router.push(`/setlists/${localSetlist.id}`)}>
+                  Acessar
+                </Menu.Item>
+                <Menu.Item leftSection={<IconPlayerPlay size={16} />} onClick={() => router.push(`/player/setlist/${localSetlist.id}`)}>
+                  Tocar
+                </Menu.Item>
+                <Menu.Item leftSection={<IconTrash size={16} />} color="red" onClick={() => setModalOpen(true)}>
+                  Remover
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
+            {/* Botão Tocar destacado */}
+            <Button
+              variant="light"
+              color="green"
+              leftSection={<IconPlayerPlay size={16} style={{ marginRight: 4 }} />}
+              style={{ position: 'absolute', right: 16, bottom: 8, zIndex: 1 }}
+              onClick={() => router.push(`/player/setlist/${localSetlist.id}`)}
+            >
+              Tocar
+            </Button>
             <div>
               <Text weight={600} mb={4}>{localSetlist.name}</Text>
               {localSetlist.date && (
@@ -198,35 +266,6 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
                 )}
               </Box>
             </div>
-            <Group justify="flex-end" spacing={8} style={{ position: 'absolute', right: 0, bottom: 0 }}>
-              <Button
-                variant="light"
-                color="blue"
-                size="xs"
-                onClick={() => router.push(`/setlists/${localSetlist.id}`)}
-              >
-                <IconEye size={16} />
-                Acessar
-              </Button>
-              <Button
-                variant="light"
-                color="green"
-                size="xs"
-                onClick={() => router.push(`/player/setlist/${localSetlist.id}`)}
-              >
-                Tocar
-              </Button>
-              <Button
-                variant="light"
-                color="red"
-                size="xs"
-                onClick={() => setModalOpen(true)}
-                loading={loading}
-                disabled={loading}
-              >
-                <IconTrash size={16} />
-              </Button>
-            </Group>
           </Box>
         </Group>
       )}
