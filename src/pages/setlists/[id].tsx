@@ -39,7 +39,7 @@ export default function SetlistViewPage() {
         <Breadcrumbs mb="md">
           <Anchor onClick={() => router.push('/')}>Início</Anchor>
           <Anchor onClick={() => router.push('/setlists')}>Setlists</Anchor>
-          <Text>Visualizar</Text>
+          <Text>{setlist?.name}</Text>
         </Breadcrumbs>
         <Title order={2} mb="lg">Setlist: {setlist?.name}</Title>
         {setlist?.date && (

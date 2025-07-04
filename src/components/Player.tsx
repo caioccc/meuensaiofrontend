@@ -343,7 +343,7 @@ export default function Player({ song }: PlayerProps) {
       <Stack spacing="md" className="player-controls-stack" style={{ width: '100%', marginTop: 32 }}>
         {/* Canal YouTube */}
         <Group gap="xs" align="center">
-          <Tooltip label="YouTube">
+          <Tooltip label="Volume do YouTube">
             <IconBrandYoutube size={28} color="#e63946" />
           </Tooltip>
           <Tooltip label="Mute">
@@ -369,7 +369,7 @@ export default function Player({ song }: PlayerProps) {
         </Group> */}
         {/* Canal PAD Cloud */}
         <Group gap="xs" align="center">
-          <Tooltip label="Pad Cloud">
+          <Tooltip label="Volume do Pad Cloud">
             <IconMusic size={28} color="#51cf66" />
           </Tooltip>
           <Tooltip label="Mute">
@@ -382,7 +382,7 @@ export default function Player({ song }: PlayerProps) {
         </Group>
         {/* Canal Pad Shimmer */}
         <Group gap="xs" align="center">
-          <Tooltip label="Pad Shimmer">
+          <Tooltip label="Volume do Pad Shimmer">
             <IconWaveSine size={28} color="#845ef7" />
           </Tooltip>
           <Tooltip label="Mute">
@@ -395,7 +395,7 @@ export default function Player({ song }: PlayerProps) {
         </Group>
         {/* Canal Pad Guitar */}
         <Group gap="xs" align="center">
-          <Tooltip label="Pad Guitar">
+          <Tooltip label="Volume do Pad Guitar">
             <IconGuitarPick size={28} color="#fab005" />
           </Tooltip>
           <Tooltip label="Mute">

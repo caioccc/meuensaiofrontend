@@ -110,7 +110,7 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
       {!compact && hovered && (
         <Menu shadow="md" width={180} position="bottom-end" withinPortal>
           <Menu.Target>
-            <ActionIcon variant="subtle" color="gray" size="lg" style={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}>
+            <ActionIcon color="gray" size="lg" style={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}>
               <IconDotsVertical size={22} />
             </ActionIcon>
           </Menu.Target>
@@ -206,6 +206,7 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
                         bullet={<IconEye size={16} />}
                         lineVariant={idx === 0 ? 'dashed' : 'solid'}
                       >
+                        <Text size="sm" color="dimmed">{setlist.date ? format(new Date(setlist.date), 'dd/MM/yyyy') : 'Sem data'}</Text>
                         {
                           setlist.songs && setlist.songs.length > 0 ? (
                             <Text size="xs" color="dimmed">
@@ -215,7 +216,7 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
                             <Text size="xs" color="dimmed">Nenhuma música registrada</Text>
                           )
                         }
-                        <Text size="sm" color="dimmed">{setlist.date ? format(new Date(setlist.date), 'dd/MM/yyyy') : 'Sem data'}</Text>
+
                       </Timeline.Item>
                     ))}
                   </Timeline>

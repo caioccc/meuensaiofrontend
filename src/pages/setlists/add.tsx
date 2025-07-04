@@ -76,6 +76,13 @@ export default function AddSetlistPage() {
 
   // Adiciona música selecionada
   const addSong = (song: any) => {
+    if (source === 'new' && selected.length >= 10) {
+      showNotification({
+        color: 'red',
+        message: 'No modo "Novo Setlist" só é permitido adicionar até 10 músicas por setlist.'
+      });
+      return;
+    }
     if (!selected.find((s) => s.youtube_id === song.youtube_id)) {
       setSelected([...selected, song]);
     }

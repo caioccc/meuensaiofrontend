@@ -1,15 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import AppLayout from "@/components/AppLayout";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { ActionIcon, Button, Container, Grid, Group, Loader, Modal, MultiSelect, Pagination, RangeSlider, Select, Stack, Text, TextInput, Title } from "@mantine/core";
+import { ActionIcon, Button, Container, Grid, Group, LoadingOverlay, Modal, MultiSelect, Select, Stack, Text, TextInput, Title } from "@mantine/core";
+import { useMediaQuery } from '@mantine/hooks';
 import { IconFilter, IconPlus, IconSearch } from "@tabler/icons-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import api from "../../lib/axios";
+import InfiniteScrollWrapper from "../components/InfiniteScrollWrapper";
 import MusicCard, { MusicCardProps } from "../components/MusicCard";
 import MusicPreviewModal from "../components/MusicPreviewModal";
 import OrderSelect from "../components/OrderSelect";
-import { useMediaQuery } from '@mantine/hooks';
 
 interface SongApi {
   id: number;
@@ -47,6 +48,7 @@ export default function DashboardPage() {
   const [selectedSetlists, setSelectedSetlists] = useState<string[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [order, setOrder] = useState("-created_at");
+  const [hasMore, setHasMore] = useState(true);
 
   const router = useRouter();
   const isMobile = useMediaQuery('(max-width: 48em)');
@@ -66,7 +68,7 @@ export default function DashboardPage() {
     return () => clearTimeout(handler);
   }, [searchInput]);
 
-  useEffect(() => {
+  const fetchSongs = async (append = false) => {
     setLoading(true);
     const params = new URLSearchParams();
     if (search) params.append("search", search);
@@ -79,11 +81,35 @@ export default function DashboardPage() {
     if (order) params.append("ordering", order);
     api.get(`songs/?${params.toString()}`)
       .then(res => {
-        setSongs(res.data.results || res.data);
+        if (append) {
+          setSongs(prev => [...prev, ...(res.data.results || res.data)]);
+        } else {
+          setSongs(res.data.results || res.data);
+        }
+        setHasMore(!!res.data.next);
         setTotal(res.data.count ? Math.ceil(res.data.count / 10) : 1);
       })
       .finally(() => setLoading(false));
-  }, [search, artist, key, bpm, selectedSetlists, page, order]);
+  };
+
+  // Scroll infinito: carrega mais ao chegar no fim
+  const loadMore = () => {
+    setPage(prev => prev + 1);
+    // Removido fetchSongs(true) para evitar duplicidade
+  };
+
+  useEffect(() => {
+    setPage(1);
+    fetchSongs();
+    // eslint-disable-next-line
+  }, [search, artist, key, bpm, selectedSetlists, order]);
+
+  useEffect(() => {
+    if (page > 1) {
+      fetchSongs(true);
+    }
+    // eslint-disable-next-line
+  }, [page]);
 
   const orderOptions = [
     { value: "-created_at", label: "Mais recente" },
@@ -93,7 +119,11 @@ export default function DashboardPage() {
   return (
     <ProtectedRoute>
       <AppLayout>
-        <Container size="100%" py="md">
+        {/*
+          IMPORTANTE: Para evitar múltiplos scrolls, não defina height ou overflow no Container ou no InfiniteScrollWrapper.
+          O scroll infinito já usa o scroll global (window) por padrão.
+        */}
+        <Container size="100%" py="md" /* style={{ overflow: 'visible' }} */>
           <Group justify="space-between" mb="md" style={{ flexWrap: 'wrap' }}>
             <Title order={2}>Minhas Músicas</Title>
             <Button
@@ -121,7 +151,10 @@ export default function DashboardPage() {
                   <IconFilter size={20} />
                 </ActionIcon>
               </Group>
-              <OrderSelect value={order} onChange={v => setOrder(v || "-created_at")} options={orderOptions} />
+              <OrderSelect value={order} onChange={v => {
+                setPage(1);
+                setOrder(v || "-created_at")
+              }} options={orderOptions} />
             </Stack>
           ) : (
             <Group mb="md" align="center">
@@ -132,7 +165,10 @@ export default function DashboardPage() {
                 onChange={e => setSearchInput(e.currentTarget.value)}
                 style={{ flex: 1 }}
               />
-              <OrderSelect value={order} onChange={v => setOrder(v || "-created_at")} options={orderOptions} />
+              <OrderSelect value={order} onChange={v => {
+                setPage(1);
+                setOrder(v || "-created_at")
+              }} options={orderOptions} />
               <ActionIcon variant="light" color="blue" size="lg" onClick={() => setModalOpen(true)} title="Filtros avançados">
                 <IconFilter size={20} />
               </ActionIcon>
@@ -140,13 +176,6 @@ export default function DashboardPage() {
           )}
           <Modal opened={modalOpen} onClose={() => setModalOpen(false)} title="Filtros avançados" centered>
             <Stack>
-              <Text size="sm" fw={500}>Artista</Text>
-              <TextInput
-                placeholder="Artista"
-                value={artist}
-                onChange={e => setArtist(e.currentTarget.value)}
-                mb="sm"
-              />
               <Text size="sm" fw={500}>Tom</Text>
               <Select
                 placeholder="Tom"
@@ -154,21 +183,6 @@ export default function DashboardPage() {
                 value={key}
                 onChange={v => setKey(v)}
                 clearable
-                mb="sm"
-              />
-              <Text size="sm" fw={500}>BPM</Text>
-              <RangeSlider
-                min={40}
-                max={220}
-                value={bpm}
-                onChange={v => setBpm(v as [number, number])}
-                label={val => `${val} bpm`}
-                marks={[
-                  { value: 60, label: '60' },
-                  { value: 120, label: '120' },
-                  { value: 180, label: '180' },
-                  { value: 220, label: '220' },
-                ]}
                 mb="sm"
               />
               <Text size="sm" fw={500}>Setlists</Text>
@@ -192,37 +206,61 @@ export default function DashboardPage() {
               </Group>
             </Stack>
           </Modal>
-          {loading ? (
-            <Group justify="center" py="xl"><Loader /></Group>
+          {loading && page === 1 ? (
+            <Group justify="center" py="xl"><LoadingOverlay
+              visible={loading} zIndex={1000} overlayBlur={2} overlayProps={{ radius: "sm", blur: 2 }}
+            /></Group>
           ) : songs.length === 0 ? (
             <Text align="center" color="dimmed">Nenhuma música encontrada.</Text>
           ) : (
-            <Grid>
-              {songs.map(song => (
-                <Grid.Col span={{ base: 12, sm: 6, md: 4, lg: 3 }} key={song.id}>
-                  <MusicCard
-                    id={song.id}
-                    title={song.title}
-                    artist={song.artist}
-                    duration={song.duration}
-                    bpm={song.bpm}
-                    chords_url={song.chords_url}
-                    thumbnail_url={song.thumbnail_url}
-                    songKey={song.key}
-                    view_count={song.view_count}
-                    onPlay={() => window.open(song.link, '_blank')}
-                    onDelete={async () => {
-                      await api.delete(`songs/${song.id}/`);
-                      setSongs(songs => songs.filter(s => s.id !== song.id));
-                    }}
-                  />
-                </Grid.Col>
-              ))}
-            </Grid>
+            <InfiniteScrollWrapper
+              dataLength={songs.length}
+              next={loadMore}
+              hasMore={hasMore}
+              style={{
+                overflow: 'auto',
+                overflowX: 'hidden',
+                height: '100%', // Ajuste conforme necessário
+                //esconder os scroll
+                scrollbarWidth: 'none', // Firefox
+                msOverflowStyle: 'none', // Internet Explorer 10+
+                '&::-webkit-scrollbar': {
+                  display: 'none', // Chrome, Safari e Opera
+                },
+                '&::-webkit-scrollbar-track':
+                  { background: 'transparent' }, // Chrome, Safari e Opera
+                '&::-webkit-scrollbar-thumb':
+                  { background: 'transparent' }, // Chrome, Safari e Opera
+                '&::-webkit-scrollbar-thumb:hover':
+                  { background: 'transparent' }, // Chrome, Safari e Opera
+                '&::-webkit-scrollbar-thumb:active':
+                  { background: 'transparent' }, // Chrome, Safari e Opera
+              }}
+              loader={<LoadingOverlay />}>
+              <Grid>
+                {songs.map(song => (
+                  <Grid.Col span={{ base: 12, sm: 6, md: 4, lg: 3 }} key={song.id}>
+                    <MusicCard
+                      id={song.id}
+                      title={song.title}
+                      artist={song.artist}
+                      duration={song.duration}
+                      bpm={song.bpm}
+                      chords_url={song.chords_url}
+                      thumbnail_url={song.thumbnail_url}
+                      songKey={song.key}
+                      view_count={song.view_count}
+                      onPlay={() => window.open(song.link, '_blank')}
+                      onDelete={async () => {
+                        await api.delete(`songs/${song.id}/`);
+                        setSongs(songs => songs.filter(s => s.id !== song.id));
+                      }}
+                    />
+                  </Grid.Col>
+                ))}
+              </Grid>
+            </InfiniteScrollWrapper>
           )}
-          <Group justify="center" mt="md">
-            <Pagination value={page} onChange={setPage} total={total} />
-          </Group>
           <MusicPreviewModal opened={!!preview} onClose={() => setPreview(null)} music={preview} />
         </Container>
       </AppLayout>

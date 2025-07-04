@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import AppLayout from "@/components/AppLayout";
-import { Button, Container, Group, Loader, Pagination, SimpleGrid, TextInput, Title, Breadcrumbs, Anchor, Stack } from "@mantine/core";
+import { Anchor, Breadcrumbs, Button, Container, Group, Loader, SimpleGrid, Stack, TextInput, Title } from "@mantine/core";
+import { useMediaQuery } from '@mantine/hooks';
 import { showNotification } from "@mantine/notifications";
 import { IconPlus, IconSearch } from "@tabler/icons-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import api from "../../../lib/axios";
-import SetlistCard from "../../components/SetlistCard";
+import InfiniteScrollWrapper from "../../components/InfiniteScrollWrapper";
 import OrderSelect from "../../components/OrderSelect";
-import { useMediaQuery } from '@mantine/hooks';
+import SetlistCard from "../../components/SetlistCard";
 
 interface Song {
   id: number;
@@ -31,6 +32,7 @@ export default function SetlistsPage() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(1);
   const [order, setOrder] = useState("-created_at");
+  const [hasMore, setHasMore] = useState(true);
   const isMobile = useMediaQuery('(max-width: 48em)');
 
   // Debounce para busca
@@ -51,7 +53,7 @@ export default function SetlistsPage() {
     { value: "num_songs", label: "Menos músicas" },
   ];
 
-  const fetchSetlists = async () => {
+  const fetchSetlists = async (append = false) => {
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(page) });
@@ -66,8 +68,13 @@ export default function SetlistsPage() {
         });
         return;
       }
-      setSetlists(res.data.results);
+      if (append) {
+        setSetlists(prev => [...prev, ...res.data.results]);
+      } else {
+        setSetlists(res.data.results);
+      }
       setTotal(Math.ceil(res.data.count / 10));
+      setHasMore(!!res.data.next);
     } catch (e: any) {
       showNotification({ color: "red", message: e.message });
     } finally {
@@ -75,10 +82,24 @@ export default function SetlistsPage() {
     }
   };
 
+  // Scroll infinito: carrega mais ao chegar no fim
+  const loadMore = () => {
+    setPage(prev => prev + 1);
+  };
+
   useEffect(() => {
-    fetchSetlists();
+    if (page === 1) {
+      fetchSetlists();
+    }
     // eslint-disable-next-line
-  }, [search, page, order]);
+  }, [search, order]);
+
+  useEffect(() => {
+    if (page > 1) {
+      fetchSetlists(true);
+    }
+    // eslint-disable-next-line
+  }, [page]);
 
   const handleRemoved = () => {
     fetchSetlists();
@@ -112,7 +133,10 @@ export default function SetlistsPage() {
               onChange={(e) => setSearchInput(e.currentTarget.value)}
               mb={0}
             />
-            <OrderSelect value={order} onChange={v => setOrder(v || "-created_at")} options={orderOptions} />
+            <OrderSelect value={order} onChange={v => {
+              setPage(1);
+              setOrder(v || "-created_at")
+            }} options={orderOptions} />
           </Stack>
         ) : (
           <Group mb="md" gap="xs" align="center" style={{ width: '100%' }}>
@@ -124,23 +148,53 @@ export default function SetlistsPage() {
               style={{ flex: 7, minWidth: 0 }}
               mb={0}
             />
-            <OrderSelect value={order} onChange={v => setOrder(v || "-created_at")} options={orderOptions} style={{ flex: 3, minWidth: 120 }} />
+            <OrderSelect value={order} onChange={v => {
+              setPage(1);
+              setOrder(v || "-created_at");
+            }} options={orderOptions} style={{ flex: 3, minWidth: 120 }} />
           </Group>
         )}
-        {loading ? (
+        {/* Bloco de conteúdo com scroll dedicado */}
+        {loading && page === 1 ? (
           <Loader />
         ) : (
-          <SimpleGrid
-            cols={1}
-            spacing="md"
-            breakpoints={[{ maxWidth: "sm", cols: 1 }]}
+          <InfiniteScrollWrapper
+            dataLength={setlists.length}
+            next={loadMore}
+            hasMore={hasMore}
+            loader={<Loader />}
+            scrollableTarget="setlists-scrollable-content"
+            style={{
+              overflow: 'auto',
+              overflowX: 'hidden',
+              height: '100%', // Ajuste conforme necessário
+              //esconder os scroll
+              scrollbarWidth: 'none', // Firefox
+              msOverflowStyle: 'none', // Internet Explorer 10+
+              '&::-webkit-scrollbar': {
+                display: 'none', // Chrome, Safari e Opera
+              },
+              '&::-webkit-scrollbar-track':
+                { background: 'transparent' }, // Chrome, Safari e Opera
+              '&::-webkit-scrollbar-thumb':
+                { background: 'transparent' }, // Chrome, Safari e Opera
+              '&::-webkit-scrollbar-thumb:hover':
+                { background: 'transparent' }, // Chrome, Safari e Opera
+              '&::-webkit-scrollbar-thumb:active':
+                { background: 'transparent' }, // Chrome, Safari e Opera
+            }}
           >
-            {setlists.map((setlist) => (
-              <SetlistCard key={setlist.id} setlist={setlist} onRemoved={handleRemoved} />
-            ))}
-          </SimpleGrid>
+            <SimpleGrid
+              cols={1}
+              spacing="md"
+              breakpoints={[{ maxWidth: "sm", cols: 1 }]}
+            >
+              {setlists.map((setlist) => (
+                <SetlistCard key={setlist.id} setlist={setlist} onRemoved={handleRemoved} />
+              ))}
+            </SimpleGrid>
+          </InfiniteScrollWrapper>
         )}
-        <Pagination page={page} onChange={setPage} total={total} mt="lg" />
       </Container>
     </AppLayout>
   );

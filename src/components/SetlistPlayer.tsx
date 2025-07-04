@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Button, Group, Loader, LoadingOverlay, Paper, Slider, Stack, Text, Tooltip } from '@mantine/core';
+import { Anchor, Breadcrumbs, Button, Group, Loader, LoadingOverlay, Paper, Slider, Stack, Text, Tooltip } from '@mantine/core';
 import { IconBrandYoutube, IconPlayerPause, IconPlayerPlay, IconPlayerStop, IconPlayerTrackNext, IconPlayerTrackPrev } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 import api from '../../lib/axios';
@@ -72,16 +72,15 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
             if (playerRef.current && typeof playerRef.current.setVolume === 'function') {
               playerRef.current.setVolume(ytVolume);
             }
-            // Toca automaticamente ao renderizar
             ytPlayer?.playVideo?.();
           },
           onStateChange: (e: any) => {
             setIsPlaying(e.data === 1);
-            if (e.data === 0) { // vídeo terminou
+            if (e.data === 0) {
               if (currentIdx < songs.length - 1) {
                 setCurrentIdx(currentIdx + 1);
               } else {
-                setCurrentIdx(0); // reinicia setlist
+                setCurrentIdx(0);
               }
             }
           },
@@ -97,8 +96,9 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
     return () => {
       ytPlayer?.destroy?.();
     };
-  }, [currentSong?.youtube_id, currentIdx, songs.length, ytVolume]);
+  }, [currentSong?.youtube_id, currentIdx, songs.length]); // REMOVIDO ytVolume
 
+  // Atualiza volume do player YouTube apenas se estiver tocando
   useEffect(() => {
     if (
       playerRef.current &&
@@ -121,6 +121,12 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
 
   return (
     <Stack style={{ position: 'relative' }}>
+      <Breadcrumbs mb="md">
+        <Anchor onClick={() => router.push('/')}>Início</Anchor>
+        <Anchor onClick={() => router.push('/setlists')}>Setlists</Anchor>
+        <Text>Player</Text>
+        <Text>{setlistName}</Text>
+      </Breadcrumbs>
       <LoadingOverlay visible={loading} zIndex={1000} overlayBlur={2} overlayProps={{ radius: "sm", blur: 2 }} />
       <Text fw={700} size="lg" mb="xs">Setlist: {setlistName}</Text>
       {/* Controles principais */}
@@ -134,7 +140,7 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
       <div id="ytplayer" style={{ width: '100%', height: 360, borderRadius: 12, overflow: 'hidden', boxShadow: '0 2px 12px #0001' }} />
       {/* Volume YouTube */}
       <Group gap="xs" align="center" mt="md">
-        <Tooltip label="YouTube">
+        <Tooltip label="Volume do YouTube">
           <IconBrandYoutube size={28} color="#e63946" />
         </Tooltip>
         <Slider min={0} max={100} value={ytVolume} onChange={setYtVolume} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
