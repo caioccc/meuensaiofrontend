@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import AppLayout from "@/components/AppLayout";
-import { Button, Container, Group, Loader, Pagination, SimpleGrid, TextInput, Title, Breadcrumbs, Anchor } from "@mantine/core";
+import { Button, Container, Group, Loader, Pagination, SimpleGrid, TextInput, Title, Breadcrumbs, Anchor, Stack } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { IconPlus, IconSearch } from "@tabler/icons-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import api from "../../../lib/axios";
 import SetlistCard from "../../components/SetlistCard";
+import OrderSelect from "../../components/OrderSelect";
+import { useMediaQuery } from '@mantine/hooks';
 
 interface Song {
   id: number;
@@ -28,6 +30,8 @@ export default function SetlistsPage() {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(1);
+  const [order, setOrder] = useState("-created_at");
+  const isMobile = useMediaQuery('(max-width: 48em)');
 
   // Debounce para busca
   useEffect(() => {
@@ -40,11 +44,19 @@ export default function SetlistsPage() {
     return () => clearTimeout(handler);
   }, [searchInput]);
 
+  const orderOptions = [
+    { value: "-created_at", label: "Mais recente" },
+    { value: "created_at", label: "Mais antigo" },
+    { value: "-num_songs", label: "Mais músicas" },
+    { value: "num_songs", label: "Menos músicas" },
+  ];
+
   const fetchSetlists = async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(page) });
       if (search) params.append("search", search);
+      if (order) params.append("ordering", order);
       const res = await api.get(`/setlists/?${params.toString()}`);
       if (res.status !== 200) {
         showNotification({
@@ -66,7 +78,7 @@ export default function SetlistsPage() {
   useEffect(() => {
     fetchSetlists();
     // eslint-disable-next-line
-  }, [search, page]);
+  }, [search, page, order]);
 
   const handleRemoved = () => {
     fetchSetlists();
@@ -91,13 +103,30 @@ export default function SetlistsPage() {
             Novo Setlist
           </Button>
         </Group>
-        <TextInput
-          icon={<IconSearch size={16} />}
-          placeholder="Buscar por nome do setlist ou música"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.currentTarget.value)}
-          mb="md"
-        />
+        {isMobile ? (
+          <Stack mb="md" gap="xs">
+            <TextInput
+              icon={<IconSearch size={16} />}
+              placeholder="Buscar por nome do setlist ou música"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.currentTarget.value)}
+              mb={0}
+            />
+            <OrderSelect value={order} onChange={v => setOrder(v || "-created_at")} options={orderOptions} />
+          </Stack>
+        ) : (
+          <Group mb="md" gap="xs" align="center" style={{ width: '100%' }}>
+            <TextInput
+              icon={<IconSearch size={16} />}
+              placeholder="Buscar por nome do setlist ou música"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.currentTarget.value)}
+              style={{ flex: 7, minWidth: 0 }}
+              mb={0}
+            />
+            <OrderSelect value={order} onChange={v => setOrder(v || "-created_at")} options={orderOptions} style={{ flex: 3, minWidth: 120 }} />
+          </Group>
+        )}
         {loading ? (
           <Loader />
         ) : (

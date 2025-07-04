@@ -9,6 +9,7 @@ import api from "../../lib/axios";
 import MusicCard, { MusicCardProps } from "../components/MusicCard";
 import MusicPreviewModal from "../components/MusicPreviewModal";
 import OrderSelect from "../components/OrderSelect";
+import { useMediaQuery } from '@mantine/hooks';
 
 interface SongApi {
   id: number;
@@ -48,6 +49,7 @@ export default function DashboardPage() {
   const [order, setOrder] = useState("-created_at");
 
   const router = useRouter();
+  const isMobile = useMediaQuery('(max-width: 48em)');
 
   useEffect(() => {
     api.get("setlists/").then(res => setSetlists(res.data.results || res.data));
@@ -105,19 +107,37 @@ export default function DashboardPage() {
               Adicionar Música
             </Button>
           </Group>
-          <Group mb="md" align="center">
-            <TextInput
-              placeholder="Buscar por título..."
-              leftSection={<IconSearch size={18} />}
-              value={searchInput}
-              onChange={e => setSearchInput(e.currentTarget.value)}
-              style={{ flex: 1 }}
-            />
-            <OrderSelect value={order} onChange={v => setOrder(v || "-created_at")} options={orderOptions} />
-            <ActionIcon variant="light" color="blue" size="lg" onClick={() => setModalOpen(true)} title="Filtros avançados">
-              <IconFilter size={20} />
-            </ActionIcon>
-          </Group>
+          {isMobile ? (
+            <Stack mb="md" gap="xs">
+              <Group gap="xs" align="center" style={{ width: '100%' }}>
+                <TextInput
+                  placeholder="Buscar por título..."
+                  leftSection={<IconSearch size={18} />}
+                  value={searchInput}
+                  onChange={e => setSearchInput(e.currentTarget.value)}
+                  style={{ flex: 7, minWidth: 0 }}
+                />
+                <ActionIcon variant="light" color="blue" size="lg" onClick={() => setModalOpen(true)} title="Filtros avançados">
+                  <IconFilter size={20} />
+                </ActionIcon>
+              </Group>
+              <OrderSelect value={order} onChange={v => setOrder(v || "-created_at")} options={orderOptions} />
+            </Stack>
+          ) : (
+            <Group mb="md" align="center">
+              <TextInput
+                placeholder="Buscar por título..."
+                leftSection={<IconSearch size={18} />}
+                value={searchInput}
+                onChange={e => setSearchInput(e.currentTarget.value)}
+                style={{ flex: 1 }}
+              />
+              <OrderSelect value={order} onChange={v => setOrder(v || "-created_at")} options={orderOptions} />
+              <ActionIcon variant="light" color="blue" size="lg" onClick={() => setModalOpen(true)} title="Filtros avançados">
+                <IconFilter size={20} />
+              </ActionIcon>
+            </Group>
+          )}
           <Modal opened={modalOpen} onClose={() => setModalOpen(false)} title="Filtros avançados" centered>
             <Stack>
               <Text size="sm" fw={500}>Artista</Text>
