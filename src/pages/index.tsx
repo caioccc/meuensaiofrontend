@@ -3,8 +3,9 @@ import AppLayout from "@/components/AppLayout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { ActionIcon, Badge, Button, Container, Grid, Group, Loader, LoadingOverlay, Menu, Modal, MultiSelect, NumberInput, ScrollArea, SegmentedControl, Select, Stack, Text, TextInput, Timeline, Title, Tooltip } from "@mantine/core";
 import { useMediaQuery } from '@mantine/hooks';
+import { notifications } from '@mantine/notifications';
 import { IconClock, IconEdit, IconEye, IconFilter, IconLayoutGrid, IconList, IconMusic, IconPlayerPlay, IconPlus, IconSearch, IconTable, IconTrash, IconWaveSine } from "@tabler/icons-react";
-import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
+import { DataTable } from 'mantine-datatable';
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import api from "../../lib/axios";
@@ -54,14 +55,12 @@ export default function DashboardPage() {
   const [order, setOrder] = useState("-created_at");
   const [hasMore, setHasMore] = useState(true);
   const [viewMode, setViewMode] = useState<'gallery' | 'list' | 'table'>('gallery');
-  const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({ columnAccessor: 'title', direction: 'asc' });
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [removeModalOpen, setRemoveModalOpen] = useState(false);
   const [selectedSong, setSelectedSong] = useState<SongApi | null>(null);
 
   const router = useRouter();
   const isMobile = useMediaQuery('(max-width: 48em)');
-
 
   const [loadingDelete, setLoadingDelete] = useState(false);
   const [loadingEdit, setLoadingEdit] = useState(false);
@@ -74,7 +73,8 @@ export default function DashboardPage() {
   const handleDelete = async () => {
     setLoadingDelete(true);
     try {
-      await onDelete?.();
+      await api.delete(`songs/${selectedSong?.id}/`);
+      setSongs(songs => songs.filter(s => s.id !== selectedSong?.id));
       notifications.show({
         color: 'green',
         title: 'Removida',
@@ -90,7 +90,7 @@ export default function DashboardPage() {
       });
     } finally {
       setLoadingDelete(false);
-      setModalOpen(false);
+      setRemoveModalOpen(false);
     }
   };
 
@@ -98,7 +98,7 @@ export default function DashboardPage() {
   const handleEdit = async () => {
     setLoadingEdit(true);
     try {
-      await api.patch(`/songs/${id}/`, { custom_bpm: editBpm, custom_key: editKey });
+      await api.patch(`/songs/${selectedSong?.id}/`, { custom_bpm: editBpm, custom_key: editKey });
       notifications.show({
         color: 'green',
         title: 'Atualizada',
@@ -115,6 +115,7 @@ export default function DashboardPage() {
       });
     } finally {
       setLoadingEdit(false);
+      setEditModalOpen(false);
     }
   };
 
@@ -184,18 +185,6 @@ export default function DashboardPage() {
     }
     // eslint-disable-next-line
   }, [page]);
-
-  // Adapte a ordenação do backend ao sortStatus
-  useEffect(() => {
-    if (viewMode === 'table') {
-      let ordering = '';
-      if (sortStatus.columnAccessor) {
-        ordering = `${sortStatus.direction === 'desc' ? '-' : ''}${sortStatus.columnAccessor}`;
-        setOrder(ordering);
-      }
-    }
-    // eslint-disable-next-line
-  }, [sortStatus, viewMode]);
 
   const orderOptions = [
     { value: "-created_at", label: "Mais recente" },
@@ -352,8 +341,6 @@ export default function DashboardPage() {
                           await api.delete(`songs/${song.id}/`);
                           setSongs(songs => songs.filter(s => s.id !== song.id));
                         }}
-                        onEdit={() => handleEdit(song)}
-                        onRemove={() => handleRemove(song)}
                       />
                     </Grid.Col>
                   ))}
@@ -423,11 +410,25 @@ export default function DashboardPage() {
                       width: 130,
                       render: (s: SongApi) => (
                         <Group gap={4}>
-                          <Button size="xs" variant="light" color="blue" onClick={() => router.push(`/player?song=${s.id}`)}>Ouvir</Button>
-                          <Button size="xs" variant="light" color="red" onClick={async () => {
-                            await api.delete(`songs/${s.id}/`);
-                            setSongs(songs => songs.filter(song => song.id !== s.id));
-                          }}>Excluir</Button>
+                          <Tooltip label="Tocar música" withArrow>
+                            <Button size="xs" variant="light" color="blue" onClick={() => router.push({ pathname: '/player', query: { youtubeId: s.id, id: s.id } })}><IconPlayerPlay size={16} /></Button>
+                          </Tooltip>
+                          <Tooltip label="Ver detalhes" withArrow>
+                            <Button size="xs" variant="light" color="gray" onClick={() => {
+                              setSelectedSong(s);
+                              setEditModalOpen(true);
+                              setEditBpm(s.custom_bpm ?? s.bpm ?? '');
+                              setEditKey(s.custom_key ?? s.key ?? '');
+                            }}><IconEdit size={16} /></Button>
+                          </Tooltip>
+                          <Tooltip label="Remover música" withArrow>
+                            <Button size="xs" variant="light" color="red" onClick={async () => {
+                              setSelectedSong(s);
+                              setRemoveModalOpen(true);
+                            }}>
+                              <IconTrash size={16} />
+                            </Button>
+                          </Tooltip>
                         </Group>
                       ),
                     },
@@ -445,10 +446,10 @@ export default function DashboardPage() {
         </Container>
         <Modal opened={removeModalOpen} onClose={() => setRemoveModalOpen(false)} title="Remover música" centered>
           <Stack>
-            <Text>Tem certeza que deseja remover "{selectedSong?.title}"?</Text>
+            <Text>Tem certeza que deseja remover {selectedSong?.title}?</Text>
             <Group justify="flex-end">
               <Button variant="default" onClick={() => setRemoveModalOpen(false)}>Cancelar</Button>
-              <Button color="red" onClick={handleDelete}>Remover</Button>
+              <Button color="red" onClick={handleDelete} loading={loadingDelete}>Remover</Button>
             </Group>
           </Stack>
         </Modal>
