@@ -19,9 +19,10 @@ export interface MusicCardProps {
   view_count?: string;
   onDelete?: () => Promise<void>;
   compact?: boolean;
+  viewMode?: string; // 'list' ou 'grid'
 }
 
-export default function MusicCard({ id, title, duration, bpm, thumbnail_url, songKey, onDelete, compact, custom_bpm, custom_key }: MusicCardProps & { custom_bpm?: number | null, custom_key?: string }) {
+export default function MusicCard({ id, title, duration, bpm, thumbnail_url, songKey, onDelete, compact, custom_bpm, custom_key }: MusicCardProps & { custom_bpm?: number | null, custom_key?: string, viewMode?: string }) {
   const [hovered, setHovered] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -133,7 +134,9 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
         </Menu>
       )}
       {/* Badges responsivos, quebram linha se necessário */}
-      <Group gap={4} wrap="wrap" style={{ rowGap: 4, columnGap: 4, marginBottom: compact ? 0 : 36 }}>
+      <Group gap={4} wrap="wrap" style={{ rowGap: 4, columnGap: 4,
+        marginBottom: !isMobile ? 0 : 36
+        }}>
         {bpm && (
           <Badge color={compact ? 'gray' : 'blue'} leftSection={<IconWaveSine size={14} />}>{bpm} BPM</Badge>
         )}
@@ -146,7 +149,7 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
         )}
       </Group>
       {/* Botão de play ocupa toda a linha inferior */}
-      {!compact && (
+      {isMobile && (
         <Button
           color="blue"
           variant="filled"
