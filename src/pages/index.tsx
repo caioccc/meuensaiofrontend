@@ -252,7 +252,7 @@ const MusicDashboard: React.FC = () => {
         </Text>
         <Group justify="space-between">
           <Text size="sm" c="dimmed">
-            {playlist.songCount} songs
+            {playlist.songCount} músicas
           </Text>
           <Text size="sm" c="dimmed">
             {playlist.duration}
@@ -286,12 +286,12 @@ const MusicDashboard: React.FC = () => {
     <AppLayout>
       <Container size="xl">
         <Stack gap="xl">
-          {/* Setlists of the Week */}
+          {/* Setlists da Semana */}
           <section>
             <Group justify="space-between" mb="md">
-              <Title order={2}>Setlists of the Week</Title>
+              <Title order={2}>Setlists da Semana</Title>
               <Button variant="subtle" rightSection={<IconChevronRight size={16} />}>
-                View All
+                Ver todos
               </Button>
             </Group>
 
@@ -302,10 +302,10 @@ const MusicDashboard: React.FC = () => {
             </SimpleGrid>
           </section>
 
-          {/* Most Played Songs */}
+          {/* Músicas mais tocadas */}
           <section>
             <Group justify="space-between" mb="md">
-              <Title order={2}>Most Played Songs</Title>
+              <Title order={2}>Músicas mais tocadas</Title>
               <ActionIcon variant="subtle">
                 <IconChevronRight size={16} />
               </ActionIcon>
@@ -320,9 +320,9 @@ const MusicDashboard: React.FC = () => {
 
           <Grid>
             <Grid.Col span={{ base: 12, md: 6 }}>
-              {/* Your Top Tracks */}
+              {/* Suas músicas favoritas */}
               <section>
-                <Title order={2} mb="md">Your Top Tracks</Title>
+                <Title order={2} mb="md">Suas músicas favoritas</Title>
                 <Stack gap="sm">
                   {topTracks.map((song, index) => (
                     <Paper key={song.id} p="sm" radius="md" withBorder>
@@ -357,9 +357,9 @@ const MusicDashboard: React.FC = () => {
             </Grid.Col>
 
             <Grid.Col span={{ base: 12, md: 6 }}>
-              {/* Your Personal Ranking */}
+              {/* Seu ranking pessoal */}
               <section>
-                <Title order={2} mb="md">Your Personal Ranking</Title>
+                <Title order={2} mb="md">Seu ranking pessoal</Title>
                 <Stack gap="sm">
                   {personalRanking.map((song, index) => (
                     <Paper key={song.id} p="sm" radius="md" withBorder>
@@ -380,7 +380,7 @@ const MusicDashboard: React.FC = () => {
                         </Box>
                         <Group gap="xs">
                           <Text size="xs" c="dimmed">
-                            {song.plays.toLocaleString()} plays
+                            {song.plays.toLocaleString()} execuções
                           </Text>
                           <ActionIcon variant="subtle" size="sm">
                             <IconPlayerPlay size={14} />
@@ -397,14 +397,14 @@ const MusicDashboard: React.FC = () => {
             </Grid.Col>
           </Grid>
 
-          {/* Your Music Stats */}
+          {/* Suas estatísticas musicais */}
           <section>
-            <Title order={2} mb="md">Your Music Stats</Title>
+            <Title order={2} mb="md">Suas estatísticas musicais</Title>
             <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="md">
               <StatCard
                 icon={<IconMusic size={24} />}
                 value={musicStats.totalSongs.toLocaleString()}
-                label="Total Songs"
+                label="Total de músicas"
               />
               <StatCard
                 icon={<IconPlaylist size={24} />}
@@ -414,12 +414,12 @@ const MusicDashboard: React.FC = () => {
               <StatCard
                 icon={<IconMusic size={24} />}
                 value={musicStats.mostCommonKey}
-                label="Most Common Key"
+                label="Tom mais comum"
               />
               <StatCard
                 icon={<IconMusic size={24} />}
                 value={musicStats.avgBPM}
-                label="Avg BPM"
+                label="BPM médio"
               />
             </SimpleGrid>
           </section>
