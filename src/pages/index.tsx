@@ -128,9 +128,12 @@ const MusicDashboard: React.FC = () => {
         title: s.title,
         artist: s.artist,
         duration: s.duration,
-        plays: s.setlists?.length || 0, // ou s.num_repeats se vier do annotate
+        plays: typeof s.num_repeats === 'number' ? s.num_repeats : (s.setlists?.length || 0), // usa num_repeats se vier do annotate
         image: s.thumbnail_url || '/api/placeholder/50/50',
         genre: '',
+        youtube_id: s.youtube_id || '',
+        key: s.key || '',
+        bpm: s.bpm || 0,
       })));
     });
     // Estatísticas
@@ -205,9 +208,9 @@ const MusicDashboard: React.FC = () => {
             <ActionIcon variant="subtle" size="sm">
               <IconPlayerPlay size={16} onClick={() =>  router.push({ pathname: '/player', query: { youtubeId: song.youtube_id, id: song.id } })}/>
             </ActionIcon>
-            <ActionIcon variant="subtle" size="sm">
+            {/* <ActionIcon variant="subtle" size="sm">
               <IconShare size={16} />
-            </ActionIcon>
+            </ActionIcon> */}
           </Group>
         </Group>
       </Paper>
@@ -373,24 +376,21 @@ const MusicDashboard: React.FC = () => {
                             {index + 1}
                           </Text>
                         </Center>
-                        <Avatar src={song.image} size={40} radius="md" />
+                        <Avatar src={song.image} size={60} radius="md" />
                         <Box style={{ flex: 1 }}>
                           <Text fw={500} size="sm" truncate>
                             {song.title}
                           </Text>
                           <Text size="xs" c="dimmed">
-                            {song.artist}
+                            Tom {song.key} - {song.bpm} bpm
                           </Text>
                         </Box>
                         <Group gap="xs">
                           <Text size="xs" c="dimmed">
-                            {song.plays.toLocaleString()} execuções
+                            {song.plays.toLocaleString()} setlists
                           </Text>
                           <ActionIcon variant="subtle" size="sm">
-                            <IconPlayerPlay size={14} />
-                          </ActionIcon>
-                          <ActionIcon variant="subtle" size="sm">
-                            <IconHeart size={14} />
+                            <IconPlayerPlay size={14} onClick={() =>  router.push({ pathname: '/player', query: { youtubeId: song.youtube_id, id: song.id } })}/>
                           </ActionIcon>
                         </Group>
                       </Group>
