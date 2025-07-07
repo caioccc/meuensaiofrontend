@@ -42,6 +42,9 @@ export default function AddSetlistPage() {
   const isMobile = useMediaQuery('(max-width: 48em)');
   const searchResultsRef = useRef<HTMLDivElement | null>(null);
 
+  const [hasSongs, setHasSongs] = useState(false);
+  const [loadingSongs, setLoadingSongs] = useState(false);
+
   // Limpa o modal sempre que abrir
   useEffect(() => {
     setActive(0);
@@ -57,6 +60,16 @@ export default function AddSetlistPage() {
     setSavedSongs([]);
     setSavedLoading(false);
     setSavedSearch('');
+
+    setLoadingSongs(true);
+    api.get('/songs/').then(res => {
+      setHasSongs(res.data.results.length > 0 || res.data.count > 0);
+      setLoadingSongs(false);
+    }).catch(() => {
+      setHasSongs(false);
+      setLoadingSongs(false);
+    });
+
   }, []);
 
   // Busca músicas (agora usando /api/search/)
@@ -190,6 +203,11 @@ export default function AddSetlistPage() {
 
   return (
     <AppLayout>
+      {
+        loadingSongs && (
+          <LoadingOverlay visible={loadingSongs} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
+        )
+      }
       <Container size="100%" py="xl">
         <Breadcrumbs mb="md">
           <Anchor onClick={() => router.push('/')}>Início</Anchor>
@@ -201,42 +219,46 @@ export default function AddSetlistPage() {
           <Stepper active={active} onStepClick={setActive}>
             <Stepper.Step label="Fonte" description="Escolha a fonte das músicas">
               <Group justify="center" gap="xl" mt="xl" style={{ justifyContent: 'center', width: '100%' }}>
-                <Card
-                  shadow={source === 'saved' ? 'md' : 'xs'}
-                  withBorder
-                  tabIndex={0}
-                  style={{
-                    width: 280,
-                    height: 180,
-                    cursor: 'pointer',
-                    borderColor: source === 'saved' ? '#228be6' : undefined,
-                    borderWidth: source === 'saved' ? 3 : 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'border-width 0.2s',
-                  }}
-                  onClick={() => {
-                    setSource('saved');
-                    setSelected([]);
-                    setEnriched([]);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      setSource('saved');
-                      setSelected([]);
-                      setEnriched([]);
-                      setTimeout(() => {
-                        if (source === 'saved') setActive(1);
-                      }, 0);
-                    }
-                  }}
-                >
-                  <IconPlaylist size={48} color={source === 'saved' ? '#228be6' : '#888'} />
-                  <Title order={4} mb="sm" mt="md">Músicas Salvas</Title>
-                  <Text ta="center">Selecionar músicas já salvas no sistema</Text>
-                </Card>
+                {
+                  hasSongs && (
+                    <Card
+                      shadow={source === 'saved' ? 'md' : 'xs'}
+                      withBorder
+                      tabIndex={0}
+                      style={{
+                        width: 280,
+                        height: 180,
+                        cursor: 'pointer',
+                        borderColor: source === 'saved' ? '#228be6' : undefined,
+                        borderWidth: source === 'saved' ? 3 : 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'border-width 0.2s',
+                      }}
+                      onClick={() => {
+                        setSource('saved');
+                        setSelected([]);
+                        setEnriched([]);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          setSource('saved');
+                          setSelected([]);
+                          setEnriched([]);
+                          setTimeout(() => {
+                            if (source === 'saved') setActive(1);
+                          }, 0);
+                        }
+                      }}
+                    >
+                      <IconPlaylist size={48} color={source === 'saved' ? '#228be6' : '#888'} />
+                      <Title order={4} mb="sm" mt="md">Músicas Salvas</Title>
+                      <Text ta="center">Selecionar músicas já salvas no sistema</Text>
+                    </Card>
+                  )
+                }
                 <Card
                   shadow={source === 'new' ? 'md' : 'xs'}
                   withBorder

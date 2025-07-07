@@ -103,7 +103,7 @@ export default function AddMusicPage() {
         position: 'top-right',
         autoClose: 2000,
       });
-      router.push("/");
+      router.push("/songs");
     } catch {
       notifications.show({
         color: 'red',

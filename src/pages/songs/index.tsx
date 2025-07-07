@@ -132,7 +132,7 @@ export default function DashboardPage() {
             <Button
               leftSection={<IconPlus />}
               onClick={() => {
-                router.push("/addmusic");
+                router.push("/songs/add");
               }}
               color="blue"
               style={{ marginLeft: 'auto' }}

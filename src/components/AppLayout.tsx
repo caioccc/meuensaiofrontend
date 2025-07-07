@@ -13,14 +13,16 @@ import {
 import { IconLayoutDashboard, IconLogout, IconTable, IconMenu2, IconMusic, IconSun, IconMoon } from "@tabler/icons-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
+import { useMediaQuery } from '@mantine/hooks';
 
 interface AppLayoutProps {
   children: ReactNode;
 }
 
 export default function AppLayout({ children }: AppLayoutProps) {
-  const [navbarCollapsed, setNavbarCollapsed] = useState(true); // Começa collapsed no mobile
+  const isMobile = useMediaQuery('(max-width: 48em)');
+  const [navbarCollapsed, setNavbarCollapsed] = useState(false); // Começa aberto no desktop
   const pathname = usePathname();
   const { logout } = useAuth();
   const [loadingLogout, setLoadingLogout] = useState(false);
@@ -38,10 +40,14 @@ export default function AppLayout({ children }: AppLayoutProps) {
     }, 600); // tempo para mostrar o loading
   };
 
+  useEffect(() => {
+    setNavbarCollapsed(isMobile);
+  }, [isMobile]);
+
   return (
     <AppShell
       header={{ height: 60 }}
-      navbar={{ width: 220, breakpoint: 'sm', collapsed: { mobile: navbarCollapsed } }}
+      navbar={{ width: 220, breakpoint: 'sm', collapsed: { mobile: navbarCollapsed, desktop: navbarCollapsed } }}
       footer={{ height: 40 }}
     >
       <AppShell.Header>
@@ -51,13 +57,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
               variant="subtle"
               color="blue"
               onClick={() => setNavbarCollapsed(c => !c)}
-              display={{ base: 'inline-flex', sm: 'none' }}
-              aria-label="Abrir menu"
+              // Mostra sempre o botão de colapso
+              display={{ base: 'inline-flex', sm: 'inline-flex' }}
+              aria-label="Abrir/fechar menu"
             >
               <IconMenu2 size={28} />
             </ActionIcon>
             <Group>
-              <IconMusic size={28} color="var(--mantine-color-blue-6)" />
               <Title order={2}>Setlistify</Title>
             </Group>
           </Group>
