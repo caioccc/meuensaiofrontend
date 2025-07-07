@@ -5,9 +5,12 @@ import {
   Group,
   NavLink,
   Text,
-  Loader
+  Loader,
+  useMantineColorScheme,
+  Title,
+  Button
 } from "@mantine/core";
-import { IconLayoutDashboard, IconLogout, IconTable, IconMenu2 } from "@tabler/icons-react";
+import { IconLayoutDashboard, IconLogout, IconTable, IconMenu2, IconMusic, IconSun, IconMoon } from "@tabler/icons-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode, useState } from "react";
@@ -21,6 +24,11 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname();
   const { logout } = useAuth();
   const [loadingLogout, setLoadingLogout] = useState(false);
+
+  const { isAuthenticated } = useAuth();
+
+  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+  const dark = colorScheme === 'dark';
 
   const handleLogout = () => {
     setLoadingLogout(true);
@@ -38,17 +46,39 @@ export default function AppLayout({ children }: AppLayoutProps) {
     >
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
-          {/* Botão de menu só no mobile */}
-          <ActionIcon
-            variant="subtle"
-            color="blue"
-            onClick={() => setNavbarCollapsed(c => !c)}
-            display={{ base: 'inline-flex', sm: 'none' }}
-            aria-label="Abrir menu"
-          >
-            <IconMenu2 size={28} />
-          </ActionIcon>
-          <Text size="lg" fw={700}>Meu Ensaio</Text>
+          <Group justify="space-between">
+            <ActionIcon
+              variant="subtle"
+              color="blue"
+              onClick={() => setNavbarCollapsed(c => !c)}
+              display={{ base: 'inline-flex', sm: 'none' }}
+              aria-label="Abrir menu"
+            >
+              <IconMenu2 size={28} />
+            </ActionIcon>
+            <Group>
+              <IconMusic size={28} color="var(--mantine-color-blue-6)" />
+              <Title order={2}>Setlistify</Title>
+            </Group>
+          </Group>
+
+          <Group>
+            <ActionIcon
+              variant="subtle"
+              onClick={() => toggleColorScheme()}
+              size="lg"
+            >
+              {dark ? <IconSun size={20} /> : <IconMoon size={20} />}
+            </ActionIcon>
+            {
+              // Botão de login só aparece se não estiver autenticado
+              !isAuthenticated && (
+                <Button variant="filled" onClick={() => router.push('/login')}>
+                  Login
+                </Button>
+              )
+            }
+          </Group>
         </Group>
       </AppShell.Header>
       <AppShell.Navbar p="md">
@@ -59,6 +89,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
             label="Início"
             leftSection={<IconLayoutDashboard size={18} />}
             active={pathname === "/"}
+          />
+          <NavLink
+            component={Link}
+            href="/songs"
+            label="Músicas"
+            leftSection={<IconMusic size={18} />}
+            active={pathname === "/songs" || pathname.startsWith("/songs/")}
           />
           <NavLink
             component={Link}

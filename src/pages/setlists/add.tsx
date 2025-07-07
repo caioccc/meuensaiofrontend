@@ -194,6 +194,7 @@ export default function AddSetlistPage() {
         <Breadcrumbs mb="md">
           <Anchor onClick={() => router.push('/')}>Início</Anchor>
           <Anchor onClick={() => router.push('/setlists')}>Setlists</Anchor>
+          <Text>Adicionar Setlist</Text>
         </Breadcrumbs>
         <Title order={2} mb="lg">Criar novo Setlist</Title>
         <Paper shadow="md" p="xl" radius="md" withBorder>

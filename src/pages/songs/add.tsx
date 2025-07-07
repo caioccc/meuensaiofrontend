@@ -7,7 +7,7 @@ import { Anchor, Breadcrumbs, Button, Card, Container, Grid, Group, Image, Loade
 import { notifications } from '@mantine/notifications';
 import { IconCheck, IconChevronLeft, IconChevronRight, IconMusic, IconSearch, IconX } from "@tabler/icons-react";
 import { useRouter } from "next/router";
-import api from "../../lib/axios";
+import api from "../../../lib/axios";
 
 interface YoutubeResult {
   youtube_id: string;
@@ -150,7 +150,8 @@ export default function AddMusicPage() {
     <AppLayout>
       <Container size="100%" py="xl">
         <Breadcrumbs mb="md">
-          <Anchor href="/">Início</Anchor>
+          <Anchor onClick={() => router.push('/')}>Início</Anchor>
+          <Anchor onClick={() => router.push('/songs')}>Minhas músicas</Anchor>
           <Text>Adicionar Música</Text>
         </Breadcrumbs>
         <Title order={2} mb="lg">Adicionar Música</Title>
