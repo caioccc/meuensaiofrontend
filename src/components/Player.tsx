@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Button, Group, LoadingOverlay, Slider, Stack, Text, Tooltip } from '@mantine/core';
-import { IconBrandYoutube, IconGuitarPick, IconMusic, IconPlayerPause, IconPlayerPlay, IconVolumeOff, IconWaveSine } from '@tabler/icons-react';
+import { Button, Divider, Group, LoadingOverlay, Paper, Slider, Stack, Text, Tooltip } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
+import { IconBrandYoutube, IconGuitarPick, IconMusic, IconVolumeOff, IconWaveSine } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 import * as Tone from 'tone';
 import { guitarSamples, padSamples, shimmerSamples } from '../constants/padMaps';
@@ -133,8 +134,8 @@ export default function Player({ song }: PlayerProps) {
   }, [isPlaying]);
 
   // Funções de controle
-  const play = () => playerRef.current?.playVideo();
-  const pause = () => playerRef.current?.pauseVideo();
+  // const play = () => playerRef.current?.playVideo();
+  // const pause = () => playerRef.current?.pauseVideo();
 
   // Encontrar acorde ativo pelo tempo
   const activeChordIdx = song.chords_formatada?.findIndex(
@@ -231,189 +232,317 @@ export default function Player({ song }: PlayerProps) {
     return () => clearTimeout(timeout);
   }, [song.youtube_id]);
 
+  const isMobile = useMediaQuery('(max-width: 48em)');
+
   return (
     <Stack style={{ position: 'relative' }}>
       <LoadingOverlay visible={loading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
-      {/* Características da música */}
-      <Group gap="xl" align="center" style={{ marginBottom: 16, marginTop: 8 }}>
-        <Text size="md" fw={600} color="#228be6">
-          TOM: <span style={{ fontWeight: 700 }}>{song.key || '-'}</span>
-        </Text>
-        <Text size="md" fw={600} color="#228be6">
-          BPM: <span style={{ fontWeight: 700 }}>{song.bpm || '-'}</span>
-        </Text>
-        <Text size="md" fw={600} color="#228be6">
-          DURAÇÃO: <span style={{ fontWeight: 700 }}>{song.duration || '-'}</span>
-        </Text>
-      </Group>
-      {/* Seção principal: vídeo, timeline, etc */}
-      <div className="player-main-content" style={{ width: '100%' }}>
-        <div id="ytplayer" style={{ width: '100%', height: 360, borderRadius: 12, overflow: 'hidden', boxShadow: '0 2px 12px #0001' }} />
-        <Group mt="md">
-          <Button onClick={isPlaying ? pause : play} leftSection={isPlaying ? <IconPlayerPause size={18} /> : <IconPlayerPlay size={18} />}>
-            {isPlaying ? 'Pause' : 'Play'}
-          </Button>
-          {/* <Switch checked={metronomeOn} onChange={e => setMetronomeOn(e.currentTarget.checked)} label="Metrônomo" disabled={!metroLoaded && !metronomeOn} /> */}
+      {isMobile ? (
+        <Stack gap="md" style={{ width: '100%' }}>
+          {/* Bloco principal: vídeo, controles, volumes */}
+          <Stack style={{ width: '100%' }}>
+            <Group gap="xl" align="center" style={{ marginBottom: 16, marginTop: 8 }}>
+              <Text size="md" fw={600} color="#228be6">
+                TOM: <span style={{ fontWeight: 700 }}>{song.key || '-'}</span>
+              </Text>
+              <Text size="md" fw={600} color="#228be6">
+                BPM: <span style={{ fontWeight: 700 }}>{song.bpm || '-'}</span>
+              </Text>
+              <Text size="md" fw={600} color="#228be6">
+                DURAÇÃO: <span style={{ fontWeight: 700 }}>{song.duration || '-'}</span>
+              </Text>
+            </Group>
+            <div className="player-main-content" style={{ width: '100%' }}>
+              <div id="ytplayer" style={{ width: '100%', height: 220, borderRadius: 12, overflow: 'hidden', boxShadow: '0 2px 12px #0001' }} />
+              {/* <Group mt="md">
+                <Button onClick={isPlaying ? pause : play} leftSection={isPlaying ? <IconPlayerPause size={18} /> : <IconPlayerPlay size={18} />}>
+                  {isPlaying ? 'Pause' : 'Play'}
+                </Button>
+              </Group> */}
+            </div>
+            {/* Volumes e outros controles */}
+            <Stack gap="md" className="player-controls-stack" style={{ width: '100%', marginTop: 24 }}>
+              {/* Canal YouTube */}
+              <Group gap="xs" align="center">
+                <Tooltip label="Volume do YouTube">
+                  <IconBrandYoutube size={28} color="#e63946" />
+                </Tooltip>
+                <Tooltip label="Mute">
+                  <Button variant={ytMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setYtMute(m => !m)}><IconVolumeOff size={16} /></Button>
+                </Tooltip>
+                <Tooltip label="Solo">
+                  <Button variant={ytSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setYtSolo(s => !s)}>S</Button>
+                </Tooltip>
+                <Slider min={0} max={100} value={ytVolume} onChange={setYtVolume} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+              </Group>
+              {/* Canal Metrônomo */}
+              {/* <Group gap="xs" align="center">
+                <Tooltip label="Metrônomo">
+                  <IconWaveSine size={28} color="#228be6" />
+                </Tooltip>
+                <Tooltip label="Mute">
+                  <Button variant={metroMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setMetroMute(m => !m)}><IconVolumeOff size={16} /></Button>
+                </Tooltip>
+                <Tooltip label="Solo">
+                  <Button variant={metroSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setMetroSolo(s => !s)}>S</Button>
+                </Tooltip>
+                <Slider min={0} max={100} value={metroVolume} onChange={setMetroVolume} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+              </Group> */}
+              {/* Canal PAD Cloud */}
+              <Group gap="xs" align="center">
+                <Tooltip label="Volume do Pad Cloud">
+                  <IconMusic size={28} color="#51cf66" />
+                </Tooltip>
+                <Tooltip label="Mute">
+                  <Button variant={padCloudMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadCloudMute(m => !m)}><IconVolumeOff size={16} /></Button>
+                </Tooltip>
+                <Tooltip label="Solo">
+                  <Button variant={padCloudSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadCloudSolo(s => !s)}>S</Button>
+                </Tooltip>
+                <Slider min={0} max={100} value={padCloudVol} onChange={setPadCloudVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+              </Group>
+              {/* Canal Pad Shimmer */}
+              <Group gap="xs" align="center">
+                <Tooltip label="Volume do Pad Shimmer">
+                  <IconWaveSine size={28} color="#845ef7" />
+                </Tooltip>
+                <Tooltip label="Mute">
+                  <Button variant={padShimmerMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadShimmerMute(m => !m)}><IconVolumeOff size={16} /></Button>
+                </Tooltip>
+                <Tooltip label="Solo">
+                  <Button variant={padShimmerSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadShimmerSolo(s => !s)}>S</Button>
+                </Tooltip>
+                <Slider min={0} max={100} value={padShimmerVol} onChange={setPadShimmerVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+              </Group>
+              {/* Canal Pad Guitar */}
+              <Group gap="xs" align="center">
+                <Tooltip label="Volume do Pad Guitar">
+                  <IconGuitarPick size={28} color="#fab005" />
+                </Tooltip>
+                <Tooltip label="Mute">
+                  <Button variant={padGuitarMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadGuitarMute(m => !m)}><IconVolumeOff size={16} /></Button>
+                </Tooltip>
+                <Tooltip label="Solo">
+                  <Button variant={padGuitarSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadGuitarSolo(s => !s)}>S</Button>
+                </Tooltip>
+                <Slider min={0} max={100} value={padGuitarVol} onChange={setPadGuitarVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+              </Group>
+            </Stack>
+          </Stack>
+          {/* Bloco de acordes abaixo do vídeo no mobile */}
+          <Paper withBorder shadow="md" p="md" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 8 }}>
+            <Text fw={700} size="lg" mb="xs">Acordes</Text>
+            <Text size="sm" color="dimmed" mb="xs">
+              {new Date(currentTime * 1000).toISOString().substr(14, 5)} / {song.duration || '-'}
+            </Text>
+            {activeChordIdx !== -1 && song.chords_formatada && song.chords_formatada[activeChordIdx] ? (
+              <Stack align="center" mb="sm" style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                {/* Tap tempo dots */}
+                <Group gap={8} mb={8} style={{ justifyContent: 'center', width: '100%' }}>
+                  {Array.from({ length: song.chords_formatada[activeChordIdx].barLength || 4 }).map((_, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        width: 14,
+                        height: 14,
+                        borderRadius: '50%',
+                        background: i === Math.floor(((currentTime - song.chords_formatada[activeChordIdx].start) / ((song.chords_formatada[activeChordIdx].end - song.chords_formatada[activeChordIdx].start) / (song.chords_formatada[activeChordIdx].barLength || 4))) % (song.chords_formatada[activeChordIdx].barLength || 4)) ? '#228be6' : '#d0ebff',
+                        transition: 'background 0.1s',
+                        boxShadow: i === Math.floor(((currentTime - song.chords_formatada[activeChordIdx].start) / ((song.chords_formatada[activeChordIdx].end - song.chords_formatada[activeChordIdx].start) / (song.chords_formatada[activeChordIdx].barLength || 4))) % (song.chords_formatada[activeChordIdx].barLength || 4)) ? '0 0 8px #228be6' : undefined
+                      }}
+                    />
+                  ))}
+                </Group>
+                <Stack align="center" gap={4} style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                  <Text size="xl" fw={800} style={{ fontSize: 32, letterSpacing: 2, textAlign: 'center' }}>{song.chords_formatada[activeChordIdx].note_fmt || song.chords_formatada[activeChordIdx].note}</Text>
+                  {song.chords_formatada[activeChordIdx].image && (
+                    <img src={song.chords_formatada[activeChordIdx].image} alt={song.chords_formatada[activeChordIdx].note_fmt || song.chords_formatada[activeChordIdx].note} style={{ width: 60, height: 60, objectFit: 'contain', margin: '0 auto', background: '#fff', borderRadius: 8, boxShadow: '0 2px 8px #0001', display: 'block' }} />
+                  )}
+                </Stack>
+              </Stack>
+            ) : (
+              <Text size="md" color="dimmed">-</Text>
+            )}
+            {/* Próximos acordes diferentes */}
+            <Stack gap={2} mt="md" style={{ width: '100%' }}>
+              {(() => {
+                if (!song.chords_formatada || activeChordIdx === -1) return null;
+                const current = song.chords_formatada[activeChordIdx];
+                const nextDiffs = [];
+                let lastNote = current.note_fmt || current.note;
+                for (let i = activeChordIdx + 1; i < song.chords_formatada.length && nextDiffs.length < 5; i++) {
+                  const n = song.chords_formatada[i];
+                  const note = n.note_fmt || n.note;
+                  if (note !== lastNote) {
+                    nextDiffs.push(note);
+                    lastNote = note;
+                  }
+                }
+                return nextDiffs.map((note, idx) => (
+                  <>
+                    {idx > 0 && <Divider my={2} />}
+                    <Text key={note + idx} size="sm" color="gray.6" style={{ textAlign: 'center', opacity: 0.7 }}>{note}</Text>
+                  </>
+                ));
+              })()}
+            </Stack>
+          </Paper>
+        </Stack>
+      ) : (
+        <Group align="flex-start" gap="xl" style={{ width: '100%', minHeight: 400 }}>
+          {/* Bloco principal: vídeo, controles, volumes (80%) */}
+          <Stack style={{ flex: 8, minWidth: 0 }}>
+            <Group gap="xl" align="center" style={{ marginBottom: 16, marginTop: 8 }}>
+              <Text size="md" fw={600} color="#228be6">
+                TOM: <span style={{ fontWeight: 700 }}>{song.key || '-'}</span>
+              </Text>
+              <Text size="md" fw={600} color="#228be6">
+                BPM: <span style={{ fontWeight: 700 }}>{song.bpm || '-'}</span>
+              </Text>
+              <Text size="md" fw={600} color="#228be6">
+                DURAÇÃO: <span style={{ fontWeight: 700 }}>{song.duration || '-'}</span>
+              </Text>
+            </Group>
+            <div className="player-main-content" style={{ width: '100%' }}>
+              <div id="ytplayer" style={{ width: '100%', height: 360, borderRadius: 12, overflow: 'hidden', boxShadow: '0 2px 12px #0001' }} />
+              {/* <Group mt="md">
+                <Button onClick={isPlaying ? pause : play} leftSection={isPlaying ? <IconPlayerPause size={18} /> : <IconPlayerPlay size={18} />}>
+                  {isPlaying ? 'Pause' : 'Play'}
+                </Button>
+                <Switch checked={metronomeOn} onChange={e => setMetronomeOn(e.currentTarget.checked)} label="Metrônomo" disabled={!metroLoaded && !metronomeOn} />
+              </Group> */}
+            </div>
+            {/* Volumes e outros controles */}
+            <Stack gap="md" className="player-controls-stack" style={{ width: '100%', marginTop: 32 }}>
+              {/* Canal YouTube */}
+              <Group gap="xs" align="center">
+                <Tooltip label="Volume do YouTube">
+                  <IconBrandYoutube size={28} color="#e63946" />
+                </Tooltip>
+                <Tooltip label="Mute">
+                  <Button variant={ytMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setYtMute(m => !m)}><IconVolumeOff size={16} /></Button>
+                </Tooltip>
+                <Tooltip label="Solo">
+                  <Button variant={ytSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setYtSolo(s => !s)}>S</Button>
+                </Tooltip>
+                <Slider min={0} max={100} value={ytVolume} onChange={setYtVolume} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+              </Group>
+              {/* Canal Metrônomo */}
+              {/* <Group gap="xs" align="center">
+                <Tooltip label="Metrônomo">
+                  <IconWaveSine size={28} color="#228be6" />
+                </Tooltip>
+                <Tooltip label="Mute">
+                  <Button variant={metroMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setMetroMute(m => !m)}><IconVolumeOff size={16} /></Button>
+                </Tooltip>
+                <Tooltip label="Solo">
+                  <Button variant={metroSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setMetroSolo(s => !s)}>S</Button>
+                </Tooltip>
+                <Slider min={0} max={100} value={metroVolume} onChange={setMetroVolume} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+              </Group> */}
+              {/* Canal PAD Cloud */}
+              <Group gap="xs" align="center">
+                <Tooltip label="Volume do Pad Cloud">
+                  <IconMusic size={28} color="#51cf66" />
+                </Tooltip>
+                <Tooltip label="Mute">
+                  <Button variant={padCloudMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadCloudMute(m => !m)}><IconVolumeOff size={16} /></Button>
+                </Tooltip>
+                <Tooltip label="Solo">
+                  <Button variant={padCloudSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadCloudSolo(s => !s)}>S</Button>
+                </Tooltip>
+                <Slider min={0} max={100} value={padCloudVol} onChange={setPadCloudVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+              </Group>
+              {/* Canal Pad Shimmer */}
+              <Group gap="xs" align="center">
+                <Tooltip label="Volume do Pad Shimmer">
+                  <IconWaveSine size={28} color="#845ef7" />
+                </Tooltip>
+                <Tooltip label="Mute">
+                  <Button variant={padShimmerMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadShimmerMute(m => !m)}><IconVolumeOff size={16} /></Button>
+                </Tooltip>
+                <Tooltip label="Solo">
+                  <Button variant={padShimmerSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadShimmerSolo(s => !s)}>S</Button>
+                </Tooltip>
+                <Slider min={0} max={100} value={padShimmerVol} onChange={setPadShimmerVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+              </Group>
+              {/* Canal Pad Guitar */}
+              <Group gap="xs" align="center">
+                <Tooltip label="Volume do Pad Guitar">
+                  <IconGuitarPick size={28} color="#fab005" />
+                </Tooltip>
+                <Tooltip label="Mute">
+                  <Button variant={padGuitarMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadGuitarMute(m => !m)}><IconVolumeOff size={16} /></Button>
+                </Tooltip>
+                <Tooltip label="Solo">
+                  <Button variant={padGuitarSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadGuitarSolo(s => !s)}>S</Button>
+                </Tooltip>
+                <Slider min={0} max={100} value={padGuitarVol} onChange={setPadGuitarVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+              </Group>
+            </Stack>
+          </Stack>
+          {/* Bloco de acordes (20%) */}
+          <Paper withBorder shadow="md" p="md" style={{ flex: 2, minWidth: 180, maxWidth: 320, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Text fw={700} size="lg" mb="xs">Acordes</Text>
+            {/* Timer */}
+            <Text size="sm" color="dimmed" mb="xs">
+              {new Date(currentTime * 1000).toISOString().substr(14, 5)} / {song.duration || '-'}
+            </Text>
+            {/* Acorde atual em destaque */}
+            {activeChordIdx !== -1 && song.chords_formatada && song.chords_formatada[activeChordIdx] ? (
+              <Stack align="center" mb="sm" style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                {/* Tap tempo dots */}
+                <Group gap={8} mb={8} style={{ justifyContent: 'center', width: '100%' }}>
+                  {Array.from({ length: song.chords_formatada[activeChordIdx].barLength || 4 }).map((_, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        width: 14,
+                        height: 14,
+                        borderRadius: '50%',
+                        background: i === Math.floor(((currentTime - song.chords_formatada[activeChordIdx].start) / ((song.chords_formatada[activeChordIdx].end - song.chords_formatada[activeChordIdx].start) / (song.chords_formatada[activeChordIdx].barLength || 4))) % (song.chords_formatada[activeChordIdx].barLength || 4)) ? '#228be6' : '#d0ebff',
+                        transition: 'background 0.1s',
+                        boxShadow: i === Math.floor(((currentTime - song.chords_formatada[activeChordIdx].start) / ((song.chords_formatada[activeChordIdx].end - song.chords_formatada[activeChordIdx].start) / (song.chords_formatada[activeChordIdx].barLength || 4))) % (song.chords_formatada[activeChordIdx].barLength || 4)) ? '0 0 8px #228be6' : undefined
+                      }}
+                    />
+                  ))}
+                </Group>
+                <Stack align="center" gap={4} style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                  <Text size="xl" fw={800} style={{ fontSize: 40, letterSpacing: 2, textAlign: 'center' }}>{song.chords_formatada[activeChordIdx].note_fmt || song.chords_formatada[activeChordIdx].note}</Text>
+                  {song.chords_formatada[activeChordIdx].image && (
+                    <img src={song.chords_formatada[activeChordIdx].image} alt={song.chords_formatada[activeChordIdx].note_fmt || song.chords_formatada[activeChordIdx].note} style={{ width: 80, height: 80, objectFit: 'contain', margin: '0 auto', background: '#fff', borderRadius: 8, boxShadow: '0 2px 8px #0001', display: 'block' }} />
+                  )}
+                </Stack>
+              </Stack>
+            ) : (
+              <Text size="md" color="dimmed">-</Text>
+            )}
+            {/* Próximos acordes diferentes */}
+            <Stack gap={2} mt="md" style={{ width: '100%' }}>
+              {(() => {
+                if (!song.chords_formatada || activeChordIdx === -1) return null;
+                const current = song.chords_formatada[activeChordIdx];
+                const nextDiffs = [];
+                let lastNote = current.note_fmt || current.note;
+                for (let i = activeChordIdx + 1; i < song.chords_formatada.length && nextDiffs.length < 5; i++) {
+                  const n = song.chords_formatada[i];
+                  const note = n.note_fmt || n.note;
+                  if (note !== lastNote) {
+                    nextDiffs.push(note);
+                    lastNote = note;
+                  }
+                }
+                return nextDiffs.map((note, idx) => (
+                  <>
+                    {idx > 0 && <Divider my={2} />}
+                    <Text key={note + idx} size="sm" color="gray.6" style={{ textAlign: 'center', opacity: 0.7 }}>{note}</Text>
+                  </>
+                ));
+              })()}
+            </Stack>
+          </Paper>
         </Group>
-        {/* Linha do tempo de acordes */}
-        <div
-          ref={timelineRef}
-          style={{
-            minHeight: 60,
-            display: 'flex',
-            gap: 8,
-            alignItems: 'center',
-            flexWrap: 'nowrap',
-            justifyContent: 'flex-start',
-            overflowX: 'auto',
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-            position: 'relative',
-            padding: '8px 0',
-            marginTop: 16,
-          }}
-          className="hide-scrollbar"
-        >
-          {song.chords_formatada?.map((c, i) => {
-            if (activeChordIdx === i) {
-              // Bloco ativo: imagem + nota animada
-              return (
-                <div
-                  key={i}
-                  style={{
-                    width: 48,
-                    height: 60,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: 10,
-                    background: 'linear-gradient(135deg, #228be6 60%, #b2d8ff 100%)',
-                    boxShadow: '0 0 16px 2px #228be6aa',
-                    transform: 'scale(1.15)',
-                    transition: 'all 0.25s cubic-bezier(.4,2,.6,1)',
-                    border: '2px solid #228be6',
-                    position: 'relative',
-                    zIndex: 2,
-                  }}
-                >
-                  <img src={c.image} alt={c.note_fmt} width={36} height={48} style={{ filter: 'drop-shadow(0 0 6px #228be6)' }} />
-                  <Text color="white" fw={700} size="lg" span style={{ position: 'absolute', bottom: 4, left: 0, right: 0, textAlign: 'center', textShadow: '0 2px 8px #228be6' }}>
-                    {c.note_fmt}
-                  </Text>
-                </div>
-              );
-            } else if (i > (activeChordIdx ?? -1)) {
-              // Notas futuras: só nota, sem imagem
-              return (
-                <div
-                  key={i}
-                  style={{
-                    width: 48,
-                    height: 60,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: 10,
-                    background: '#e7f5ff',
-                    border: '1px solid #a5d8ff',
-                    color: '#228be6',
-                    fontWeight: 600,
-                    fontSize: 22,
-                    opacity: 0.7,
-                    transition: 'all 0.2s',
-                  }}
-                >
-                  {c.note_fmt}
-                </div>
-              );
-            } else {
-              // Notas passadas: marcador discreto
-              return (
-                <div
-                  key={i}
-                  style={{
-                    width: 36,
-                    height: 48,
-                    opacity: 0.15,
-                    borderRadius: 8,
-                    background: '#dee2e6',
-                    margin: '0 6px',
-                  }}
-                />
-              );
-            }
-          })}
-        </div>
-      </div>
-      {/* Seção de controles de volume abaixo */}
-      <Stack gap="md" className="player-controls-stack" style={{ width: '100%', marginTop: 32 }}>
-        {/* Canal YouTube */}
-        <Group gap="xs" align="center">
-          <Tooltip label="Volume do YouTube">
-            <IconBrandYoutube size={28} color="#e63946" />
-          </Tooltip>
-          <Tooltip label="Mute">
-            <Button variant={ytMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setYtMute(m => !m)}><IconVolumeOff size={16} /></Button>
-          </Tooltip>
-          <Tooltip label="Solo">
-            <Button variant={ytSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setYtSolo(s => !s)}>S</Button>
-          </Tooltip>
-          <Slider min={0} max={100} value={ytVolume} onChange={setYtVolume} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
-        </Group>
-        {/* Canal Metrônomo */}
-        {/* <Group gap="xs" align="center">
-          <Tooltip label="Metrônomo">
-            <IconWaveSine size={28} color="#228be6" />
-          </Tooltip>
-          <Tooltip label="Mute">
-            <Button variant={metroMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setMetroMute(m => !m)}><IconVolumeOff size={16} /></Button>
-          </Tooltip>
-          <Tooltip label="Solo">
-            <Button variant={metroSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setMetroSolo(s => !s)}>S</Button>
-          </Tooltip>
-          <Slider min={0} max={100} value={metroVolume} onChange={setMetroVolume} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
-        </Group> */}
-        {/* Canal PAD Cloud */}
-        <Group gap="xs" align="center">
-          <Tooltip label="Volume do Pad Cloud">
-            <IconMusic size={28} color="#51cf66" />
-          </Tooltip>
-          <Tooltip label="Mute">
-            <Button variant={padCloudMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadCloudMute(m => !m)}><IconVolumeOff size={16} /></Button>
-          </Tooltip>
-          <Tooltip label="Solo">
-            <Button variant={padCloudSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadCloudSolo(s => !s)}>S</Button>
-          </Tooltip>
-          <Slider min={0} max={100} value={padCloudVol} onChange={setPadCloudVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
-        </Group>
-        {/* Canal Pad Shimmer */}
-        <Group gap="xs" align="center">
-          <Tooltip label="Volume do Pad Shimmer">
-            <IconWaveSine size={28} color="#845ef7" />
-          </Tooltip>
-          <Tooltip label="Mute">
-            <Button variant={padShimmerMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadShimmerMute(m => !m)}><IconVolumeOff size={16} /></Button>
-          </Tooltip>
-          <Tooltip label="Solo">
-            <Button variant={padShimmerSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadShimmerSolo(s => !s)}>S</Button>
-          </Tooltip>
-          <Slider min={0} max={100} value={padShimmerVol} onChange={setPadShimmerVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
-        </Group>
-        {/* Canal Pad Guitar */}
-        <Group gap="xs" align="center">
-          <Tooltip label="Volume do Pad Guitar">
-            <IconGuitarPick size={28} color="#fab005" />
-          </Tooltip>
-          <Tooltip label="Mute">
-            <Button variant={padGuitarMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadGuitarMute(m => !m)}><IconVolumeOff size={16} /></Button>
-          </Tooltip>
-          <Tooltip label="Solo">
-            <Button variant={padGuitarSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadGuitarSolo(s => !s)}>S</Button>
-          </Tooltip>
-          <Slider min={0} max={100} value={padGuitarVol} onChange={setPadGuitarVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
-        </Group>
-      </Stack>
+      )}
       {/* CSS para esconder scrollbar e responsividade */}
       <style jsx global>{`
         .hide-scrollbar {
@@ -434,7 +563,6 @@ export default function Player({ song }: PlayerProps) {
           margin-top: 32px !important;
           border-radius: 12px;
           box-shadow: 0 1px 6px #0001;
-          background: #f8fafc;
           padding: 20px;
         }
       `}</style>

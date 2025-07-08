@@ -11,6 +11,7 @@ import {
   Container,
   Grid,
   Group,
+  LoadingOverlay,
   Menu,
   Modal,
   Paper,
@@ -23,14 +24,11 @@ import {
 import { useMediaQuery } from '@mantine/hooks';
 import { showNotification } from '@mantine/notifications';
 import {
-  IconChevronRight,
   IconDotsVertical,
-  IconHeart,
   IconMusic,
   IconPlayerPlay,
   IconPlaylist,
-  IconPlus,
-  IconShare
+  IconPlus
 } from '@tabler/icons-react';
 import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
@@ -69,7 +67,8 @@ const MusicDashboard: React.FC = () => {
   const [setlistsOfWeek, setSetlistsOfWeek] = useState<Playlist[]>([]);
   const [mostPlayedSongs, setMostPlayedSongs] = useState<Song[]>([]);
   const [personalRanking, setPersonalRanking] = useState<Song[]>([]);
-  const [musicStats, setMusicStats] = useState<MusicStats>({ totalSongs: 0, playlists: 0, mostCommonKey: '', avgBPM: 0 });
+  const [musicStats, setMusicStats] = useState<MusicStats>({ totalSongs: 0, playlists: 0, mostCommonKey: 'Nenhum', avgBPM: 0 });
+  const [loading, setLoading] = useState(true);
 
   const isMobile = useMediaQuery('(max-width: 48em)');
   const router = useRouter();
@@ -78,9 +77,14 @@ const MusicDashboard: React.FC = () => {
   const [selectedSetlist, setSelectedSetlist] = useState<any>(null);
 
   useEffect(() => {
-    // Setlists da semana
-    api.get('/setlists/of-the-week/').then(res => {
-      setSetlistsOfWeek((res.data.results || []).map((s: any) => {
+    setLoading(true);
+    Promise.all([
+      api.get('/setlists/of-the-week/'),
+      api.get('/songs/most-popular/'),
+      api.get('/songs/personal-ranking/'),
+      api.get('/songs/music-stats/')
+    ]).then(([setlistsRes, mostPopularRes, rankingRes, statsRes]) => {
+      setSetlistsOfWeek((setlistsRes.data.results || []).map((s: any) => {
         // Soma as durações das músicas (formato mm:ss)
         let totalSeconds = 0;
         if (s.songs && Array.isArray(s.songs)) {
@@ -105,10 +109,7 @@ const MusicDashboard: React.FC = () => {
           songs: s.songs || [],
         };
       }));
-    });
-    // Músicas mais tocadas
-    api.get('/songs/most-popular/').then(res => {
-      setMostPlayedSongs((res.data.results || []).map((s: any) => ({
+      setMostPlayedSongs((mostPopularRes.data.results || []).map((s: any) => ({
         title: s.title,
         artist: s.artist,
         duration: s.duration,
@@ -120,10 +121,7 @@ const MusicDashboard: React.FC = () => {
         youtube_id: s.youtube_id || '',
         id: String(s.id),
       })));
-    });
-    // Ranking pessoal
-    api.get('/songs/personal-ranking/').then(res => {
-      setPersonalRanking((res.data.results || []).map((s: any) => ({
+      setPersonalRanking((rankingRes.data.results || []).map((s: any) => ({
         id: String(s.id),
         title: s.title,
         artist: s.artist,
@@ -135,11 +133,17 @@ const MusicDashboard: React.FC = () => {
         key: s.key || '',
         bpm: s.bpm || 0,
       })));
-    });
-    // Estatísticas
-    api.get('/songs/music-stats/').then(res => {
-      setMusicStats(res.data);
-    });
+      if (!statsRes.data.mostCommonKey) {
+        setMusicStats({
+          totalSongs: statsRes.data.total_songs || 0,
+          playlists: statsRes.data.playlists || 0,
+          mostCommonKey: 'Nenhum',
+          avgBPM: statsRes.data.avg_bpm || 0,
+        });
+      } else {
+        setMusicStats(statsRes.data);
+      }
+    }).finally(() => setLoading(false));
   }, []);
 
   const handleAddSetlist = async () => {
@@ -206,7 +210,9 @@ const MusicDashboard: React.FC = () => {
           </Text>
           <Group gap="xs">
             <ActionIcon variant="subtle" size="sm">
-              <IconPlayerPlay size={16} onClick={() =>  router.push({ pathname: '/player', query: { youtubeId: song.youtube_id, id: song.id } })}/>
+              <Tooltip label="Tocar música" withArrow>
+                <IconPlayerPlay size={16} onClick={() => router.push({ pathname: '/player', query: { youtubeId: song.youtube_id, id: song.id } })} />
+              </Tooltip>
             </ActionIcon>
             {/* <ActionIcon variant="subtle" size="sm">
               <IconShare size={16} />
@@ -233,7 +239,7 @@ const MusicDashboard: React.FC = () => {
             </Menu.Target>
             <Menu.Dropdown>
               <Menu.Item leftSection={<IconPlayerPlay size={16} />} onClick={() => router.push(`/player/setlist/${playlist.id}`)}>
-                Tocar música
+                Tocar Setlist
               </Menu.Item>
               <Menu.Item leftSection={<IconPlus size={16} />} onClick={() => { setSelectedSetlist(playlist); setAddModalOpen(true); }}>
                 Adicionar à minha lista
@@ -284,7 +290,7 @@ const MusicDashboard: React.FC = () => {
           {playlist.songs && playlist.songs.length > 0 && (
             <Stack gap={0} mb={2}>
               {playlist.songs.slice(0, 3).map((m, idx) => (
-                <Text key={idx} size="xs" c="dimmed" style={{ lineHeight: 1.2 }}>
+                <Text key={idx} size="xs" c="dimmed" style={{ lineHeight: 1.2 }} lineClamp={1}>
                   {m.title}
                 </Text>
               ))}
@@ -328,76 +334,116 @@ const MusicDashboard: React.FC = () => {
 
   return (
     <AppLayout>
-      <Container size="xl">
+      <Container size="xl" style={{ position: 'relative' }}>
+        <LoadingOverlay visible={loading} zIndex={1000} overlayProps={{ radius: 'sm', blur: 2 }} />
         <Stack gap="xl">
           {/* Setlists da Semana */}
-          <section>
-            <Group justify="space-between" mb="md">
-              <Title order={2}>Setlists da Semana</Title>
-              <Button variant="subtle" rightSection={<IconChevronRight size={16} />}>
-                Ver todos
-              </Button>
-            </Group>
+          {setlistsOfWeek.length > 0 && (
+            <section>
+              <Group justify="space-between" mb="md">
+                <Title order={2}>Setlists da Semana</Title>
+                {/* <Button variant="subtle" rightSection={<IconChevronRight size={16} />}>
+                  Ver todos
+                </Button> */}
+              </Group>
 
-            <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
-              {setlistsOfWeek.map((playlist) => (
-                <PlaylistCard key={playlist.id} playlist={playlist} />
-              ))}
-            </SimpleGrid>
-          </section>
+              {/* Carousel com autoplay animado */}
+              <Carousel
+                slideGap="md"
+                align={isMobile ? 'start' : 'start'}
+                withControls={isMobile ? false : setlistsOfWeek.length > 1}
+                slideSize="320px"
+                slidesToScroll={isMobile ? 1 : 2}
+                draggable
+                loop={setlistsOfWeek.length > 2}
+                styles={{ viewport: { padding: '8px 0' } }}
+                breakpoints={[
+                  { maxWidth: '48em', slideSize: '90%', align: 'center' }
+                ]}
+                plugins={[Autoplay({ delay: Math.floor(Math.random() * 16) * 100 + 3000, stopOnInteraction: false })]}
+              >
+                {setlistsOfWeek.map((playlist) => (
+                  <Carousel.Slide key={playlist.id}>
+                    <PlaylistCard playlist={playlist} />
+                  </Carousel.Slide>
+                ))}
+              </Carousel>
+            </section>
+          )}
 
           {/* Músicas mais tocadas */}
           <section>
             <Group justify="space-between" mb="md">
               <Title order={2}>Músicas mais tocadas</Title>
-              <ActionIcon variant="subtle">
+              {/* <ActionIcon variant="subtle">
                 <IconChevronRight size={16} />
-              </ActionIcon>
+              </ActionIcon> */}
             </Group>
 
-            <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
+            <Carousel
+              slideGap="md"
+              align={isMobile ? 'start' : 'start'}
+              withControls={isMobile ? false : mostPlayedSongs.length > 1}
+              slideSize="320px"
+              slidesToScroll={isMobile ? 1 : 2}
+              draggable
+              loop={mostPlayedSongs.length > 2}
+              styles={{ viewport: { padding: '8px 0' } }}
+              breakpoints={[
+                { maxWidth: '48em', slideSize: '100vw', align: 'center' }
+              ]}
+              plugins={[Autoplay({ delay: Math.floor(Math.random() * 16) * 100 + 3000, stopOnInteraction: false })]}
+            >
               {mostPlayedSongs.map((song) => (
-                <SongCard key={song.id} song={song} showPlays />
+                <Carousel.Slide key={song.id}>
+                  <Box style={{ maxWidth: isMobile ? '95vw' : 320, width: '100%', margin: '0 auto' }}>
+                    <SongCard song={song} showPlays />
+                  </Box>
+                </Carousel.Slide>
               ))}
-            </SimpleGrid>
+            </Carousel>
           </section>
 
           <Grid>
             <Grid.Col>
               {/* Seu ranking pessoal */}
-              <section>
-                <Title order={2} mb="md">Seu ranking pessoal</Title>
-                <Stack gap="sm">
-                  {personalRanking.map((song, index) => (
-                    <Paper key={song.id} p="sm" radius="md" withBorder>
-                      <Group>
-                        <Center w={30} h={30}>
-                          <Text fw={700} size="sm">
-                            {index + 1}
-                          </Text>
-                        </Center>
-                        <Avatar src={song.image} size={60} radius="md" />
-                        <Box style={{ flex: 1 }}>
-                          <Text fw={500} size="sm" truncate>
-                            {song.title}
-                          </Text>
-                          <Text size="xs" c="dimmed">
-                            Tom {song.key} - {song.bpm} bpm
-                          </Text>
-                        </Box>
-                        <Group gap="xs">
-                          <Text size="xs" c="dimmed">
-                            {song.plays.toLocaleString()} setlists
-                          </Text>
+              {personalRanking.length > 0 && (
+                <section>
+                  <Title order={2} mb="md">Seu ranking pessoal</Title>
+                  <Stack gap="sm">
+                    {personalRanking.map((song, index) => (
+                      <Paper key={song.id} p={isMobile ? 'md' : 'sm'} radius="md" withBorder>
+                        <Group align="flex-start" wrap="nowrap">
+                          <Box style={{ position: 'relative', flex: isMobile ? '0 0 90px' : '0 0 90px', width: isMobile ? 90 : 90, height: isMobile ? 64 : 64, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Avatar src={song.image} size={isMobile ? 80 : 80} radius="md" style={{ width: 90, height: 64, objectFit: 'cover' }} />
+                            <Center w={28} h={28} style={{ position: 'absolute', top: -8, left: -8, background: 'light-dark(#f1f3f5, #0082ff)', borderRadius: 12, boxShadow: '0 2px 8px #0002', zIndex: 2 }}>
+                              <Text fw={700} size="xs">{index + 1}</Text>
+                            </Center>
+                          </Box>
+                          <Box style={{ flex: 1, minWidth: 0 }}>
+
+                            <Text fw={500} size="sm" truncate title={song.title} style={{ maxWidth: '100%', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {song.title}
+                            </Text>
+
+                            <Text size="xs" c="dimmed">
+                              Tom: {song.key} - {song.bpm} bpm
+                            </Text>
+                            <Text size="xs" c="dimmed">
+                              {song.plays.toLocaleString()} setlists
+                            </Text>
+                          </Box>
                           <ActionIcon variant="subtle" size="sm">
-                            <IconPlayerPlay size={14} onClick={() =>  router.push({ pathname: '/player', query: { youtubeId: song.youtube_id, id: song.id } })}/>
+                            <Tooltip label="Tocar música" withArrow>
+                              <IconPlayerPlay size={14} onClick={() => router.push({ pathname: '/player', query: { youtubeId: song.youtube_id, id: song.id } })} />
+                            </Tooltip>
                           </ActionIcon>
                         </Group>
-                      </Group>
-                    </Paper>
-                  ))}
-                </Stack>
-              </section>
+                      </Paper>
+                    ))}
+                  </Stack>
+                </section>
+              )}
             </Grid.Col>
           </Grid>
 

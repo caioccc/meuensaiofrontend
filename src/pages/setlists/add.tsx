@@ -2,12 +2,13 @@
 import AppLayout from '@/components/AppLayout';
 import {
   Anchor,
+  Box,
   Breadcrumbs,
   Button,
   Card, Container, Divider,
   Group,
   Image,
-  LoadingOverlay, Paper, ScrollArea,
+  LoadingOverlay, Modal, Paper, ScrollArea,
   Stack,
   Stepper,
   Text,
@@ -44,6 +45,8 @@ export default function AddSetlistPage() {
 
   const [hasSongs, setHasSongs] = useState(false);
   const [loadingSongs, setLoadingSongs] = useState(false);
+
+  const [showSelectedModal, setShowSelectedModal] = useState(false);
 
   // Limpa o modal sempre que abrir
   useEffect(() => {
@@ -97,7 +100,7 @@ export default function AddSetlistPage() {
       return;
     }
     if (!selected.find((s) => s.youtube_id === song.youtube_id)) {
-      setSelected([...selected, song]);
+      setSelected([song, ...selected]); // Adiciona no início
     }
   };
   // Remove música selecionada (compatível com ambos os fluxos)
@@ -208,6 +211,11 @@ export default function AddSetlistPage() {
           <LoadingOverlay visible={loadingSongs} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
         )
       }
+      {
+        loading && (
+          <LoadingOverlay visible={loading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
+        )
+      }
       <Container size="100%" py="xl">
         <Breadcrumbs mb="md">
           <Anchor onClick={() => router.push('/')}>Início</Anchor>
@@ -215,8 +223,9 @@ export default function AddSetlistPage() {
           <Text>Adicionar Setlist</Text>
         </Breadcrumbs>
         <Title order={2} mb="lg">Criar novo Setlist</Title>
-        <Paper shadow="md" p="xl" radius="md" withBorder>
+        <Paper shadow="md" p="xs" radius="md" withBorder>
           <Stepper active={active} onStepClick={setActive}>
+            {/* Step 1: Fonte das músicas */}
             <Stepper.Step label="Fonte" description="Escolha a fonte das músicas">
               <Group justify="center" gap="xl" mt="xl" style={{ justifyContent: 'center', width: '100%' }}>
                 {
@@ -300,28 +309,46 @@ export default function AddSetlistPage() {
                 <Button onClick={() => { setActive(1); }} disabled={!source}>Próximo</Button>
               </Group>
             </Stepper.Step>
+            {/* Step 2: Nome do setlist */}
             <Stepper.Step label="Nome" description="Defina o nome">
-              <TextInput
-                onKeyDown={(e) => e.key === 'Enter' && setActive(2)}
-                label="Nome do setlist" value={name} onChange={(e) => setName(e.currentTarget.value)} autoFocus required />
-              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
-                <DatePicker
-                  label="Data do setlist (opcional)"
-                  value={date}
-                  onChange={setDate}
-                  slotProps={{ textField: { fullWidth: true, size: 'small', margin: 'normal', placeholder: 'Selecione a data' } }}
-                  format="dd/MM/yyyy"
-                />
-              </LocalizationProvider>
-              <TextInput label="Descrição" value={description} onChange={(e) => setDescription(e.currentTarget.value)} mt="md" />
-              <Group mt="md" style={{ justifyContent: 'flex-end' }}>
-                <Button variant="default" onClick={() => setActive(0)}>Voltar</Button>
-                <Button onClick={() => setActive(2)} disabled={!name}>Próximo</Button>
-              </Group>
+              <Box
+                style={{
+                  maxWidth: 400,
+                  margin: '0 auto',
+                  width: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  marginBottom: '16px',
+                  paddingBottom: '8px',
+                  paddingLeft: '0',
+                  paddingRight: '0',
+                }}
+              >
+                <TextInput
+                  onKeyDown={(e) => e.key === 'Enter' && setActive(2)}
+                  label="Nome do setlist" value={name} onChange={(e) => setName(e.currentTarget.value)} autoFocus required />
+                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+                  <DatePicker
+                    label="Data do setlist (opcional)"
+                    value={date}
+                    onChange={setDate}
+                    slotProps={{ textField: { fullWidth: true, size: 'small', margin: 'normal', placeholder: 'Selecione a data' } }}
+                    format="dd/MM/yyyy"
+                  />
+                </LocalizationProvider>
+                <TextInput label="Descrição" value={description} onChange={(e) => setDescription(e.currentTarget.value)} mt="md" />
+                <Group mt="md" style={{ justifyContent: 'flex-end' }}>
+                  <Button variant="default" onClick={() => setActive(0)}>Voltar</Button>
+                  <Button onClick={() => setActive(2)} disabled={!name}>Próximo</Button>
+                </Group>
+              </Box>
+
             </Stepper.Step>
+            {/* Step 3: Músicas */}
             <Stepper.Step label="Músicas" description="Escolha músicas">
-              <Group align="flex-start">
-                <div style={{ flex: 2, minWidth: 0 }}>
+              <Group align="flex-start" style={{ height: isMobile ? '100%' : '60vh', minHeight: 340, alignItems: 'stretch' }}>
+                <div style={{ flex: 2, minWidth: 0, height: '100%' }}>
                   {source === 'saved' ? (
                     <>
                       <TextInput
@@ -331,7 +358,7 @@ export default function AddSetlistPage() {
                         onChange={e => setSavedSearch(e.currentTarget.value)}
                         mb="md"
                       />
-                      <div id="scrollableSavedSongs" style={{ height: 250, overflow: 'auto' }}>
+                      <div id="scrollableSavedSongs" style={{ height: '360px', overflow: 'auto' }}>
                         <InfiniteScroll
                           dataLength={savedSongs.length}
                           next={() => fetchSavedSongs()}
@@ -341,33 +368,63 @@ export default function AddSetlistPage() {
                           style={{ overflow: 'visible' }}
                         >
                           <Group gap="xs" style={{ flexWrap: 'wrap' }}>
-                            {savedSongs.map(song => (
-                              <Card
-                                key={song.id}
-                                shadow="xs"
-                                onClick={() =>
-                                  selected.find(s => s.id === song.id)
-                                    ? removeSong(song.id)
-                                    : setSelected([...selected, song])
-                                }
-                                withBorder
-                                style={{
-                                  width: 220,
-                                  marginBottom: 12,
-                                  borderColor: selected.find(s => s.id === song.id) ? '#228be6' : undefined,
-                                  borderWidth: selected.find(s => s.id === song.id) ? 2 : 1,
-                                  cursor: 'pointer',
-                                }}
-                              >
-                                <Card.Section>
-                                  <Image src={song.thumbnail_url} height={120} alt={song.title} fallbackSrc="/no-image.png" />
-                                </Card.Section>
-                                <Tooltip label={"" + song.title + ""} position="top" withArrow>
-                                  <Text fw={500} mt={4} lineClamp={1}>{song.title}</Text>
-                                </Tooltip>
-                                <Text size="xs">{song.duration} | {song.view_count}</Text>
-                              </Card>
-                            ))}
+                            {savedSongs.map(song => {
+                              const isSelected = selected.find(s => s.id === song.id);
+                              return (
+                                <Card
+                                  key={song.id}
+                                  shadow="xs"
+                                  onClick={() => isSelected ? removeSong(song.id) : setSelected([song, ...selected])}
+                                  withBorder
+                                  style={{
+                                    width: isMobile ? '100%' : 220,
+                                    marginBottom: 12,
+                                    borderColor: isSelected ? '#228be6' : undefined,
+                                    borderWidth: isSelected ? 2 : 1,
+                                    cursor: 'pointer',
+                                    position: 'relative',
+                                    transition: 'border 0.2s',
+                                  }}
+                                >
+                                  <Card.Section>
+                                    <Image src={song.thumbnail_url} height={120} alt={song.title} fallbackSrc="/no-image.png" />
+                                  </Card.Section>
+                                  <Tooltip label={song.title} position="top" withArrow>
+                                    <Text fw={500} mt={4} lineClamp={1}>{song.title}</Text>
+                                  </Tooltip>
+                                  <Text size="xs">{song.duration} | {song.view_count}</Text>
+                                  {!isSelected && (
+                                    <Button
+                                      size="xs"
+                                      color="blue"
+                                      variant="light"
+                                      style={{
+                                        position: 'absolute',
+                                        bottom: 8,
+                                        right: 8,
+                                        zIndex: 2,
+                                        borderRadius: '50%',
+                                        padding: 0,
+                                        width: 32,
+                                        height: 32,
+                                        minWidth: 32,
+                                        minHeight: 32,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        boxShadow: '0 2px 8px rgba(34,139,230,0.08)'
+                                      }}
+                                      onClick={e => {
+                                        e.stopPropagation();
+                                        setSelected([song, ...selected]);
+                                      }}
+                                    >
+                                      <IconPlus size={18} />
+                                    </Button>
+                                  )}
+                                </Card>
+                              );
+                            })}
                           </Group>
                         </InfiniteScroll>
                       </div>
@@ -398,52 +455,121 @@ export default function AddSetlistPage() {
                           <Button onClick={handleSearch} loading={searchLoading}>Buscar</Button>
                         </Group>
                       )}
-                      <ScrollArea h={320} mb="xs" viewportRef={searchResultsRef}>
+                      <ScrollArea h={360} mb="xs" viewportRef={searchResultsRef}>
                         <Group gap="xs" style={{ flexWrap: 'wrap' }}>
-                          {searchResults.map((song) => (
-                            <Card
-                              onClick={() =>
-                                selected.find(s => s.youtube_id === song.youtube_id)
-                                  ? removeSong(song.youtube_id)
-                                  : addSong(song)
-                              }
-                              withBorder
-                              style={{
-                                width: 220,
-                                marginBottom: 12,
-                                borderColor: selected.find(s => s.youtube_id === song.youtube_id) ? '#228be6' : undefined,
-                                borderWidth: selected.find(s => s.youtube_id === song.youtube_id) ? 2 : 1,
-                                cursor: 'pointer', // Adiciona o ícone de mouse de seleção
-                              }}
-                              gap="xs" key={song.youtube_id} shadow="xs">
-                              <Card.Section>
-                                <Image src={song.thumbnail_url} height={80} radius="sm" alt={song.title} fallbackSrc="/no-image.png" />
-                              </Card.Section>
-                              <Group align="center" gap="xs">
-                                <div style={{ flex: 1 }}>
-                                  <Tooltip label={"" + song.title + ""} position="top" withArrow>
-                                    <Text fw={500} size="sm" lineClamp={1}>{song.title}</Text>
-                                  </Tooltip>
-                                  <Text size="sm" color="dimmed" lineClamp={1}>{song.channel_name}</Text>
-                                  <Text size="xs" lineClamp={1}>{song.duration} | {song.view_count}</Text>
-                                </div>
-                              </Group>
-                            </Card>
-                          ))}
+                          {searchResults.map((song) => {
+                            const isSelected = selected.find(s => s.youtube_id === song.youtube_id);
+                            return (
+                              <Card
+                                onClick={() => isSelected ? removeSong(song.youtube_id) : addSong(song)}
+                                withBorder
+                                style={{
+                                  width: isMobile ? '100%' : 220,
+                                  marginBottom: 12,
+                                  borderColor: isSelected ? '#228be6' : undefined,
+                                  borderWidth: isSelected ? 2 : 1,
+                                  cursor: 'pointer',
+                                  position: 'relative',
+                                  transition: 'border 0.2s',
+                                }}
+                                gap="xs" key={song.youtube_id} shadow="xs">
+                                <Card.Section>
+                                  <Image src={song.thumbnail_url} height={80} radius="sm" alt={song.title} fallbackSrc="/no-image.png" />
+                                </Card.Section>
+                                <Group align="center" gap="xs">
+                                  <div style={{ flex: 1 }}>
+                                    <Tooltip label={song.title} position="top" withArrow>
+                                      <Text fw={500} size="sm" lineClamp={1}>{song.title}</Text>
+                                    </Tooltip>
+                                    <Text size="sm" color="dimmed" lineClamp={1}>{song.channel_name}</Text>
+                                    <Text size="xs" lineClamp={1}>{song.duration} | {song.view_count}</Text>
+                                  </div>
+                                </Group>
+                                {!isSelected && (
+                                  <Button
+                                    size="xs"
+                                    color="blue"
+                                    variant="light"
+                                    style={{
+                                      position: 'absolute',
+                                      bottom: 8,
+                                      right: 8,
+                                      zIndex: 2,
+                                      borderRadius: '50%',
+                                      padding: 0,
+                                      width: 32,
+                                      height: 32,
+                                      minWidth: 32,
+                                      minHeight: 32,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      boxShadow: '0 2px 8px rgba(34,139,230,0.08)'
+                                    }}
+                                    onClick={e => {
+                                      e.stopPropagation();
+                                      addSong(song);
+                                    }}
+                                  >
+                                    <IconPlus size={18} />
+                                  </Button>
+                                )}
+                              </Card>
+                            );
+                          })}
                         </Group>
                       </ScrollArea>
                     </>
                   )}
                 </div>
-                {/* Divider e barra lateral de selecionadas */}
-                {selected.length > 0 && (
+                {/* Barra lateral de selecionadas: sempre visível (desktop) ou Card+Modal (mobile) */}
+                {isMobile ? (
                   <>
-                    <Divider orientation="vertical" mx="xs" style={{ height: 320 }} />
-                    <div style={{ flex: 1, minWidth: 260, maxWidth: 340 }}>
-                      <Title order={5} mb="xs">Selecionadas ({selected.length})</Title>
-                      <ScrollArea h={320}>
-                        <Stack gap="sm">
-                          {selected.map((song) => (
+                    <Card
+                      shadow="xs"
+                      withBorder
+                      style={{
+                        minWidth: 0,
+                        width: '100%',
+                        position: 'fixed',
+                        left: 0,
+                        bottom: 0,
+                        zIndex: 2000,
+                        borderRadius: 0,
+                        margin: 0,
+                        padding: 0,
+                        boxShadow: '0 -2px 12px rgba(0,0,0,0.08)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        background: '#fff',
+                        borderTop: '1px solid #e9ecef',
+                        height: 36
+                      }}
+                      onClick={() => setShowSelectedModal(true)}
+                    >
+                      <Group justify="space-between" align="center" style={{ width: '100%', padding: '0 20px' }}>
+                        <Title order={5} style={{ margin: 0 }}>Selecionadas</Title>
+                        <Text size="sm" fw={800}>({selected.length})</Text>
+                      </Group>
+                    </Card>
+                    <Modal
+                      opened={showSelectedModal}
+                      onClose={() => setShowSelectedModal(false)}
+                      title={`Músicas Selecionadas (${selected.length})`}
+                      size="md"
+                      centered
+                    >
+                      <Stack gap="sm" mb={24} >
+                        {selected.length === 0 ? (
+                          <Card shadow="xs" withBorder style={{ width: '100%', minWidth: 0, padding: 16, textAlign: 'center', background: '#f8f9fa', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                            <IconPlaylist size={40} color="#adb5bd" style={{ marginBottom: 8 }} />
+                            <Text fw={500} size="sm" color="dimmed">Nenhuma música foi selecionada ainda</Text>
+                            <Text size="xs" color="dimmed" mt={4}>Selecione as músicas a partir das músicas disponíveis ao lado.</Text>
+                          </Card>
+                        ) : (
+                          selected.map((song) => (
                             <Card key={song.id || song.youtube_id} shadow="xs" withBorder style={{ width: '100%', minWidth: 0, padding: 8 }}>
                               <Group align="center" gap="md">
                                 <Image src={song.thumbnail_url} width={48} height={48} radius="sm" alt={song.title} />
@@ -459,16 +585,63 @@ export default function AddSetlistPage() {
                                 </div>
                               </Group>
                             </Card>
-                          ))}
+                          ))
+                        )}
+                      </Stack>
+                      <Group mt="md" style={{ flexDirection: 'column', gap: 8, width: '100%' }}>
+                        <Button variant="default" onClick={() => { setShowSelectedModal(false); setActive(1); }} fullWidth>Voltar</Button>
+                        <Button onClick={source === 'saved' ? () => { setShowSelectedModal(false); setActive(3); } : () => { setShowSelectedModal(false); enrichSongs(); }} loading={loading} disabled={selected.length === 0} fullWidth>Confirmar</Button>
+                      </Group>
+                    </Modal>
+                    <div style={{ height: 56 }} /> {/* Espaço para não sobrepor conteúdo pelo card fixo */}
+                  </>
+                ) : (
+                  <>
+                    <Divider orientation="vertical" mx="xs" style={{ height: '100%' }} />
+                    <div style={{ flex: 1, minWidth: 260, maxWidth: 340, display: 'flex', flexDirection: 'column', height: '100%', position: 'relative' }}>
+                      <Group mb="xs" justify="space-between" align="center">
+                        <Title order={5} style={{ margin: 0 }}>Selecionadas</Title>
+                        <Text size="sm" fw={800}>({selected.length})</Text>
+                      </Group>
+                      <ScrollArea h="calc(100% - 110px)" style={{ flex: 1, minHeight: 120, paddingBottom: 100 }}>
+                        <Stack gap="sm">
+                          {selected.length === 0 ? (
+                            <Card shadow="xs" withBorder style={{ width: '100%', minWidth: 0, padding: 16, textAlign: 'center', background: '#f8f9fa', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                              <IconPlaylist size={40} color="#adb5bd" style={{ marginBottom: 8 }} />
+                              <Text fw={500} size="sm" color="dimmed">Nenhuma música foi selecionada ainda</Text>
+                              <Text size="xs" color="dimmed" mt={4}>Selecione as músicas a partir das músicas disponíveis ao lado.</Text>
+                            </Card>
+                          ) : (
+                            selected.map((song) => (
+                              <Card key={song.id || song.youtube_id} shadow="xs" withBorder style={{ width: '100%', minWidth: 0, padding: 8 }}>
+                                <Group align="center" gap="md">
+                                  <Image src={song.thumbnail_url} width={48} height={48} radius="sm" alt={song.title} />
+                                  <div style={{ flex: 1 }}>
+                                    <Tooltip label={"" + song.title + ""} position="top" withArrow>
+                                      <Text fw={500} size="sm" lineClamp={1}>{song.title}</Text>
+                                    </Tooltip>
+                                    <Text size="xs" color="dimmed" lineClamp={1}>{song.channel_name}</Text>
+                                    <Text size="xs" lineClamp={1}>{song.duration} | {song.view_count}</Text>
+                                  </div>
+                                  <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: 48 }}>
+                                    <Button size="xs" color="red" style={{ alignSelf: 'flex-end' }} onClick={() => removeSong(song.id || song.youtube_id)} leftIcon={<IconX size={14} />}>Remover</Button>
+                                  </div>
+                                </Group>
+                              </Card>
+                            ))
+                          )}
                         </Stack>
                       </ScrollArea>
+                      {/* Botões Voltar/Confirmar fixos no rodapé da barra lateral */}
+                      <Box style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', padding: 8, background: 'white', borderTop: '1px solid #f1f3f5' }}>
+                        <Group style={{ flexDirection: 'column', gap: 8, width: '100%' }}>
+                          <Button variant="default" onClick={() => setActive(1)} fullWidth>Voltar</Button>
+                          <Button onClick={source === 'saved' ? () => setActive(3) : enrichSongs} loading={loading} disabled={selected.length === 0} fullWidth>Confirmar</Button>
+                        </Group>
+                      </Box>
                     </div>
                   </>
                 )}
-              </Group>
-              <Group mt="md" style={{ justifyContent: 'flex-end' }}>
-                <Button variant="default" onClick={() => setActive(1)}>Voltar</Button>
-                <Button onClick={source === 'saved' ? () => setActive(3) : enrichSongs} loading={loading} disabled={selected.length === 0}>Próximo</Button>
               </Group>
             </Stepper.Step>
             <Stepper.Step label="Preview" description="Confirme e salve">
@@ -492,7 +665,7 @@ export default function AddSetlistPage() {
                           mb="md"
                           withBorder
                           style={{
-                            width: 220,
+                            width: isMobile ? '100%' : 220,
                             marginBottom: 12,
                             border: missingData ? '2px solid #fa5252' : undefined,
                           }}

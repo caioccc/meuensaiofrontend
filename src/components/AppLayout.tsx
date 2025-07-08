@@ -124,7 +124,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           </ActionIcon>
         </AppShell.Section>
       </AppShell.Navbar>
-      <AppShell.Main style={{ margin: '16px' }}>
+      <AppShell.Main style={{ marginTop: '16px', marginBottom: '16px' }}>
         {children}
       </AppShell.Main>
       <AppShell.Footer>

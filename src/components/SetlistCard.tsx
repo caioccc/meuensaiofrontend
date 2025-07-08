@@ -148,8 +148,7 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
             </Box>
           </Box>
           <Button
-            variant="light"
-            color="green"
+            color="blue"
             size="xs"
             leftSection={<IconPlayerPlay size={16} style={{ marginRight: 4 }} />}
             style={{ position: 'absolute', bottom: 0, left: 0, right: 0, borderRadius: 0, zIndex: 2, height: 38 }}
@@ -231,7 +230,7 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
             {/* Botão Tocar destacado */}
             <Button
               variant="light"
-              color="green"
+              color="blue"
               leftSection={<IconPlayerPlay size={16} style={{ marginRight: 4 }} />}
               style={{ position: 'absolute', right: 16, bottom: 8, zIndex: 1 }}
               onClick={() => router.push(`/player/setlist/${localSetlist.id}`)}

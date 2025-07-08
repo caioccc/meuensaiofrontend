@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Anchor, Breadcrumbs, Button, Group, Loader, LoadingOverlay, Paper, Slider, Stack, Text, Tooltip } from '@mantine/core';
+import { Anchor, Breadcrumbs, Button, Divider, Group, LoadingOverlay, Paper, Slider, Stack, Text, Tooltip } from '@mantine/core';
 import { IconBrandYoutube, IconPlayerPause, IconPlayerPlay, IconPlayerStop, IconPlayerTrackNext, IconPlayerTrackPrev } from '@tabler/icons-react';
+import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
 import api from '../../lib/axios';
-import { useRouter } from 'next/router';
 
 interface Song {
   id: number;
@@ -118,7 +118,27 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
   const next = () => setCurrentIdx(i => Math.min(i + 1, songs.length - 1));
   const prev = () => setCurrentIdx(i => Math.max(i - 1, 0));
 
-  if (loading) return <Loader />;
+  // Encontrar acorde ativo pelo tempo
+  const [currentTime, setCurrentTime] = useState(0);
+  const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 48em)').matches;
+
+  // Atualiza currentTime periodicamente
+  useEffect(() => {
+    if (!isPlaying) return;
+    const interval = setInterval(() => {
+      if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
+        setCurrentTime(playerRef.current.getCurrentTime() || 0);
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
+  // Encontrar acorde ativo pelo tempo
+  const activeChordIdx = currentSong?.chords_formatada?.findIndex(
+    c => currentTime >= c.start && currentTime < c.end
+  );
+
+  if (loading) return <LoadingOverlay visible={loading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />;
   if (!currentSong && !loading) return <Text color="dimmed">Nenhuma música encontrada na setlist.</Text>;
 
   return (
@@ -132,21 +152,154 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
       <LoadingOverlay visible={loading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
       <Text fw={700} size="lg" mb="xs">Setlist: {setlistName}</Text>
       {/* Controles principais */}
-      <Group mb="md">
-        <Button onClick={prev} disabled={currentIdx === 0} leftSection={<IconPlayerTrackPrev size={18} />}>Anterior</Button>
-        <Button onClick={isPlaying ? pause : play} leftSection={isPlaying ? <IconPlayerPause size={18} /> : <IconPlayerPlay size={18} />}>{isPlaying ? 'Pause' : 'Play'}</Button>
-        <Button onClick={stop} leftSection={<IconPlayerStop size={18} />}>Stop</Button>
-        <Button onClick={next} disabled={currentIdx === songs.length - 1} leftSection={<IconPlayerTrackNext size={18} />}>Próxima</Button>
-      </Group>
-      {/* Player YouTube */}
-      <div id="ytplayer" style={{ width: '100%', height: 360, borderRadius: 12, overflow: 'hidden', boxShadow: '0 2px 12px #0001' }} />
-      {/* Volume YouTube */}
-      <Group gap="xs" align="center" mt="md">
-        <Tooltip label="Volume do YouTube">
-          <IconBrandYoutube size={28} color="#e63946" />
-        </Tooltip>
-        <Slider min={0} max={100} value={ytVolume} onChange={setYtVolume} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
-      </Group>
+      {isMobile ? (
+        <Group mb="md" width="100%" align="center" justify="space-between">
+          <Button onClick={prev} disabled={currentIdx === 0} variant="subtle" size="md" px={8} style={{ minWidth: 0 }} leftSection={<IconPlayerTrackPrev size={20} />} />
+          <Button onClick={isPlaying ? pause : play} leftSection={isPlaying ? <IconPlayerPause size={18} /> : <IconPlayerPlay size={18} />}>{isPlaying ? 'Pause' : 'Play'}</Button>
+          <Button onClick={stop} variant="subtle" size="md" px={8} style={{ minWidth: 0 }} leftSection={<IconPlayerStop size={20} />} />
+          <Button onClick={next} disabled={currentIdx === songs.length - 1} variant="subtle" size="md" px={8} style={{ minWidth: 0 }} leftSection={<IconPlayerTrackNext size={20} />} />
+        </Group>
+      ) : (
+        <Group mb="md">
+          <Button onClick={prev} disabled={currentIdx === 0} leftSection={<IconPlayerTrackPrev size={18} />}>Anterior</Button>
+          <Button onClick={isPlaying ? pause : play} leftSection={isPlaying ? <IconPlayerPause size={18} /> : <IconPlayerPlay size={18} />}>{isPlaying ? 'Pause' : 'Play'}</Button>
+          <Button onClick={stop} leftSection={<IconPlayerStop size={18} />}>Stop</Button>
+          <Button onClick={next} disabled={currentIdx === songs.length - 1} leftSection={<IconPlayerTrackNext size={18} />}>Próxima</Button>
+        </Group>
+      )}
+      {/* Layout responsivo: vídeo/controles + bloco de acordes */}
+      {isMobile ? (
+        <Stack gap="md" style={{ width: '100%' }}>
+          <div className="player-main-content" style={{ width: '100%' }}>
+            <div id="ytplayer" style={{ width: '100%', height: 220, borderRadius: 12, overflow: 'hidden', boxShadow: '0 2px 12px #0001' }} />
+          </div>
+          <Group gap="xs" align="center" mt="md">
+            <Tooltip label="Volume do YouTube">
+              <IconBrandYoutube size={28} color="#e63946" />
+            </Tooltip>
+            <Slider min={0} max={100} value={ytVolume} onChange={setYtVolume} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+          </Group>
+          {/* Bloco de acordes abaixo do vídeo */}
+          <Paper withBorder shadow="md" p="md" style={{ width: '100%', background: '#f8fafc', display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 8 }}>
+            <Text fw={700} size="lg" mb="xs">Acordes</Text>
+            <Text size="sm" color="dimmed" mb="xs">
+              {new Date(currentTime * 1000).toISOString().substr(14, 5)} / {currentSong?.duration || '-'}
+            </Text>
+            {activeChordIdx !== -1 && currentSong?.chords_formatada && currentSong.chords_formatada[activeChordIdx] ? (
+              <Stack align="center" mb="sm" style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                {/* Tap tempo dots */}
+                <Group gap={8} mb={8} style={{ justifyContent: 'center', width: '100%' }}>
+                  {Array.from({ length: currentSong.chords_formatada[activeChordIdx].barLength || 4 }).map((_, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        width: 14,
+                        height: 14,
+                        borderRadius: '50%',
+                        background: i === Math.floor(((currentTime - currentSong.chords_formatada[activeChordIdx].start) / ((currentSong.chords_formatada[activeChordIdx].end - currentSong.chords_formatada[activeChordIdx].start) / (currentSong.chords_formatada[activeChordIdx].barLength || 4))) % (currentSong.chords_formatada[activeChordIdx].barLength || 4)) ? '#228be6' : '#d0ebff',
+                        transition: 'background 0.1s',
+                        boxShadow: i === Math.floor(((currentTime - currentSong.chords_formatada[activeChordIdx].start) / ((currentSong.chords_formatada[activeChordIdx].end - currentSong.chords_formatada[activeChordIdx].start) / (currentSong.chords_formatada[activeChordIdx].barLength || 4))) % (currentSong.chords_formatada[activeChordIdx].barLength || 4)) ? '0 0 8px #228be6' : undefined
+                      }}
+                    />
+                  ))}
+                </Group>
+                <Stack align="center" gap={4} style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                  <Text size="xl" fw={800} style={{ fontSize: 32, letterSpacing: 2, textAlign: 'center' }}>{currentSong.chords_formatada[activeChordIdx].note_fmt || currentSong.chords_formatada[activeChordIdx].note}</Text>
+                </Stack>
+                <Divider my={8} style={{ width: '100%' }} />
+                {/* Próximos acordes diferentes centralizados */}
+                <Stack gap={2} mt="md" align="center" style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                  {(() => {
+                    if (!currentSong?.chords_formatada || activeChordIdx === -1) return null;
+                    const current = currentSong.chords_formatada[activeChordIdx];
+                    const nextDiffs = [];
+                    let lastNote = current.note_fmt || current.note;
+                    for (let i = activeChordIdx + 1; i < currentSong.chords_formatada.length && nextDiffs.length < 5; i++) {
+                      const n = currentSong.chords_formatada[i];
+                      if ((n.note_fmt || n.note) !== lastNote) {
+                        nextDiffs.push(n.note_fmt || n.note);
+                        lastNote = n.note_fmt || n.note;
+                      }
+                    }
+                    return nextDiffs.map((note, idx) => (
+                      <Text key={idx} size="sm" color="dimmed" style={{ textAlign: 'center' }}>{note}</Text>
+                    ));
+                  })()}
+                </Stack>
+              </Stack>
+            ) : (
+              <Text size="md" color="dimmed">-</Text>
+            )}
+          </Paper>
+        </Stack>
+      ) : (
+        <Group align="flex-start" gap="xl" style={{ width: '100%', minHeight: 400 }}>
+          {/* Bloco principal: vídeo, controles, volumes (80%) */}
+          <Stack style={{ flex: 8, minWidth: 0 }}>
+            <div className="player-main-content" style={{ width: '100%' }}>
+              <div id="ytplayer" style={{ width: '100%', height: 360, borderRadius: 12, overflow: 'hidden', boxShadow: '0 2px 12px #0001' }} />
+            </div>
+            <Group gap="xs" align="center" mt="md">
+              <Tooltip label="Volume do YouTube">
+                <IconBrandYoutube size={28} color="#e63946" />
+              </Tooltip>
+              <Slider min={0} max={100} value={ytVolume} onChange={setYtVolume} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+            </Group>
+          </Stack>
+          {/* Bloco de acordes (20%) */}
+          <Paper withBorder shadow="md" p="md" style={{ flex: 2, minWidth: 180, maxWidth: 320, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Text fw={700} size="lg" mb="xs">Acordes</Text>
+            <Text size="sm" color="dimmed" mb="xs">
+              {new Date(currentTime * 1000).toISOString().substr(14, 5)} / {currentSong?.duration || '-'}
+            </Text>
+            {activeChordIdx !== -1 && currentSong?.chords_formatada && currentSong.chords_formatada[activeChordIdx] ? (
+              <Stack align="center" mb="sm" style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                {/* Tap tempo dots */}
+                <Group gap={8} mb={8} style={{ justifyContent: 'center', width: '100%' }}>
+                  {Array.from({ length: currentSong.chords_formatada[activeChordIdx].barLength || 4 }).map((_, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        width: 14,
+                        height: 14,
+                        borderRadius: '50%',
+                        background: i === Math.floor(((currentTime - currentSong.chords_formatada[activeChordIdx].start) / ((currentSong.chords_formatada[activeChordIdx].end - currentSong.chords_formatada[activeChordIdx].start) / (currentSong.chords_formatada[activeChordIdx].barLength || 4))) % (currentSong.chords_formatada[activeChordIdx].barLength || 4)) ? '#228be6' : '#d0ebff',
+                        transition: 'background 0.1s',
+                        boxShadow: i === Math.floor(((currentTime - currentSong.chords_formatada[activeChordIdx].start) / ((currentSong.chords_formatada[activeChordIdx].end - currentSong.chords_formatada[activeChordIdx].start) / (currentSong.chords_formatada[activeChordIdx].barLength || 4))) % (currentSong.chords_formatada[activeChordIdx].barLength || 4)) ? '0 0 8px #228be6' : undefined
+                      }}
+                    />
+                  ))}
+                </Group>
+                <Stack align="center" gap={4} style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                  <Text size="xl" fw={800} style={{ fontSize: 32, letterSpacing: 2, textAlign: 'center' }}>{currentSong.chords_formatada[activeChordIdx].note_fmt || currentSong.chords_formatada[activeChordIdx].note}</Text>
+                </Stack>
+                <Divider my={8} style={{ width: '100%' }} />
+                {/* Próximos acordes diferentes centralizados */}
+                <Stack gap={2} mt="md" align="center" style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                  {(() => {
+                    if (!currentSong?.chords_formatada || activeChordIdx === -1) return null;
+                    const current = currentSong.chords_formatada[activeChordIdx];
+                    const nextDiffs = [];
+                    let lastNote = current.note_fmt || current.note;
+                    for (let i = activeChordIdx + 1; i < currentSong.chords_formatada.length && nextDiffs.length < 5; i++) {
+                      const n = currentSong.chords_formatada[i];
+                      if ((n.note_fmt || n.note) !== lastNote) {
+                        nextDiffs.push(n.note_fmt || n.note);
+                        lastNote = n.note_fmt || n.note;
+                      }
+                    }
+                    return nextDiffs.map((note, idx) => (
+                      <Text key={idx} size="sm" color="dimmed" style={{ textAlign: 'center' }}>{note}</Text>
+                    ));
+                  })()}
+                </Stack>
+              </Stack>
+            ) : (
+              <Text size="md" color="dimmed">-</Text>
+            )}
+          </Paper>
+        </Group>
+      )}
       {/* Sequência de músicas */}
       <Stack mt="xl" gap="xs">
         <Text fw={500}>Sequência da setlist:</Text>
