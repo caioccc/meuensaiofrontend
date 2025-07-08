@@ -149,7 +149,14 @@ export default function AddSetlistPage() {
       }
       showNotification({ color: 'green', message: 'Setlist criado com sucesso!' });
       router.push('/setlists'); // Redireciona para a página de setlists
-    } catch {
+    } catch (err: any){
+      if (err.response?.status === 403 && err.response.data.detail?.includes('Plano gratuito')) {
+        showNotification({
+          color: 'red',
+          message: err.response.data.detail || 'Você precisa de um plano pago para criar mais setlists.'
+        });
+        return;
+      }
       showNotification({ color: 'red', message: 'Erro ao salvar setlist' });
     } finally {
       setLoading(false);

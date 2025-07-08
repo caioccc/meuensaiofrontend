@@ -4,7 +4,7 @@ import { useMediaQuery } from '@mantine/hooks';
 import { useEffect, useState } from 'react';
 
 import { Anchor, Breadcrumbs, Button, Card, Container, Grid, Group, Image, Loader, Paper, Select, Stack, Stepper, Text, TextInput, Title } from "@mantine/core";
-import { notifications } from '@mantine/notifications';
+import { notifications, showNotification } from '@mantine/notifications';
 import { IconCheck, IconChevronLeft, IconChevronRight, IconMusic, IconSearch, IconX } from "@tabler/icons-react";
 import { useRouter } from "next/router";
 import api from "../../../lib/axios";
@@ -95,7 +95,7 @@ export default function AddMusicPage() {
         chords,
         setlists: setlistId ? [setlistId] : [],
       });
-      notifications.show({
+      showNotification({
         color: 'green',
         title: 'Sucesso',
         message: 'Música adicionada com sucesso!',
@@ -104,7 +104,14 @@ export default function AddMusicPage() {
         autoClose: 2000,
       });
       router.push("/songs");
-    } catch {
+    } catch (err: any) {
+      if (err.response?.status === 403 && err.response.data.detail?.includes('Plano gratuito')) {
+        showNotification({
+          color: 'red',
+          message: err.response.data.detail || 'Você precisa de um plano pago para criar mais músicas.',
+        });
+        return;
+      }
       notifications.show({
         color: 'red',
         title: 'Erro',

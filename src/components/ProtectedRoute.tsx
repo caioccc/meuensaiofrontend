@@ -6,15 +6,16 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
-const UNPROTECTED_PATHS = ["/login", "/register"];
+const UNPROTECTED_PATHS = ["/login", "/register", "/success", "/forgot-password", "/reset-password", "terms", "/privacy-policy", "/cookie-policy", "/plans", "/pricing", "/about", "/contact", "/faq"];
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
+      if (loading) return; // Aguarda checagem do token
       const isUnprotected = UNPROTECTED_PATHS.includes(router.pathname);
       if (!isAuthenticated && !isUnprotected) {
         router.replace("/login");
@@ -22,8 +23,8 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
         setChecked(true);
       }
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, loading, router]);
 
-  if (!checked) return null; // Evita hydration mismatch
+  if (!checked || loading) return null; // Evita hydration mismatch
   return <>{children}</>;
 }

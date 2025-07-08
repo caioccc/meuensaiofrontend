@@ -5,6 +5,7 @@ import { IconBrandYoutube, IconGuitarPick, IconMusic, IconVolumeOff, IconWaveSin
 import { useEffect, useRef, useState } from 'react';
 import * as Tone from 'tone';
 import { guitarSamples, padSamples, shimmerSamples } from '../constants/padMaps';
+import { useAuth } from '../contexts/AuthContext';
 
 declare global {
   interface Window {
@@ -36,6 +37,7 @@ interface PlayerProps {
 }
 
 export default function Player({ song }: PlayerProps) {
+  const { isPro } = useAuth();
   const playerRef = useRef<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -61,7 +63,7 @@ export default function Player({ song }: PlayerProps) {
   const [padGuitarSolo, setPadGuitarSolo] = useState(false);
 
   // Lógica de solo/mute
-  const anySolo = ytSolo || padCloudSolo || padShimmerSolo || padGuitarSolo;
+  const anySolo = ytSolo || padCloudSolo || padGuitarSolo;
   const isChannelActive = (mute: boolean, solo: boolean) => {
     if (anySolo) return solo;
     return !mute;
@@ -233,6 +235,32 @@ export default function Player({ song }: PlayerProps) {
   }, [song.youtube_id]);
 
   const isMobile = useMediaQuery('(max-width: 48em)');
+
+  if (!isPro) {
+    // Usuário não Pro: mostra apenas vídeo e info básica
+    return (
+      <Stack style={{ position: 'relative' }}>
+        <LoadingOverlay visible={loading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
+        <Group gap="xl" align="center" style={{ marginBottom: 16, marginTop: 8 }}>
+          <Text size="md" fw={600} color="#228be6">
+            TOM: <span style={{ fontWeight: 700 }}>{song.key || '-'}</span>
+          </Text>
+          <Text size="md" fw={600} color="#228be6">
+            BPM: <span style={{ fontWeight: 700 }}>{song.bpm || '-'}</span>
+          </Text>
+          <Text size="md" fw={600} color="#228be6">
+            DURAÇÃO: <span style={{ fontWeight: 700 }}>{song.duration || '-'}</span>
+          </Text>
+        </Group>
+        <div className="player-main-content" style={{ width: '100%' }}>
+          <div id="ytplayer" style={{ width: '100%', height: 360, borderRadius: 12, overflow: 'hidden', boxShadow: '0 2px 12px #0001' }} />
+        </div>
+        <Paper withBorder shadow="md" p="md" mt="md" style={{ width: '100%', textAlign: 'center', background: '#fffbe6', border: '1px solid #ffe066' }}>
+          <Text fw={700} size="lg" color="#fab005">Recursos de Pads e Acordes disponíveis apenas para assinantes Pro.</Text>
+        </Paper>
+      </Stack>
+    );
+  }
 
   return (
     <Stack style={{ position: 'relative' }}>

@@ -35,6 +35,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import api from '../../lib/axios';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Song {
   id: string;
@@ -76,8 +77,11 @@ const MusicDashboard: React.FC = () => {
   const [addLoading, setAddLoading] = useState(false);
   const [selectedSetlist, setSelectedSetlist] = useState<any>(null);
 
+  const { refreshUser } = useAuth();
+
   useEffect(() => {
     setLoading(true);
+    refreshUser();
     Promise.all([
       api.get('/setlists/of-the-week/'),
       api.get('/songs/most-popular/'),
@@ -145,6 +149,7 @@ const MusicDashboard: React.FC = () => {
       }
     }).finally(() => setLoading(false));
   }, []);
+
 
   const handleAddSetlist = async () => {
     if (!selectedSetlist) return;
@@ -283,9 +288,6 @@ const MusicDashboard: React.FC = () => {
 
         <Stack gap="xs" mt="md">
           <Title order={4}>{playlist.name}</Title>
-          <Text size="sm" c="dimmed">
-            {playlist.description}
-          </Text>
           {/* Lista de músicas, até 3 por card */}
           {playlist.songs && playlist.songs.length > 0 && (
             <Stack gap={0} mb={2}>

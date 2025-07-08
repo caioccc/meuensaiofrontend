@@ -8,6 +8,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import api from "../../lib/axios";
+import { showNotification } from "@mantine/notifications";
 
 interface RegisterForm {
   first_name: string;
@@ -48,9 +49,21 @@ export default function RegisterPage() {
         email: data.email,
         password: data.password,
       });
+      showNotification({
+        color: 'green',
+        title: 'Sucesso',
+        message: 'Usuário registrado com sucesso!',
+        autoClose: 5000,
+      });
       router.push("/login");
     } catch (err: any) {
-      console.error("Erro ao registrar usuário:", err);
+      showNotification({
+        color: 'red',
+        title: 'Erro ao registrar usuário ',
+        message: err.response?.data?.detail || "Não foi possível realizar o cadastro. Verifique seus dados ou tente novamente mais tarde.",
+        autoClose: 5000,
+      });
+      console.log("Erro ao registrar usuário:", err);
       setError("Não foi possível realizar o cadastro. Verifique seus dados ou tente novamente mais tarde.");
     } finally {
       setLoading(false);

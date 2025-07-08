@@ -4,6 +4,7 @@ import { IconBrandYoutube, IconPlayerPause, IconPlayerPlay, IconPlayerStop, Icon
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
 import api from '../../lib/axios';
+import { useAuth } from '../contexts/AuthContext';
 
 interface Song {
   id: number;
@@ -32,6 +33,7 @@ interface SetlistPlayerProps {
 }
 
 export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
+  const { isPro } = useAuth();
   const [songs, setSongs] = useState<Song[]>([]);
   const [setlistName, setSetlistName] = useState('');
   const [loading, setLoading] = useState(true);
@@ -140,6 +142,42 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
 
   if (loading) return <LoadingOverlay visible={loading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />;
   if (!currentSong && !loading) return <Text color="dimmed">Nenhuma música encontrada na setlist.</Text>;
+
+  if (!isPro) {
+    // Usuário não Pro: mostra apenas vídeo e info básica
+    return (
+      <Stack style={{ position: 'relative' }}>
+        <LoadingOverlay visible={loading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
+        <Breadcrumbs mb="md">
+          <Anchor onClick={() => router.push('/')}>Início</Anchor>
+          <Anchor onClick={() => router.push('/setlists')}>Setlists</Anchor>
+          <Text>Player</Text>
+          <Text>{setlistName}</Text>
+        </Breadcrumbs>
+        <Text fw={700} size="lg" mb="xs">Setlist: {setlistName}</Text>
+        <Group mb="md">
+          <Button onClick={prev} disabled={currentIdx === 0}>Anterior</Button>
+          <Button onClick={isPlaying ? pause : play}>{isPlaying ? 'Pause' : 'Play'}</Button>
+          <Button onClick={stop}>Stop</Button>
+          <Button onClick={next} disabled={currentIdx === songs.length - 1}>Próxima</Button>
+        </Group>
+        <div className="player-main-content" style={{ width: '100%' }}>
+          <div id="ytplayer" style={{ width: '100%', height: 360, borderRadius: 12, overflow: 'hidden', boxShadow: '0 2px 12px #0001' }} />
+        </div>
+        <Paper withBorder shadow="md" p="md" mt="md" style={{ width: '100%', textAlign: 'center', background: '#fffbe6', border: '1px solid #ffe066' }}>
+          <Text fw={700} size="lg" color="#fab005">Recursos de Pads e Acordes disponíveis apenas para assinantes Pro.</Text>
+        </Paper>
+        <Stack mt="xl" gap="xs">
+          <Text fw={500}>Sequência da setlist:</Text>
+          {songs.map((s, idx) => (
+            <Paper key={s.id} shadow={idx === currentIdx ? "md" : "xs"} p="xs" withBorder style={{ background: idx === currentIdx ? '#e7f5ff' : undefined, cursor: 'pointer' }} onClick={() => goTo(idx)}>
+              <Text size="sm" fw={idx === currentIdx ? 700 : 400} color={idx === currentIdx ? 'blue' : undefined}>{idx + 1}. {s.title} - {s.bpm} - {s.key}</Text>
+            </Paper>
+          ))}
+        </Stack>
+      </Stack>
+    );
+  }
 
   return (
     <Stack style={{ position: 'relative' }}>
