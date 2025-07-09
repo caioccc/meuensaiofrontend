@@ -10,6 +10,7 @@ const api = axios.create({
 const UNPROTECTED_ROUTES = [
   '/token/',
   '/token/refresh/',
+  '/confirm-email/',
   // Adicione outras rotas livres se necessário
 ];
 

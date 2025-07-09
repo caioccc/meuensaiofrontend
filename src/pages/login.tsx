@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Button, Container, Divider, Loader, Paper, PasswordInput, TextInput, Title } from '@mantine/core';
+import { GoogleLoginButton } from '@/components/GoogleLoginButton';
+import { Button, Container, Divider, Group, Loader, Paper, PasswordInput, TextInput, Title } from '@mantine/core';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -30,8 +31,17 @@ export default function LoginPage() {
       login(res.data.access, res.data.refresh);
       router.push('/');
     } catch (err: any) {
-      console.error('Erro ao fazer login:', err);
-      setError('Usuário ou senha inválidos');
+      let msg = 'Usuário ou senha inválidos';
+      if (err?.response?.data?.detail) {
+        if (err.response.data.detail === 'No active account found with the given credentials') {
+          msg = 'Nenhuma conta ativa encontrada com as credenciais fornecidas';
+        }
+        msg = err.response.data.detail;
+      } else if (err?.response?.data?.error) {
+        msg = err.response.data.error;
+      }
+      setError(msg);
+      console.log('Erro ao fazer login:', err);
     } finally {
       setLoading(false);
     }
@@ -44,31 +54,20 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit(onSubmit)}>
           <TextInput label="E-mail" placeholder="seu@email.com" {...register('email', { required: true })} error={errors.email && 'Campo obrigatório'} />
           <PasswordInput
-           label="Senha" type="password" mt="md" {...register('password', { required: true })} error={errors.password && 'Campo obrigatório'} />
+            label="Senha" type="password" mt="md" {...register('password', { required: true })} error={errors.password && 'Campo obrigatório'} />
           {error && <div style={{ color: 'red', marginTop: 8 }}>{error}</div>}
           <Button fullWidth mt="xl" type="submit" loading={loading} disabled={loading} leftSection={loading ? <Loader size={18} color="white" /> : undefined}>
             {loading ? <Loader size={18} color="white" /> : "Entrar"}
           </Button>
         </form>
+        <Divider label={'Ou entre com'} my="lg" />
+
+        <Group justify="center">
+          <GoogleLoginButton />
+        </Group>
+
         <Divider my="lg" label="ou" labelPosition="center" />
-        {/* <Group justify="center" style={{ width: '100%' }}>
-          <div style={{ width: '100%' }}>
-            <GoogleLogin
-              onSuccess={credentialResponse => {
-                // Aqui você pode enviar o credentialResponse.credential para o backend
-                // para autenticar/registrar o usuário
-                // Exemplo: axios.post('/api/google-login/', { token: credentialResponse.credential })
-              }}
-              onError={() => setError('Erro ao autenticar com Google')}
-              useOneTap
-              width="100%"
-              text="continue_with"
-              shape="pill"
-              locale="pt-BR"
-              clientId="917555710750-n61p9e7knksgrno9ggquh7ipcdiqq0b8.apps.googleusercontent.com"
-            />
-          </div>
-        </Group> */}
+
         <Button
           variant="subtle"
           fullWidth

@@ -21,6 +21,8 @@ interface SongApi {
   thumbnail_url?: string;
   description?: string;
   key?: string;
+  custom_bpm?: number | null;
+  custom_key?: string | null;
 }
 
 interface SetlistApi {
@@ -250,6 +252,8 @@ export default function DashboardPage() {
                       bpm={song.bpm}
                       thumbnail_url={song.thumbnail_url}
                       songKey={song.key}
+                      custom_bpm={song.custom_bpm}
+                      custom_key={song.custom_key}
                       onDelete={async () => {
                         await api.delete(`songs/${song.id}/`);
                         setSongs(songs => songs.filter(s => s.id !== song.id));

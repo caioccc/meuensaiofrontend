@@ -51,7 +51,7 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
           setStatus(res.data.processing_status);
           setLocalSetlist(res.data);
         } catch (e) {
-          console.error('Erro ao atualizar status do setlist:', e);
+          console.log('Erro ao atualizar status do setlist:', e);
           clearInterval(interval);
         }
       }, 30000);

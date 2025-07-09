@@ -52,10 +52,10 @@ export default function RegisterPage() {
       showNotification({
         color: 'green',
         title: 'Sucesso',
-        message: 'Usuário registrado com sucesso!',
+        message: 'Usuário registrado! Enviamos um link de confirmação para seu e-mail.',
         autoClose: 5000,
       });
-      router.push("/login");
+      router.push("/check-email");
     } catch (err: any) {
       showNotification({
         color: 'red',

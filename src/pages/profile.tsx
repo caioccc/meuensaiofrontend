@@ -248,7 +248,7 @@ export default function ProfilePage() {
           message: 'Não foi possível carregar suas músicas e setlists. Tente novamente mais tarde.',
           autoClose: 5000,
         });
-        console.error('Erro ao buscar dados do perfil:', e);
+        console.log('Erro ao buscar dados do perfil:', e);
       } finally {
         setLoadingData(false);
       }
