@@ -205,7 +205,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
       </AppShell.Main>
       <AppShell.Footer>
         <Group h="100%" px="md" justify="space-between">
-          <Text size="sm">&copy; {new Date().getFullYear()} Meu Ensaio</Text>
+          <Text size="sm">&copy; {new Date().getFullYear()} Setlistify</Text>
         </Group>
       </AppShell.Footer>
 

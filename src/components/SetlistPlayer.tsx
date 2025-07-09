@@ -140,14 +140,14 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
     c => currentTime >= c.start && currentTime < c.end
   );
 
-  if (loading) return <LoadingOverlay visible={loading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />;
+  if (loading) return <LoadingOverlay visible={loading} zIndex={1000}/>;
   if (!currentSong && !loading) return <Text color="dimmed">Nenhuma música encontrada na setlist.</Text>;
 
   if (!isPro) {
     // Usuário não Pro: mostra apenas vídeo e info básica
     return (
       <Stack style={{ position: 'relative' }}>
-        <LoadingOverlay visible={loading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
+        <LoadingOverlay visible={loading} zIndex={1000} />
         <Breadcrumbs mb="md">
           <Anchor onClick={() => router.push('/')}>Início</Anchor>
           <Anchor onClick={() => router.push('/setlists')}>Setlists</Anchor>
@@ -187,7 +187,7 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
         <Text>Player</Text>
         <Text>{setlistName}</Text>
       </Breadcrumbs>
-      <LoadingOverlay visible={loading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
+      <LoadingOverlay visible={loading} zIndex={1000} />
       <Text fw={700} size="lg" mb="xs">Setlist: {setlistName}</Text>
       {/* Controles principais */}
       {isMobile ? (

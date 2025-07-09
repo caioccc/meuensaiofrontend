@@ -336,8 +336,8 @@ const MusicDashboard: React.FC = () => {
 
   return (
     <AppLayout>
+      <LoadingOverlay visible={loading} zIndex={1000} overlayProps={{ radius: 'sm', blur: 2 }} />
       <Container size="xl" style={{ position: 'relative' }}>
-        <LoadingOverlay visible={loading} zIndex={1000} overlayProps={{ radius: 'sm', blur: 2 }} />
         <Stack gap="xl">
           {/* Setlists da Semana */}
           {setlistsOfWeek.length > 0 && (

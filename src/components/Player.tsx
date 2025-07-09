@@ -240,7 +240,7 @@ export default function Player({ song }: PlayerProps) {
     // Usuário não Pro: mostra apenas vídeo e info básica
     return (
       <Stack style={{ position: 'relative' }}>
-        <LoadingOverlay visible={loading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
+        <LoadingOverlay visible={loading} zIndex={1000} />
         <Group gap="xl" align="center" style={{ marginBottom: 16, marginTop: 8 }}>
           <Text size="md" fw={600} color="#228be6">
             TOM: <span style={{ fontWeight: 700 }}>{song.key || '-'}</span>
@@ -264,7 +264,7 @@ export default function Player({ song }: PlayerProps) {
 
   return (
     <Stack style={{ position: 'relative' }}>
-      <LoadingOverlay visible={loading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
+      <LoadingOverlay visible={loading} zIndex={1000} />
       {isMobile ? (
         <Stack gap="md" style={{ width: '100%' }}>
           {/* Bloco principal: vídeo, controles, volumes */}

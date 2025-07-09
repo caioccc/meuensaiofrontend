@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import AppLayout from "@/components/AppLayout";
-import { Title, Container, Text, Loader } from "@mantine/core";
+import { Container, LoadingOverlay, Text, Title } from "@mantine/core";
 import { useRouter } from "next/router";
-import Player from "../components/Player";
 import { useEffect, useState } from "react";
 import api from "../../lib/axios";
+import Player from "../components/Player";
 
 export default function PlayerPage() {
   const router = useRouter();
@@ -21,7 +21,7 @@ export default function PlayerPage() {
     }).catch(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <Loader />;
+  if (loading) return <LoadingOverlay visible={true} zIndex={1000} />;
 
   return (
     <AppLayout>
