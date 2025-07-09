@@ -9,7 +9,6 @@ const api = axios.create({
 // Rotas livres (não exigem autenticação)
 const UNPROTECTED_ROUTES = [
   '/token/',
-  '/users/',
   '/token/refresh/',
   // Adicione outras rotas livres se necessário
 ];

@@ -14,7 +14,7 @@ import {
   useMantineColorScheme
 } from "@mantine/core";
 import { useMediaQuery } from '@mantine/hooks';
-import { IconArrowUpRight, IconLayoutDashboard, IconLogout, IconMenu2, IconMoon, IconMusic, IconSun, IconTable } from "@tabler/icons-react";
+import { IconArrowUpRight, IconLayoutDashboard, IconLogout, IconMenu2, IconMoon, IconMusic, IconSun, IconTable, IconUser } from "@tabler/icons-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
@@ -26,7 +26,7 @@ interface AppLayoutProps {
 
 export default function AppLayout({ children }: AppLayoutProps) {
   const router = useRouter();
-  const { user, isPro } = useAuth();
+  const { user, isPro, subscription } = useAuth();
   const userEmail = user?.email || 'usuario@email.com';
   const isMobile = useMediaQuery('(max-width: 48em)');
   const [navbarCollapsed, setNavbarCollapsed] = useState(false); // Começa aberto no desktop
@@ -96,7 +96,26 @@ export default function AppLayout({ children }: AppLayoutProps) {
               <Menu.Target>
                 <Group gap={8} align="center" style={{ cursor: 'pointer' }}>
                   {!isMobile && (
-                    <Text size="sm" fw={500}>Olá, {userEmail}</Text>
+                    <>
+                      <Text size="sm" fw={500}>Olá, {userEmail}</Text>
+                      {subscription && (
+                        <Text size="xs" fw={700} px={8} py={2} style={{
+                          background: isPro ? '#228be6' : '#fab005',
+                          color: isPro ? '#fff' : '#232b3a',
+                          borderRadius: 8,
+                          marginLeft: 8,
+                          textTransform: 'uppercase',
+                          letterSpacing: 0.5,
+                        }}>
+                          {isPro ? 'PRO' : (subscription.plan?.name || 'Gratuito')}
+                        </Text>
+                      )}
+                      {!subscription && (
+                        <Text size="xs" fw={700} px={8} py={2} style={{
+                          background: '#adb5bd', color: '#fff', borderRadius: 8, marginLeft: 8, textTransform: 'uppercase', letterSpacing: 0.5
+                        }}>Gratuito</Text>
+                      )}
+                    </>
                   )}
                   <Avatar radius="xl" color="blue" size={isMobile ? 36 : 40} style={{ background: '#fff', color: '#007bff', fontWeight: 700, fontSize: 18 }}>
                     {userEmail[0]?.toUpperCase()}
@@ -112,6 +131,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   setOpened(true);
                 }}>
                   Fazer upgrade do plano
+                </Menu.Item>
+                <Menu.Item leftSection={<IconUser size={18} />} onClick={() => router.push('/profile')}>
+                  Meu Perfil
                 </Menu.Item>
                 <Menu.Item color="red" leftSection={loadingLogout ? <Loader size={18} color="red" /> : <IconLogout size={18} />} onClick={handleLogout} disabled={loadingLogout}>
                   Sair
@@ -143,6 +165,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
             label="Setlists"
             leftSection={<IconTable size={18} />}
             active={pathname === "/setlists" || pathname.startsWith("/setlists/")}
+          />
+          <NavLink
+            component={Link}
+            href="/profile"
+            label="Meu Perfil"
+            leftSection={<IconUser size={18} />}
+            active={pathname === "/profile"}
           />
           <NavLink
             label="Sair"
