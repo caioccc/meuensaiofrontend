@@ -4,6 +4,7 @@ import { ActionIcon, Badge, Box, Button, Card, Center, Group, Menu, Modal, Text 
 import { useMediaQuery } from '@mantine/hooks';
 import { showNotification } from '@mantine/notifications';
 import { IconDotsVertical, IconEye, IconMusic, IconPlayerPlay, IconTrash } from '@tabler/icons-react';
+import { IconBrandWhatsapp } from '@tabler/icons-react';
 import { format } from 'date-fns';
 import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
@@ -78,6 +79,27 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
     delay: getRandomDelay(), stopOnInteraction: false
   }));
 
+  // Função para compartilhar setlist no WhatsApp
+  function handleShareWhatsapp() {
+    const title = localSetlist.name;
+    const qtd = localSetlist.songs.length;
+    const musicas = localSetlist.songs.map((s, i) => `🎵 ${i + 1}. ${s.title}${s.artist ? ' - ' + s.artist : ''}`).join("\n");
+    const url = `${window.location.origin}/player/setlist/${localSetlist.id}`;
+    const texto =
+      `🔥 Confira minha setlist exclusiva no *Setlistify*!\n` +
+      `\n` +
+      `🎤 *${title}*\n` +
+      `🎼 Total de músicas: *${qtd}*\n` +
+      `-----------------------------\n` +
+      `${musicas}\n` +
+      `-----------------------------\n` +
+      `\n` +
+      `👉 Ouça, toque e compartilhe: ${url}\n` +
+      `\n` +
+      `🚀 Crie suas próprias setlists em ${window.location.origin}`;
+    window.open(`https://api.whatsapp.com/send/?&text=${encodeURIComponent(texto)}`, '_blank');
+  }
+
   return (
     <Card shadow="sm" padding="xs" radius="md" withBorder style={isMobile ? { position: 'relative', minHeight: 220 } : {}}>
       {isMobile ? (
@@ -92,25 +114,24 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
             )}
           </Card.Section>
           {/* Meatball menu no topo direito */}
-          <ActionIcon
-            color="gray"
-            size="lg"
-            style={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}
-            aria-label="Ações do setlist"
-            onClick={e => {
-              e.stopPropagation();
-              setMenuOpened(true);
-            }}
-          >
-            <IconDotsVertical size={22} />
-          </ActionIcon>
           <Menu
             opened={menuOpened}
             onClose={() => setMenuOpened(false)}
             withinPortal
           >
             <Menu.Target>
-              <div />
+              <ActionIcon
+                color="gray"
+                size="lg"
+                style={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}
+                aria-label="Ações do setlist"
+                onClick={e => {
+                  e.stopPropagation();
+                  setMenuOpened(true);
+                }}
+              >
+                <IconDotsVertical size={22} />
+              </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>
               <Menu.Item leftSection={<IconPlayerPlay size={16} />} onClick={() => router.push(`/player/setlist/${localSetlist.id}`)}>
@@ -118,6 +139,9 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
               </Menu.Item>
               <Menu.Item leftSection={<IconEye size={16} />} onClick={() => router.push(`/setlists/${localSetlist.id}`)}>
                 Acessar
+              </Menu.Item>
+              <Menu.Item leftSection={<IconBrandWhatsapp size={16} color="#25D366" />} onClick={handleShareWhatsapp}>
+                Enviar no WhatsApp
               </Menu.Item>
               <Menu.Item leftSection={<IconTrash size={16} />} color="red" onClick={() => setModalOpen(true)}>
                 Remover
@@ -194,26 +218,25 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
           </Box>
           <Box style={{ flex: 1, position: 'relative', minHeight: 90, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             {/* Meatball menu no topo direito */}
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              size="lg"
-              style={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}
-              aria-label="Ações do setlist"
-              onClick={e => {
-                e.stopPropagation();
-                setMenuOpened(true);
-              }}
-            >
-              <IconDotsVertical size={22} />
-            </ActionIcon>
             <Menu
               opened={menuOpened}
               onClose={() => setMenuOpened(false)}
               withinPortal
             >
               <Menu.Target>
-                <div />
+                <ActionIcon
+                  variant="subtle"
+                  color="gray"
+                  size="lg"
+                  style={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}
+                  aria-label="Ações do setlist"
+                  onClick={e => {
+                    e.stopPropagation();
+                    setMenuOpened(true);
+                  }}
+                >
+                  <IconDotsVertical size={22} />
+                </ActionIcon>
               </Menu.Target>
               <Menu.Dropdown>
                 <Menu.Item leftSection={<IconEye size={16} />} onClick={() => router.push(`/setlists/${localSetlist.id}`)}>
@@ -221,6 +244,9 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
                 </Menu.Item>
                 <Menu.Item leftSection={<IconPlayerPlay size={16} />} onClick={() => router.push(`/player/setlist/${localSetlist.id}`)}>
                   Tocar
+                </Menu.Item>
+                <Menu.Item leftSection={<IconBrandWhatsapp size={16} color="#25D366" />} onClick={handleShareWhatsapp}>
+                  Enviar no WhatsApp
                 </Menu.Item>
                 <Menu.Item leftSection={<IconTrash size={16} />} color="red" onClick={() => setModalOpen(true)}>
                   Remover

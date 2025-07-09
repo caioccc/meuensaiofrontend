@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ActionIcon, Badge, Button, Card, Group, Image, Loader, Menu, Modal, NumberInput, ScrollArea, Stack, Text, TextInput, Timeline, Tooltip } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconClock, IconDotsVertical, IconEdit, IconEye, IconMusic, IconPlayerPlay, IconTrash, IconWaveSine } from '@tabler/icons-react';
+import { IconBrandWhatsapp, IconClock, IconDotsVertical, IconEdit, IconEye, IconMusic, IconPlayerPlay, IconTrash, IconWaveSine } from '@tabler/icons-react';
 import { format } from 'date-fns';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
@@ -81,6 +81,22 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
     }
   };
 
+  // Função para compartilhar música no WhatsApp
+  function handleShareWhatsapp() {
+    const musica = `🎵 *${title}*${typeof songKey === 'string' && songKey.trim() ? ` (Tom: ${songKey})` : ''}${bpm ? ` • ${bpm} BPM` : ''}`;
+    const duracao = duration ? `⏱️ Duração: ${duration}\n` : '';
+    const url = `${window.location.origin}/player?id=${id}`;
+    const texto =
+      `🔥 Olha essa música do meu repertório no *Setlistify*!\n\n` +
+      `${musica}\n` +
+      `${duracao}` +
+      `\n` +
+      `👉 Ouça agora: ${url}\n` +
+      `\n` +
+      `🚀 Crie seu repertório em ${window.location.origin}`;
+    window.open(`https://api.whatsapp.com/send/?&text=${encodeURIComponent(texto)}`, '_blank');
+  }
+
   useEffect(() => {
     if (editModalOpen && id) {
       setLoadingHistory(true);
@@ -125,6 +141,9 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
             </Menu.Item>
             <Menu.Item leftSection={<IconEdit size={16} />} onClick={() => setEditModalOpen(true)}>
               Editar música
+            </Menu.Item>
+            <Menu.Item leftSection={<IconBrandWhatsapp size={16} color="#25D366" />} onClick={handleShareWhatsapp}>
+              Enviar no WhatsApp
             </Menu.Item>
             <Menu.Item leftSection={<IconTrash size={16} />} color="red" onClick={() => setModalOpen(true)}>
               Remover
