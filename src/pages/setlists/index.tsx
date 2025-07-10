@@ -30,7 +30,7 @@ export default function SetlistsPage() {
   const [searchInput, setSearchInput] = useState(""); // valor do input
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const [order, setOrder] = useState("-created_at");
+  const [order, setOrder] = useState("-date, -created_at");
   const [hasMore, setHasMore] = useState(true);
   const isMobile = useMediaQuery('(max-width: 48em)');
 
@@ -46,8 +46,8 @@ export default function SetlistsPage() {
   }, [searchInput]);
 
   const orderOptions = [
-    { value: "-created_at", label: "Mais recente" },
-    { value: "created_at", label: "Mais antigo" },
+    { value: "-date, -created_at", label: "Mais recente" },
+    { value: "date, created_at", label: "Mais antigo" },
     { value: "-num_songs", label: "Mais músicas" },
     { value: "num_songs", label: "Menos músicas" },
   ];
@@ -133,7 +133,7 @@ export default function SetlistsPage() {
             />
             <OrderSelect value={order} onChange={v => {
               setPage(1);
-              setOrder(v || "-created_at")
+              setOrder(v || "-date")
             }} options={orderOptions} />
           </Stack>
         ) : (
