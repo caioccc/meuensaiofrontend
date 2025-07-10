@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import axios from '../../lib/axios';
 import { useAuth } from '../contexts/AuthContext';
+import classes from './login.module.css'; // Certifique-se de que o caminho está correto
 
 export default function LoginPage() {
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -48,35 +49,43 @@ export default function LoginPage() {
   };
 
   return (
-    <Container size={420} my={40}>
-      <Title ta="center">Login</Title>
-      <Paper withBorder shadow="md" p={30} mt={30} radius="md">
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <TextInput label="E-mail" placeholder="seu@email.com" {...register('email', { required: true })} error={errors.email && 'Campo obrigatório'} />
-          <PasswordInput
-            label="Senha" type="password" mt="md" {...register('password', { required: true })} error={errors.password && 'Campo obrigatório'} />
-          {error && <div style={{ color: 'red', marginTop: 8 }}>{error}</div>}
-          <Button fullWidth mt="xl" type="submit" loading={loading} disabled={loading} leftSection={loading ? <Loader size={18} color="white" /> : undefined}>
-            {loading ? <Loader size={18} color="white" /> : "Entrar"}
-          </Button>
-        </form>
-        <Divider label={'Ou entre com'} my="lg" />
+    <div className={classes.wrapper}>
+      <Paper className={classes.form}>
+        <Title order={2} className={classes.title}>
+          Bem vindo ao Setlistify
+        </Title>
 
-        <Group justify="center">
-          <GoogleLoginButton />
-        </Group>
+        <Container size={420} my={40}>
+          <Paper withBorder shadow="md" p={30} mt={30} radius="md">
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <TextInput label="E-mail" placeholder="seu@email.com" {...register('email', { required: true })} error={errors.email && 'Campo obrigatório'} />
+              <PasswordInput
+                label="Senha" type="password" mt="md" {...register('password', { required: true })} error={errors.password && 'Campo obrigatório'} />
+              {error && <div style={{ color: 'red', marginTop: 8 }}>{error}</div>}
+              <Button fullWidth mt="xl" type="submit" loading={loading} disabled={loading} leftSection={loading ? <Loader size={18} color="white" /> : undefined}>
+                {loading ? <Loader size={18} color="white" /> : "Entrar"}
+              </Button>
+            </form>
+            <Divider label={'Ou entre com'} my="lg" />
 
-        <Divider my="lg" label="ou" labelPosition="center" />
+            <Group justify="center">
+              <GoogleLoginButton />
+            </Group>
 
-        <Button
-          variant="subtle"
-          fullWidth
-          mt="md"
-          onClick={() => router.push('/register')}
-        >
-          Não tem conta? Cadastre-se
-        </Button>
+            <Divider my="lg" label="ou" labelPosition="center" />
+
+            <Button
+              variant="subtle"
+              fullWidth
+              mt="md"
+              onClick={() => router.push('/register')}
+            >
+              Não tem conta? Cadastre-se
+            </Button>
+          </Paper>
+        </Container>
       </Paper>
-    </Container>
+    </div>
+
   );
 }
