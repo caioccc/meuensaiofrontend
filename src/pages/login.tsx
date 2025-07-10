@@ -36,10 +36,9 @@ export default function LoginPage() {
       if (err?.response?.data?.detail) {
         if (err.response.data.detail === 'No active account found with the given credentials') {
           msg = 'Nenhuma conta ativa encontrada com as credenciais fornecidas';
+        } else if (err?.response?.data?.error) {
+          msg = 'Nenhuma conta ativa encontrada com as credenciais fornecidas';
         }
-        msg = err.response.data.detail;
-      } else if (err?.response?.data?.error) {
-        msg = err.response.data.error;
       }
       setError(msg);
       console.log('Erro ao fazer login:', err);
