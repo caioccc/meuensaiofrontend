@@ -40,10 +40,12 @@ import {
   IconMusic,
   IconPlayerPlay,
   IconPlaylist,
-  IconShare
+  IconShare,
+  IconTrophy
 } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import api from "../../lib/axios";
 
 interface UserStats {
   totalSongs: number;
@@ -80,6 +82,16 @@ interface Song {
 //   maxProgress?: number;
 // }
 
+interface Achievement {
+  id: number;
+  title: string;
+  description: string;
+  icon_name: string;
+  category: string;
+  points: number;
+  earned: boolean;
+}
+
 export default function ProfilePage() {
   const { user, subscription, isPro } = useAuth();
   const router = useRouter();
@@ -91,6 +103,8 @@ export default function ProfilePage() {
   const [setlists, setSetlists] = useState<any[]>([]);
   const [musicStats, setMusicStats] = useState<any>(null);
   const [loadingData, setLoadingData] = useState(true);
+  const [achievements, setAchievements] = useState<Achievement[]>([]); // Para a seção de recentes
+  const [userAchievements, setUserAchievements] = useState<any[]>([]); // Para a nova aba
 
   // Paginação e infinite scroll para músicas
   const [songsPage, setSongsPage] = useState(1);
@@ -160,6 +174,10 @@ export default function ProfilePage() {
     }
   }
 
+  // Estado para conquistas sem paginação
+  // (a busca é feita apenas uma vez no useEffect)
+
+
   // Calcula o tempo total de prática somando a duração de cada música em cada setlist
   function getPracticeTimeFromSetlists(setlists: any[]): string {
     let totalSeconds = 0;
@@ -227,16 +245,23 @@ export default function ProfilePage() {
     async function fetchData() {
       setLoadingData(true);
       try {
-        const [songsData, setlistsData, statsData] = await Promise.all([
+        const [songsData, setlistsData, statsData, userAchievementsData] = await Promise.all([
           getUserSongs(1),
           getUserSetlists(1),
           getMusicStats(),
+          api.get('/user-achievements/')
         ]);
         const initialSongs = Array.isArray(songsData) ? songsData : songsData.results || [];
         setSongs(initialSongs);
         const initialSetlists = Array.isArray(setlistsData) ? setlistsData : setlistsData.results || [];
         setSetlists(initialSetlists);
         setMusicStats(statsData);
+
+        // Conquistas (sem paginação)
+        const initialUserAchievements = userAchievementsData.data.results || userAchievementsData.data || [];
+        setUserAchievements(initialUserAchievements);
+        setAchievements(initialUserAchievements.slice(0, 5).map((ua: any) => ua.achievement));
+
         setSongsPage(1);
         setSetlistsPage(1);
         setSongsHasMore(!!songsData.next);
@@ -356,6 +381,24 @@ export default function ProfilePage() {
       </Group>
     </Paper>
   );
+
+  const AchievementCard = ({ achievement }: { achievement: any }) => (
+    <Paper withBorder p="md" radius="md">
+      <Group>
+        <ThemeIcon size="lg" radius="md" color="yellow" variant='light'>
+          <IconTrophy size={24} />
+        </ThemeIcon>
+        <div style={{ flex: 1 }}>
+          <Text fw={500}>{achievement.title}</Text>
+          <Text size="sm" c="dimmed">{achievement.description}</Text>
+          <Badge color="yellow" variant="light" mt="sm">
+            {achievement.points} Pontos
+          </Badge>
+        </div>
+      </Group>
+    </Paper>
+  );
+
 
   // const AchievementCard = ({ achievement }: { achievement: Achievement }) => (
   //   <Paper
@@ -554,7 +597,7 @@ export default function ProfilePage() {
         </Card>
 
         {/* Estatísticas */}
-        <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing="md" mb="xl">
+        <SimpleGrid cols={{ base: 1, sm: 3, md: 4 }} spacing="md" mb="xl">
           <StatCard
             icon={<IconMusic size={24} />}
             value={userStats.totalSongs}
@@ -585,7 +628,41 @@ export default function ProfilePage() {
             label="BPM médio"
             color="red"
           />
+          <StatCard
+            icon={<IconTrophy size={24} />}
+            value={userAchievements.length}
+            label="Conquistas"
+            color="yellow"
+          />
+          <StatCard
+            icon={<IconTrophy size={24} />}
+            value={userAchievements.reduce((acc, ua) => acc + (ua.achievement?.points || 0), 0)}
+            label="Pontos de Conquista"
+            color="orange"
+          />
         </SimpleGrid>
+
+        {/* Seção de Conquistas */}
+        {achievements.length > 0 && (
+          <Card shadow="sm" p="lg" radius="md" withBorder mb="xl">
+            <Group justify="space-between" mb="md">
+              <Title order={4}>Conquistas Recentes</Title>
+              <Anchor size="sm" onClick={() => router.push('/achievements')}>
+                Ver todas
+              </Anchor>
+            </Group>
+            <SimpleGrid cols={{ base: 2, sm: 3, md: 5 }} spacing="lg">
+              {achievements.map((ach) => (
+                <Stack key={ach.id} align="center" gap="xs">
+                  <ThemeIcon size="xl" radius="xl" color="yellow" variant="light">
+                    <IconTrophy size={28} />
+                  </ThemeIcon>
+                  <Text size="xs" ta="center" fw={500}>{ach.title}</Text>
+                </Stack>
+              ))}
+            </SimpleGrid>
+          </Card>
+        )}
 
         {/* Tabs de Conteúdo */}
         <Tabs value={activeTab} onChange={setActiveTab} keepMounted={false}>
@@ -598,6 +675,9 @@ export default function ProfilePage() {
             </Tabs.Tab>
             <Tabs.Tab value="setlists" leftSection={<IconPlaylist size={16} />}>
               Setlists
+            </Tabs.Tab>
+            <Tabs.Tab value="achievements" leftSection={<IconTrophy size={16} />}>
+              Conquistas
             </Tabs.Tab>
           </Tabs.List>
 
@@ -742,6 +822,27 @@ export default function ProfilePage() {
                   Seus setlists aparecerão aqui
                 </Text>
               )}
+            </Card>
+          </Tabs.Panel>
+
+          {/* Conquistas */}
+          <Tabs.Panel value="achievements" pt="md">
+            <Card shadow="sm" p="md" radius="md" withBorder>
+              <Title order={4} mb="md">Minhas Conquistas ({userAchievements.length})</Title>
+              <Box style={{ maxHeight: 400, overflowY: 'auto' }}>
+                <Stack gap="sm">
+                  {userAchievements.map((userAch) => (
+                    userAch.achievement ? (
+                      <div key={userAch.achievement.id}>
+                        <AchievementCard achievement={userAch.achievement} />
+                      </div>
+                    ) : null
+                  ))}
+                </Stack>
+                {userAchievements.length === 0 && (
+                  <Text ta="center" c="dimmed" mt="md">Nenhuma conquista encontrada.</Text>
+                )}
+              </Box>
             </Card>
           </Tabs.Panel>
 

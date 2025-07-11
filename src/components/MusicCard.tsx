@@ -22,6 +22,17 @@ export interface MusicCardProps {
 }
 
 export default function MusicCard({ id, title, duration, bpm, thumbnail_url, songKey, onDelete, compact, custom_bpm, custom_key }: MusicCardProps & { custom_bpm?: number | null, custom_key?: string }) {
+  // Função para registrar ação no backend
+  const recordAction = async (actionType: string, objectId?: string) => {
+    try {
+      await api.post('/actions/record/', {
+        action: actionType,
+        related_object_id: objectId,
+      });
+    } catch (error) {
+      console.log('Erro ao registrar ação:', error);
+    }
+  };
   const [hovered, setHovered] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -62,6 +73,14 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
     setLoadingEdit(true);
     try {
       await api.patch(`/songs/${id}/`, { custom_bpm: editBpm, custom_key: editKey });
+      // Registrar ação de edição de tom
+      if (editKey && editKey !== songKey) {
+        recordAction('edit_key', String(id));
+      }
+      // Registrar ação de edição de BPM
+      if (editBpm && editBpm !== bpm) {
+        recordAction('edit_bpm', String(id));
+      }
       notifications.show({
         color: 'green',
         title: 'Atualizada',
@@ -82,7 +101,7 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
   };
 
   // Função para compartilhar música no WhatsApp
-  function handleShareWhatsapp() {
+  async function handleShareWhatsapp() {
     const musica = `🎵 *${title}*${typeof songKey === 'string' && songKey.trim() ? ` (Tom: ${songKey})` : ''}${bpm ? ` • ${bpm} BPM` : ''}`;
     const duracao = duration ? `⏱️ Duração: ${duration}\n` : '';
     const url = `${window.location.origin}/player?id=${id}`;
@@ -94,6 +113,8 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
       `👉 Ouça agora: ${url}\n` +
       `\n` +
       `🚀 Crie seu repertório em ${window.location.origin}`;
+    // Registrar ação de compartilhamento
+    await recordAction('share', String(id));
     window.open(`https://api.whatsapp.com/send/?&text=${encodeURIComponent(texto)}`, '_blank');
   }
 

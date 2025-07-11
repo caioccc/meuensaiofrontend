@@ -14,7 +14,7 @@ import {
   useMantineColorScheme
 } from "@mantine/core";
 import { useMediaQuery } from '@mantine/hooks';
-import { IconArrowUpRight, IconLayoutDashboard, IconLogout, IconMenu2, IconMoon, IconMusic, IconSun, IconTable, IconUser } from "@tabler/icons-react";
+import { IconArrowUpRight, IconLayoutDashboard, IconLogout, IconMenu2, IconMoon, IconMusic, IconSun, IconTable, IconTrophy, IconUser } from "@tabler/icons-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
@@ -135,6 +135,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 <Menu.Item leftSection={<IconUser size={18} />} onClick={() => router.push('/profile')}>
                   Meu Perfil
                 </Menu.Item>
+                <Menu.Item leftSection={<IconTrophy size={18} />} onClick={() => router.push('/achievements')}>
+                  Minhas Conquistas
+                </Menu.Item>
                 <Menu.Item color="red" leftSection={loadingLogout ? <Loader size={18} color="red" /> : <IconLogout size={18} />} onClick={handleLogout} disabled={loadingLogout}>
                   Sair
                 </Menu.Item>
@@ -165,6 +168,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
             label="Setlists"
             leftSection={<IconTable size={18} />}
             active={pathname === "/setlists" || pathname.startsWith("/setlists/")}
+          />
+          <NavLink
+            component={Link}
+            href="/achievements"
+            label="Conquistas"
+            leftSection={<IconTrophy size={18} />}
+            active={pathname === "/achievements"}
           />
           <NavLink
             component={Link}

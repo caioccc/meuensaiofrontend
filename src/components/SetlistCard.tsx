@@ -79,8 +79,8 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
     delay: getRandomDelay(), stopOnInteraction: false
   }));
 
-  // Função para compartilhar setlist no WhatsApp
-  function handleShareWhatsapp() {
+  // Função para compartilhar setlist no WhatsApp e registrar ação
+  async function handleShareWhatsapp() {
     const title = localSetlist.name;
     const qtd = localSetlist.songs.length;
     const musicas = localSetlist.songs.map((s, i) => `🎵 ${i + 1}. ${s.title}${s.artist ? ' - ' + s.artist : ''}`).join("\n");
@@ -97,6 +97,15 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
       `👉 Ouça, toque e compartilhe: ${url}\n` +
       `\n` +
       `🚀 Crie suas próprias setlists em ${window.location.origin}`;
+    // Registrar ação de compartilhamento de setlist
+    try {
+      await api.post('/actions/record/', {
+        action: 'share',
+        related_object_id: String(localSetlist.id),
+      });
+    } catch (error) {
+      console.log('Erro ao registrar ação de compartilhamento:', error);
+    }
     window.open(`https://api.whatsapp.com/send/?&text=${encodeURIComponent(texto)}`, '_blank');
   }
 

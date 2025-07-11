@@ -12,11 +12,26 @@ export default function PlayerPage() {
   const [song, setSong] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
+  // Função para registrar ação no backend
+  const recordAction = async (actionType: string, objectId?: string) => {
+    try {
+      await api.post('/actions/record/', {
+        action: actionType,
+        related_object_id: objectId,
+      });
+    } catch (error) {
+      console.log('Erro ao registrar ação:', error);
+    }
+  };
+
   useEffect(() => {
     if (!id) return;
     setLoading(true);
     api.get(`/songs/${id}/`).then(res => {
       setSong(res.data);
+      if (res.data && res.data.id) {
+        recordAction('view_song', res.data.id);
+      }
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [id]);
