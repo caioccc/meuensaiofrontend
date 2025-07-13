@@ -107,7 +107,7 @@ const PlanCard: React.FC<{
           {isCurrent ? 'Seu plano atual' : `Assinar ${plan.name}`}
         </Button>
       ) : (
-        <Button fullWidth disabled mt="sm">Seu plano atual</Button>
+        <Button fullWidth disabled mt="sm">Gratuito</Button>
       )}
     </Paper>
   );
@@ -134,6 +134,8 @@ const PlansModal: React.FC<PlansModalProps> = ({ opened, onClose }) => {
   const { subscription } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
+
+  console.log('PlansModal opened:', subscription, opened);
 
   useEffect(() => {
     if (opened) {

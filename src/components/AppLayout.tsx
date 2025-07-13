@@ -11,14 +11,18 @@ import {
   NavLink,
   Text,
   Title,
+  Tooltip,
   useMantineColorScheme
 } from "@mantine/core";
 import { useMediaQuery } from '@mantine/hooks';
-import { IconArrowUpRight, IconLayoutDashboard, IconLogout, IconMenu2, IconMoon, IconMusic, IconSun, IconTable, IconTrophy, IconUser } from "@tabler/icons-react";
+import { IconAlertCircle, IconArrowUpRight, IconLayoutDashboard, IconLogout, IconMenu2, IconMoon, IconMusic, IconSun, IconTable, IconTrophy, IconUser } from "@tabler/icons-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
+import api from '../../lib/axios';
+import OnboardingModal from "./OnboardingModal";
 import PlansModal from "./PlansModal";
+
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -38,6 +42,23 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const dark = colorScheme === 'dark';
+
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
+  const [onboarded, setOnboarded] = useState(true);
+  useEffect(() => {
+    if (user) {
+      const skip = typeof window !== 'undefined' && localStorage.getItem('onboarding_skip');
+      api.get('/user-profile/onboarding-status/')
+        .then(res => {
+          if (res.data && res.data.onboarded === false) {
+            setOnboarded(false);
+            if (!skip) setOnboardingOpen(true);
+          } else {
+            setOnboarded(true);
+          }
+        });
+    }
+  }, [user]);
 
   const handleLogout = () => {
     setLoadingLogout(true);
@@ -77,13 +98,29 @@ export default function AppLayout({ children }: AppLayoutProps) {
           </Group>
 
           <Group>
-            <ActionIcon
-              variant="subtle"
-              onClick={() => toggleColorScheme()}
-              size="lg"
-            >
-              {dark ? <IconSun size={20} /> : <IconMoon size={20} />}
-            </ActionIcon>
+            <Tooltip label="Mudar tema" position="bottom" withArrow>
+              <ActionIcon
+                variant="subtle"
+                onClick={() => toggleColorScheme()}
+                size="lg"
+              >
+                {dark ? <IconSun size={20} /> : <IconMoon size={20} />}
+              </ActionIcon>
+            </Tooltip>
+            {user && !onboarded && (
+              <Tooltip label="Complete seu onboarding para personalizar sua experiência" position="bottom" withArrow>
+                <ActionIcon
+                  variant="light"
+                  color="yellow"
+                  size="lg"
+                  onClick={() => setOnboardingOpen(true)}
+                  title="Complete seu onboarding para personalizar sua experiência"
+                  style={{ marginLeft: 4 }}
+                >
+                  <IconAlertCircle size={20} />
+                </ActionIcon>
+              </Tooltip>
+            )}
             {
               // Botão de login só aparece se não estiver autenticado
               !user && (
@@ -117,8 +154,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
                       )}
                     </>
                   )}
-                  <Avatar radius="xl" color="blue" size={isMobile ? 36 : 40} style={{ background: '#fff', color: '#007bff', fontWeight: 700, fontSize: 18 }}>
+                  <Avatar radius="xl" color="blue" size={isMobile ? 36 : 40} style={{ background: '#fff', color: '#007bff', fontWeight: 700, fontSize: 18, position: 'relative' }}>
                     {userEmail[0]?.toUpperCase()}
+                    {!onboarded && null}
                   </Avatar>
                 </Group>
               </Menu.Target>
@@ -131,6 +169,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   setOpened(true);
                 }}>
                   Fazer upgrade do plano
+                </Menu.Item>
+                <Menu.Item leftSection={<IconAlertCircle size={18} color={!onboarded ? "#fab005": '#000'} />} onClick={() => setOnboardingOpen(true)}>
+                  {!onboarded ? 'Completar onboarding' : 'Meu onboarding'}
                 </Menu.Item>
                 <Menu.Item leftSection={<IconUser size={18} />} onClick={() => router.push('/profile')}>
                   Meu Perfil
@@ -220,6 +261,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
       </AppShell.Footer>
 
       <PlansModal opened={opened} onClose={() => setOpened(false)} />
+
+      {/* Modal de Onboarding */}
+      <OnboardingModal
+        opened={onboardingOpen}
+        onClose={() => setOnboardingOpen(false)}
+        onSuccess={() => setOnboarded(true)}
+      />
     </AppShell>
   );
 }
