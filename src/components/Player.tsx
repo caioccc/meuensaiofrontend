@@ -1,11 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Button, Divider, Group, LoadingOverlay, Paper, Slider, Stack, Text, Tooltip } from '@mantine/core';
+import { Button, Divider, Group, LoadingOverlay, Modal, Paper, Slider, Stack, Text, Tooltip } from '@mantine/core';
+// Lista de tons maiores e menores para seleção rápida
+const MAJOR_KEYS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const MINOR_KEYS = MAJOR_KEYS.map(k => k + 'm');
+
 import { useMediaQuery } from '@mantine/hooks';
-import { IconBrandYoutube, IconGuitarPick, IconMusic, IconVolumeOff, IconWaveSine } from '@tabler/icons-react';
+import { IconArrowDown, IconArrowUp, IconBrandYoutube, IconGuitarPick, IconMusic, IconRefresh, IconVolumeOff, IconWaveSine } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 import * as Tone from 'tone';
 import { guitarSamples, padSamples, shimmerSamples } from '../constants/padMaps';
 import { useAuth } from '../contexts/AuthContext';
+import { getTransposedKey, transposeSongChords } from '../lib/music';
 
 declare global {
   interface Window {
@@ -37,6 +42,33 @@ interface PlayerProps {
 }
 
 export default function Player({ song }: PlayerProps) {
+  // Estado de transposição
+  const [transposition, setTransposition] = useState(0);
+
+  // Modal de seleção de tom
+  const [keyModalOpen, setKeyModalOpen] = useState(false);
+
+  // Funções de controle de transposição
+  const handleTransposeUp = () => setTransposition(t => (t < 14 ? t + 1 : t));
+  const handleTransposeDown = () => setTransposition(t => (t > -14 ? t - 1 : t));
+  const handleTransposeReset = () => setTransposition(0);
+  // Seleção direta de tom (maior/menor)
+  const handleSelectKey = (key: string) => {
+    // Detecta se o tom base é menor
+    const baseKeyRaw = song.key || 'C';
+    const baseKey = baseKeyRaw.replace('Db', 'C#').replace('Eb', 'D#').replace('Gb', 'F#').replace('Ab', 'G#').replace('Bb', 'A#').replace('m', '');
+    const baseIdx = MAJOR_KEYS.indexOf(baseKey);
+    let targetKey = key;
+    if (key.endsWith('m')) {
+      targetKey = key.replace('m', '');
+    }
+    const targetIdx = MAJOR_KEYS.indexOf(targetKey);
+    let diff = targetIdx - baseIdx;
+    if (diff > 6) diff -= 12;
+    if (diff < -6) diff += 12;
+    setTransposition(diff);
+    setKeyModalOpen(false);
+  };
   const { isPro } = useAuth();
   const playerRef = useRef<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -46,6 +78,11 @@ export default function Player({ song }: PlayerProps) {
   const [padCloudVol, setPadCloudVol] = useState(80);
   const [padShimmerVol, setPadShimmerVol] = useState(80);
   const [padGuitarVol, setPadGuitarVol] = useState(80);
+  // Estado para liberar shimmer/guitar sob demanda
+  const [shimmerEnabled, setShimmerEnabled] = useState(false);
+  const [guitarEnabled, setGuitarEnabled] = useState(false);
+  const [shimmerLoading, setShimmerLoading] = useState(false);
+  const [guitarLoading, setGuitarLoading] = useState(false);
   const padCloudPlayer = useRef<Tone.Player | null>(null);
   const padShimmerPlayer = useRef<Tone.Player | null>(null);
   const padGuitarPlayer = useRef<Tone.Player | null>(null);
@@ -139,52 +176,183 @@ export default function Player({ song }: PlayerProps) {
   // const play = () => playerRef.current?.playVideo();
   // const pause = () => playerRef.current?.pauseVideo();
 
+  // Transpor acordes conforme o estado
+  const transposedChords = transposeSongChords(song.chords_formatada || [], transposition);
   // Encontrar acorde ativo pelo tempo
-  const activeChordIdx = song.chords_formatada?.findIndex(
+  const activeChordIdx = transposedChords?.findIndex(
     c => currentTime >= c.start && currentTime < c.end
   );
 
-  // Carregar samples dos pads com Tone.js
+  // Carregar apenas o pad Cloud por padrão
   useEffect(() => {
     setPadsLoading(true);
-    const key = song.key || 'C';
-    const padCloudUrl = padSamples[key] || padSamples['C'];
-    const padShimmerUrl = shimmerSamples[key] || shimmerSamples['C'];
-    const padGuitarUrl = guitarSamples[key] || guitarSamples['C'];
-    let loaded = 0;
-    const checkLoaded = () => {
-      loaded++;
-      if (loaded === 3) setPadsLoading(false);
-    };
-    // Cloud
-    padCloudPlayer.current = new Tone.Player({ url: padCloudUrl, autostart: false, onload: checkLoaded }).toDestination();
+    // Pausa o vídeo ao iniciar carregamento dos pads
+    if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
+      playerRef.current.pauseVideo();
+    }
+    const transposedKey = getTransposedKey(song.key || 'C', transposition);
+    const padCloudUrl = padSamples[transposedKey] || padSamples['C'];
+    padCloudPlayer.current = new Tone.Player({ url: padCloudUrl, autostart: false, onload: () => setPadsLoading(false) }).toDestination();
     padCloudPlayer.current.volume.value = (padCloudVol - 100);
-    // Shimmer
-    padShimmerPlayer.current = new Tone.Player({ url: padShimmerUrl, autostart: false, onload: checkLoaded }).toDestination();
+    // Dispose shimmer/guitar se não estiverem habilitados
+    if (!shimmerEnabled && padShimmerPlayer.current) {
+      try {
+        if (padShimmerPlayer.current.state === 'started') padShimmerPlayer.current.stop();
+      } catch { }
+      padShimmerPlayer.current.dispose();
+      padShimmerPlayer.current = null;
+    }
+    if (!guitarEnabled && padGuitarPlayer.current) {
+      try {
+        if (padGuitarPlayer.current.state === 'started') padGuitarPlayer.current.stop();
+      } catch { }
+      padGuitarPlayer.current.dispose();
+      padGuitarPlayer.current = null;
+    }
+    return () => {
+      if (padCloudPlayer.current) {
+        try {
+          if (padCloudPlayer.current.state === 'started') padCloudPlayer.current.stop();
+        } catch { }
+        padCloudPlayer.current.dispose();
+      }
+      if (!shimmerEnabled && padShimmerPlayer.current) {
+        try {
+          if (padShimmerPlayer.current.state === 'started') padShimmerPlayer.current.stop();
+        } catch { }
+        padShimmerPlayer.current.dispose();
+      }
+      if (!guitarEnabled && padGuitarPlayer.current) {
+        try {
+          if (padGuitarPlayer.current.state === 'started') padGuitarPlayer.current.stop();
+        } catch { }
+        padGuitarPlayer.current.dispose();
+      }
+    };
+  }, [song.key, transposition, shimmerEnabled, guitarEnabled]);
+
+  // Carregar shimmer sob demanda
+  useEffect(() => {
+    if (!shimmerEnabled) return;
+    setShimmerLoading(true);
+    // Pausa o vídeo ao iniciar carregamento do shimmer
+    if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
+      playerRef.current.pauseVideo();
+    }
+    const transposedKey = getTransposedKey(song.key || 'C', transposition);
+    const padShimmerUrl = shimmerSamples[transposedKey] || shimmerSamples['C'];
+    padShimmerPlayer.current = new Tone.Player({ url: padShimmerUrl, autostart: false, onload: () => setShimmerLoading(false) }).toDestination();
     padShimmerPlayer.current.volume.value = (padShimmerVol - 100);
-    // Guitar
-    padGuitarPlayer.current = new Tone.Player({ url: padGuitarUrl, autostart: false, onload: checkLoaded }).toDestination();
+    return () => {
+      if (padShimmerPlayer.current) {
+        try {
+          // Só chama stop se não estiver disposed e já foi iniciado
+          if (
+            typeof padShimmerPlayer.current.state === 'string' &&
+            padShimmerPlayer.current.state === 'started' &&
+            !padShimmerPlayer.current.disposed
+          ) {
+            padShimmerPlayer.current.stop();
+          }
+        } catch { }
+        try {
+          if (!padShimmerPlayer.current.disposed) padShimmerPlayer.current.dispose();
+        } catch { }
+      }
+    };
+  }, [shimmerEnabled, song.key, transposition]);
+
+  // Carregar guitar sob demanda
+  useEffect(() => {
+    if (!guitarEnabled) return;
+    setGuitarLoading(true);
+    // Pausa o vídeo ao iniciar carregamento do guitar
+    if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
+      playerRef.current.pauseVideo();
+    }
+    const transposedKey = getTransposedKey(song.key || 'C', transposition);
+    const padGuitarUrl = guitarSamples[transposedKey] || guitarSamples['C'];
+    padGuitarPlayer.current = new Tone.Player({ url: padGuitarUrl, autostart: false, onload: () => setGuitarLoading(false) }).toDestination();
     padGuitarPlayer.current.volume.value = (padGuitarVol - 100);
     return () => {
-      padCloudPlayer.current?.dispose();
-      padShimmerPlayer.current?.dispose();
-      padGuitarPlayer.current?.dispose();
+      if (padGuitarPlayer.current) {
+        try {
+          if (
+            typeof padGuitarPlayer.current.state === 'string' &&
+            padGuitarPlayer.current.state === 'started' &&
+            !padGuitarPlayer.current.disposed
+          ) {
+            padGuitarPlayer.current.stop();
+          }
+        } catch { }
+        try {
+          if (!padGuitarPlayer.current.disposed) padGuitarPlayer.current.dispose();
+        } catch { }
+      }
     };
-  }, [song.key]);
+  }, [guitarEnabled, song.key, transposition]);
 
   // Sincronizar pads com play/pause do vídeo
   useEffect(() => {
-    if (padsLoading) return;
+    if (padsLoading || shimmerLoading || guitarLoading) return;
     if (isPlaying) {
-      padCloudPlayer.current?.start();
-      padShimmerPlayer.current?.start();
-      padGuitarPlayer.current?.start();
+      if (
+        padCloudPlayer.current &&
+        padCloudPlayer.current.state === 'stopped' &&
+        padCloudPlayer.current.buffer &&
+        padCloudPlayer.current.buffer.loaded
+      ) {
+        padCloudPlayer.current.start();
+      }
+      if (
+        padShimmerPlayer.current &&
+        padShimmerPlayer.current.state === 'stopped' &&
+        padShimmerPlayer.current.buffer &&
+        padShimmerPlayer.current.buffer.loaded
+      ) {
+        padShimmerPlayer.current.start();
+      }
+      if (
+        padGuitarPlayer.current &&
+        padGuitarPlayer.current.state === 'stopped' &&
+        padGuitarPlayer.current.buffer &&
+        padGuitarPlayer.current.buffer.loaded
+      ) {
+        padGuitarPlayer.current.start();
+      }
     } else {
-      padCloudPlayer.current?.stop();
-      padShimmerPlayer.current?.stop();
-      padGuitarPlayer.current?.stop();
+      try { padCloudPlayer.current?.stop(); } catch { }
+      try { padShimmerPlayer.current?.stop(); } catch { }
+      try { padGuitarPlayer.current?.stop(); } catch { }
     }
-  }, [isPlaying, padsLoading]);
+  }, [isPlaying, padsLoading, shimmerLoading, guitarLoading]);
+  // Soltar vídeo automaticamente após todos os pads carregarem
+  useEffect(() => {
+    if (!ytReady) return;
+    if (!padsLoading && !shimmerLoading && !guitarLoading) {
+      // Só solta se estava pausado por carregamento
+      if (playerRef.current && typeof playerRef.current.playVideo === 'function') {
+        playerRef.current.playVideo();
+        if (transposition !== 0) {
+          playerRef.current.setVolume(0);
+        } else {
+          playerRef.current.setVolume(ytVolume);
+        }
+      }
+    }
+  }, [padsLoading, shimmerLoading, guitarLoading, ytReady]);
+
+  // Ao mudar o tom, o vídeo deve ficar mutado se não estiver no tom original
+  useEffect(() => {
+    if (!ytReady) return;
+    if (playerRef.current && typeof playerRef.current.setVolume === 'function') {
+      if (transposition !== 0) {
+        playerRef.current.setVolume(0);
+      } else {
+        playerRef.current.setVolume(ytVolume);
+      }
+    }
+  }, [transposition, ytReady, ytVolume]);
 
   // Controle de volume dos pads
   useEffect(() => {
@@ -209,21 +377,13 @@ export default function Player({ song }: PlayerProps) {
     }
   }, [activeChordIdx]);
 
-  // Aplicar mute/solo nos canais
+  // Aplicar mute/solo apenas nos pads (controle de volume do vídeo é feito no hook de transposição)
   useEffect(() => {
-    // YouTube
-    if (playerRef.current && typeof playerRef.current.setVolume === 'function') {
-      if (isChannelActive(ytMute, ytSolo)) {
-        playerRef.current.setVolume(ytVolume);
-      } else {
-        playerRef.current.setVolume(0);
-      }
-    }
     // Pads
     if (padCloudPlayer.current) padCloudPlayer.current.volume.value = isChannelActive(padCloudMute, padCloudSolo) ? (padCloudVol - 100) : -100;
     if (padShimmerPlayer.current) padShimmerPlayer.current.volume.value = isChannelActive(padShimmerMute, padShimmerSolo) ? (padShimmerVol - 100) : -100;
     if (padGuitarPlayer.current) padGuitarPlayer.current.volume.value = isChannelActive(padGuitarMute, padGuitarSolo) ? (padGuitarVol - 100) : -100;
-  }, [ytMute, ytSolo, ytVolume, padCloudMute, padCloudSolo, padCloudVol, padShimmerMute, padShimmerSolo, padShimmerVol, padGuitarMute, padGuitarSolo, padGuitarVol, anySolo]);
+  }, [ytMute, ytSolo, padCloudMute, padCloudSolo, padCloudVol, padShimmerMute, padShimmerSolo, padShimmerVol, padGuitarMute, padGuitarSolo, padGuitarVol, anySolo]);
 
   const [loading, setLoading] = useState(false);
 
@@ -264,15 +424,109 @@ export default function Player({ song }: PlayerProps) {
 
   return (
     <Stack style={{ position: 'relative' }}>
-      <LoadingOverlay visible={loading} zIndex={1000} />
+      {/* Modal de seleção de tom */}
+      <Modal opened={keyModalOpen} onClose={() => setKeyModalOpen(false)} title="Selecione o tom" centered>
+        <Stack gap={12}>
+          {(() => {
+            const baseKeyRaw = song.key || 'C';
+            const isBaseMinor = baseKeyRaw.toLowerCase().endsWith('m');
+            if (isBaseMinor) {
+              return <>
+                <Text fw={700} size="sm" style={{ textAlign: 'center' }}>Menores</Text>
+                <Group gap={8} wrap="wrap" style={{ justifyContent: 'center' }}>
+                  {MINOR_KEYS.map((key) => {
+                    const currentKey = getTransposedKey(baseKeyRaw.replace('m', '') || 'C', transposition) + 'm';
+                    const isSelected = key === currentKey;
+                    return (
+                      <Button
+                        key={key}
+                        variant={isSelected ? 'filled' : 'outline'}
+                        color={isSelected ? 'blue' : 'gray'}
+                        onClick={() => handleSelectKey(key)}
+                        style={{ minWidth: 48, fontWeight: 700 }}
+                      >
+                        {key}
+                      </Button>
+                    );
+                  })}
+                </Group>
+              </>;
+            } else {
+              return <>
+                <Text fw={700} size="sm" style={{ textAlign: 'center' }}>Maiores</Text>
+                <Group gap={8} wrap="wrap" style={{ justifyContent: 'center' }}>
+                  {MAJOR_KEYS.map((key) => {
+                    const currentKey = getTransposedKey(baseKeyRaw || 'C', transposition);
+                    const isSelected = key === currentKey && !currentKey.toLowerCase().endsWith('m');
+                    return (
+                      <Button
+                        key={key}
+                        variant={isSelected ? 'filled' : 'outline'}
+                        color={isSelected ? 'blue' : 'gray'}
+                        onClick={() => handleSelectKey(key)}
+                        style={{ minWidth: 48, fontWeight: 700 }}
+                      >
+                        {key}
+                      </Button>
+                    );
+                  })}
+                </Group>
+              </>;
+            }
+          })()}
+        </Stack>
+      </Modal>
+      <LoadingOverlay visible={loading || padsLoading} zIndex={2000} loaderProps={{ color: 'blue', size: 'xl', children: <Text fw={700} size="lg">Carregando áudio dos pads...</Text> }} />
       {isMobile ? (
         <Stack gap="md" style={{ width: '100%' }}>
+          {/* Aviso de transposição diferente do original */}
+          {transposition !== 0 && (
+            <Group
+              align="center"
+              style={{
+                background: 'var(--alert-bg)',
+                border: '1px solid var(--alert-border)',
+                borderRadius: 8,
+                padding: 8,
+                marginBottom: 8,
+              }}
+              className="alert-transpose"
+            >
+              <IconBrandYoutube size={22} color="var(--alert-icon)" style={{ marginRight: 6 }} />
+              <Text size="sm" fw={600} style={{ color: 'var(--alert-text)' }}>
+                Para melhor experiência, sugerimos zerar o volume do YouTube e aumentar o volume dos pads ao transpor o tom.
+              </Text>
+            </Group>
+          )}
           {/* Bloco principal: vídeo, controles, volumes */}
           <Stack style={{ width: '100%' }}>
             <Group gap="xl" align="center" style={{ marginBottom: 16, marginTop: 8 }}>
-              <Text size="md" fw={600} color="#228be6">
-                TOM: <span style={{ fontWeight: 700 }}>{song.key || '-'}</span>
-              </Text>
+              {/* CONTROLES DE TRANSPOSIÇÃO MOBILE */}
+              <Group gap={4} align="center">
+                <Tooltip label="Diminuir tom">
+                  <Button size="xs" variant="subtle" onClick={handleTransposeDown} disabled={transposition <= -14}><IconArrowDown size={16} /></Button>
+                </Tooltip>
+                <Tooltip label="Selecionar tom">
+                  <Button
+                    size="xs"
+                    variant="outline"
+                    color="blue"
+                    onClick={() => setKeyModalOpen(true)}
+                    style={{ fontWeight: 700, minWidth: 60 }}
+                  >
+                    TOM: {getTransposedKey(song.key || '-', transposition)}
+                    {transposition !== 0 && (
+                      <span style={{ fontWeight: 400, fontSize: 14, marginLeft: 4, color: '#888' }}>({transposition > 0 ? '+' : ''}{transposition})</span>
+                    )}
+                  </Button>
+                </Tooltip>
+                <Tooltip label="Aumentar tom">
+                  <Button size="xs" variant="subtle" onClick={handleTransposeUp} disabled={transposition >= 14}><IconArrowUp size={16} /></Button>
+                </Tooltip>
+                <Tooltip label="Resetar tom">
+                  <Button size="xs" variant="light" color="gray" onClick={handleTransposeReset} style={{ marginLeft: 4 }}><IconRefresh size={14} /></Button>
+                </Tooltip>
+              </Group>
               <Text size="md" fw={600} color="#228be6">
                 BPM: <span style={{ fontWeight: 700 }}>{song.bpm || '-'}</span>
               </Text>
@@ -329,31 +583,53 @@ export default function Player({ song }: PlayerProps) {
                 </Tooltip>
                 <Slider min={0} max={100} value={padCloudVol} onChange={setPadCloudVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
               </Group>
-              {/* Canal Pad Shimmer */}
+              {/* Canal Pad Shimmer - só carrega se liberado */}
               <Group gap="xs" align="center">
                 <Tooltip label="Volume do Pad Shimmer">
                   <IconWaveSine size={28} color="#845ef7" />
                 </Tooltip>
-                <Tooltip label="Mute">
-                  <Button variant={padShimmerMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadShimmerMute(m => !m)}><IconVolumeOff size={16} /></Button>
-                </Tooltip>
-                <Tooltip label="Solo">
-                  <Button variant={padShimmerSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadShimmerSolo(s => !s)}>S</Button>
-                </Tooltip>
-                <Slider min={0} max={100} value={padShimmerVol} onChange={setPadShimmerVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+                {!shimmerEnabled ? (
+                  <Button size="xs" variant="light" color="blue" onClick={() => {
+                    setShimmerEnabled(true);
+                    if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
+                      playerRef.current.pauseVideo();
+                    }
+                  }} loading={shimmerLoading}>Liberar</Button>
+                ) : (
+                  <>
+                    <Tooltip label="Mute">
+                      <Button variant={padShimmerMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadShimmerMute(m => !m)}><IconVolumeOff size={16} /></Button>
+                    </Tooltip>
+                    <Tooltip label="Solo">
+                      <Button variant={padShimmerSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadShimmerSolo(s => !s)}>S</Button>
+                    </Tooltip>
+                    <Slider min={0} max={100} value={padShimmerVol} onChange={setPadShimmerVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+                  </>
+                )}
               </Group>
-              {/* Canal Pad Guitar */}
+              {/* Canal Pad Guitar - só carrega se liberado */}
               <Group gap="xs" align="center">
                 <Tooltip label="Volume do Pad Guitar">
                   <IconGuitarPick size={28} color="#fab005" />
                 </Tooltip>
-                <Tooltip label="Mute">
-                  <Button variant={padGuitarMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadGuitarMute(m => !m)}><IconVolumeOff size={16} /></Button>
-                </Tooltip>
-                <Tooltip label="Solo">
-                  <Button variant={padGuitarSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadGuitarSolo(s => !s)}>S</Button>
-                </Tooltip>
-                <Slider min={0} max={100} value={padGuitarVol} onChange={setPadGuitarVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+                {!guitarEnabled ? (
+                  <Button size="xs" variant="light" color="yellow" onClick={() => {
+                    setGuitarEnabled(true);
+                    if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
+                      playerRef.current.pauseVideo();
+                    }
+                  }} loading={guitarLoading}>Liberar</Button>
+                ) : (
+                  <>
+                    <Tooltip label="Mute">
+                      <Button variant={padGuitarMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadGuitarMute(m => !m)}><IconVolumeOff size={16} /></Button>
+                    </Tooltip>
+                    <Tooltip label="Solo">
+                      <Button variant={padGuitarSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadGuitarSolo(s => !s)}>S</Button>
+                    </Tooltip>
+                    <Slider min={0} max={100} value={padGuitarVol} onChange={setPadGuitarVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+                  </>
+                )}
               </Group>
             </Stack>
           </Stack>
@@ -363,29 +639,45 @@ export default function Player({ song }: PlayerProps) {
             <Text size="sm" color="dimmed" mb="xs">
               {new Date(currentTime * 1000).toISOString().substr(14, 5)} / {song.duration || '-'}
             </Text>
-            {activeChordIdx !== -1 && song.chords_formatada && song.chords_formatada[activeChordIdx] ? (
+            {activeChordIdx !== -1 && transposedChords && transposedChords[activeChordIdx] ? (
               <Stack align="center" mb="sm" style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
                 {/* Tap tempo dots */}
                 <Group gap={8} mb={8} style={{ justifyContent: 'center', width: '100%' }}>
-                  {Array.from({ length: song.chords_formatada[activeChordIdx].barLength || 4 }).map((_, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        width: 14,
-                        height: 14,
-                        borderRadius: '50%',
-                        background: i === Math.floor(((currentTime - song.chords_formatada[activeChordIdx].start) / ((song.chords_formatada[activeChordIdx].end - song.chords_formatada[activeChordIdx].start) / (song.chords_formatada[activeChordIdx].barLength || 4))) % (song.chords_formatada[activeChordIdx].barLength || 4)) ? '#228be6' : '#d0ebff',
-                        transition: 'background 0.1s',
-                        boxShadow: i === Math.floor(((currentTime - song.chords_formatada[activeChordIdx].start) / ((song.chords_formatada[activeChordIdx].end - song.chords_formatada[activeChordIdx].start) / (song.chords_formatada[activeChordIdx].barLength || 4))) % (song.chords_formatada[activeChordIdx].barLength || 4)) ? '0 0 8px #228be6' : undefined
-                      }}
-                    />
-                  ))}
+                  {(() => {
+                    // Determina o número de tempos/barra (meter) do acorde
+                    const chord = transposedChords[activeChordIdx];
+                    let beats = 4;
+                    if (chord.meter) {
+                      // meter pode ser '4/4', '6/8', etc
+                      const meterParts = chord.meter.split('/');
+                      if (meterParts.length === 2 && !isNaN(Number(meterParts[0]))) {
+                        beats = Number(meterParts[0]);
+                      }
+                    } else if (chord.barLength) {
+                      beats = chord.barLength;
+                    } else if (chord.tempo) {
+                      beats = chord.tempo;
+                    }
+                    return Array.from({ length: beats }).map((_, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          width: 14,
+                          height: 14,
+                          borderRadius: '50%',
+                          background: '#228be6',
+                          transition: 'background 0.1s',
+                          boxShadow: undefined
+                        }}
+                      />
+                    ));
+                  })()}
                 </Group>
                 <Stack align="center" gap={4} style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
-                  <Text size="xl" fw={800} style={{ fontSize: 32, letterSpacing: 2, textAlign: 'center' }}>{song.chords_formatada[activeChordIdx].note_fmt || song.chords_formatada[activeChordIdx].note}</Text>
-                  {song.chords_formatada[activeChordIdx].image && (
-                    <img src={song.chords_formatada[activeChordIdx].image} alt={song.chords_formatada[activeChordIdx].note_fmt || song.chords_formatada[activeChordIdx].note} style={{ width: 60, height: 60, objectFit: 'contain', margin: '0 auto', background: '#fff', borderRadius: 8, boxShadow: '0 2px 8px #0001', display: 'block' }} />
-                  )}
+                  <Text size="xl" fw={800} style={{ fontSize: 32, letterSpacing: 2, textAlign: 'center' }}>{transposedChords[activeChordIdx].note_fmt || transposedChords[activeChordIdx].note}</Text>
+                  {/* {transposedChords[activeChordIdx].image && (
+                    <img src={transposedChords[activeChordIdx].image} alt={transposedChords[activeChordIdx].note_fmt || transposedChords[activeChordIdx].note} style={{ width: 60, height: 60, objectFit: 'contain', margin: '0 auto', background: '#fff', borderRadius: 8, boxShadow: '0 2px 8px #0001', display: 'block' }} />
+                  )} */}
                 </Stack>
               </Stack>
             ) : (
@@ -394,12 +686,12 @@ export default function Player({ song }: PlayerProps) {
             {/* Próximos acordes diferentes */}
             <Stack gap={2} mt="md" style={{ width: '100%' }}>
               {(() => {
-                if (!song.chords_formatada || activeChordIdx === -1) return null;
-                const current = song.chords_formatada[activeChordIdx];
+                if (!transposedChords || activeChordIdx === -1) return null;
+                const current = transposedChords[activeChordIdx];
                 const nextDiffs = [];
                 let lastNote = current.note_fmt || current.note;
-                for (let i = activeChordIdx + 1; i < song.chords_formatada.length && nextDiffs.length < 5; i++) {
-                  const n = song.chords_formatada[i];
+                for (let i = activeChordIdx + 1; i < transposedChords.length && nextDiffs.length < 5; i++) {
+                  const n = transposedChords[i];
                   const note = n.note_fmt || n.note;
                   if (note !== lastNote) {
                     nextDiffs.push(note);
@@ -418,12 +710,55 @@ export default function Player({ song }: PlayerProps) {
         </Stack>
       ) : (
         <Group align="flex-start" gap="xl" style={{ width: '100%', minHeight: 400 }}>
+          {/* Aviso de transposição diferente do original */}
+          {transposition !== 0 && (
+            <Group
+              align="center"
+              style={{
+                background: 'var(--alert-bg)',
+                border: '1px solid var(--alert-border)',
+                borderRadius: 8,
+                padding: 8,
+                marginBottom: 8,
+                width: '100%',
+              }}
+              className="alert-transpose"
+            >
+              <IconBrandYoutube size={22} color="var(--alert-icon)" style={{ marginRight: 6 }} />
+              <Text size="sm" fw={600} style={{ color: 'var(--alert-text)' }}>
+                Para melhor experiência, sugerimos zerar o volume do YouTube e aumentar o volume dos pads ao transpor o tom.
+              </Text>
+            </Group>
+          )}
           {/* Bloco principal: vídeo, controles, volumes (80%) */}
           <Stack style={{ flex: 8, minWidth: 0 }}>
             <Group gap="xl" align="center" style={{ marginBottom: 16, marginTop: 8 }}>
-              <Text size="md" fw={600} color="#228be6">
-                TOM: <span style={{ fontWeight: 700 }}>{song.key || '-'}</span>
-              </Text>
+              {/* CONTROLES DE TRANSPOSIÇÃO DESKTOP */}
+              <Group gap={4} align="center">
+                <Tooltip label="Diminuir tom">
+                  <Button size="xs" variant="subtle" onClick={handleTransposeDown} disabled={transposition <= -14}><IconArrowDown size={16} /></Button>
+                </Tooltip>
+                <Tooltip label="Selecionar tom">
+                  <Button
+                    size="xs"
+                    variant="outline"
+                    color="blue"
+                    onClick={() => setKeyModalOpen(true)}
+                    style={{ fontWeight: 700, minWidth: 60 }}
+                  >
+                    TOM: {getTransposedKey(song.key || '-', transposition)}
+                    {transposition !== 0 && (
+                      <span style={{ fontWeight: 400, fontSize: 14, marginLeft: 4, color: '#888' }}>({transposition > 0 ? '+' : ''}{transposition})</span>
+                    )}
+                  </Button>
+                </Tooltip>
+                <Tooltip label="Aumentar tom">
+                  <Button size="xs" variant="subtle" onClick={handleTransposeUp} disabled={transposition >= 14}><IconArrowUp size={16} /></Button>
+                </Tooltip>
+                <Tooltip label="Resetar tom">
+                  <Button size="xs" variant="light" color="gray" onClick={handleTransposeReset} style={{ marginLeft: 4 }}><IconRefresh size={14} /></Button>
+                </Tooltip>
+              </Group>
               <Text size="md" fw={600} color="#228be6">
                 BPM: <span style={{ fontWeight: 700 }}>{song.bpm || '-'}</span>
               </Text>
@@ -481,31 +816,43 @@ export default function Player({ song }: PlayerProps) {
                 </Tooltip>
                 <Slider min={0} max={100} value={padCloudVol} onChange={setPadCloudVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
               </Group>
-              {/* Canal Pad Shimmer */}
+              {/* Canal Pad Shimmer - só carrega se liberado (desktop) */}
               <Group gap="xs" align="center">
                 <Tooltip label="Volume do Pad Shimmer">
                   <IconWaveSine size={28} color="#845ef7" />
                 </Tooltip>
-                <Tooltip label="Mute">
-                  <Button variant={padShimmerMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadShimmerMute(m => !m)}><IconVolumeOff size={16} /></Button>
-                </Tooltip>
-                <Tooltip label="Solo">
-                  <Button variant={padShimmerSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadShimmerSolo(s => !s)}>S</Button>
-                </Tooltip>
-                <Slider min={0} max={100} value={padShimmerVol} onChange={setPadShimmerVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+                {!shimmerEnabled ? (
+                  <Button size="xs" variant="light" color="blue" onClick={() => setShimmerEnabled(true)} loading={shimmerLoading}>Liberar</Button>
+                ) : (
+                  <>
+                    <Tooltip label="Mute">
+                      <Button variant={padShimmerMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadShimmerMute(m => !m)}><IconVolumeOff size={16} /></Button>
+                    </Tooltip>
+                    <Tooltip label="Solo">
+                      <Button variant={padShimmerSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadShimmerSolo(s => !s)}>S</Button>
+                    </Tooltip>
+                    <Slider min={0} max={100} value={padShimmerVol} onChange={setPadShimmerVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+                  </>
+                )}
               </Group>
-              {/* Canal Pad Guitar */}
+              {/* Canal Pad Guitar - só carrega se liberado (desktop) */}
               <Group gap="xs" align="center">
                 <Tooltip label="Volume do Pad Guitar">
                   <IconGuitarPick size={28} color="#fab005" />
                 </Tooltip>
-                <Tooltip label="Mute">
-                  <Button variant={padGuitarMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadGuitarMute(m => !m)}><IconVolumeOff size={16} /></Button>
-                </Tooltip>
-                <Tooltip label="Solo">
-                  <Button variant={padGuitarSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadGuitarSolo(s => !s)}>S</Button>
-                </Tooltip>
-                <Slider min={0} max={100} value={padGuitarVol} onChange={setPadGuitarVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+                {!guitarEnabled ? (
+                  <Button size="xs" variant="light" color="yellow" onClick={() => setGuitarEnabled(true)} loading={guitarLoading}>Liberar</Button>
+                ) : (
+                  <>
+                    <Tooltip label="Mute">
+                      <Button variant={padGuitarMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadGuitarMute(m => !m)}><IconVolumeOff size={16} /></Button>
+                    </Tooltip>
+                    <Tooltip label="Solo">
+                      <Button variant={padGuitarSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadGuitarSolo(s => !s)}>S</Button>
+                    </Tooltip>
+                    <Slider min={0} max={100} value={padGuitarVol} onChange={setPadGuitarVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+                  </>
+                )}
               </Group>
             </Stack>
           </Stack>
@@ -517,29 +864,45 @@ export default function Player({ song }: PlayerProps) {
               {new Date(currentTime * 1000).toISOString().substr(14, 5)} / {song.duration || '-'}
             </Text>
             {/* Acorde atual em destaque */}
-            {activeChordIdx !== -1 && song.chords_formatada && song.chords_formatada[activeChordIdx] ? (
+            {activeChordIdx !== -1 && transposedChords && transposedChords[activeChordIdx] ? (
               <Stack align="center" mb="sm" style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
                 {/* Tap tempo dots */}
                 <Group gap={8} mb={8} style={{ justifyContent: 'center', width: '100%' }}>
-                  {Array.from({ length: song.chords_formatada[activeChordIdx].barLength || 4 }).map((_, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        width: 14,
-                        height: 14,
-                        borderRadius: '50%',
-                        background: i === Math.floor(((currentTime - song.chords_formatada[activeChordIdx].start) / ((song.chords_formatada[activeChordIdx].end - song.chords_formatada[activeChordIdx].start) / (song.chords_formatada[activeChordIdx].barLength || 4))) % (song.chords_formatada[activeChordIdx].barLength || 4)) ? '#228be6' : '#d0ebff',
-                        transition: 'background 0.1s',
-                        boxShadow: i === Math.floor(((currentTime - song.chords_formatada[activeChordIdx].start) / ((song.chords_formatada[activeChordIdx].end - song.chords_formatada[activeChordIdx].start) / (song.chords_formatada[activeChordIdx].barLength || 4))) % (song.chords_formatada[activeChordIdx].barLength || 4)) ? '0 0 8px #228be6' : undefined
-                      }}
-                    />
-                  ))}
+                  {(() => {
+                    // Determina o número de tempos/barra (meter) do acorde
+                    const chord = transposedChords[activeChordIdx];
+                    let beats = 4;
+                    if (chord.meter) {
+                      // meter pode ser '4/4', '6/8', etc
+                      const meterParts = chord.meter.split('/');
+                      if (meterParts.length === 2 && !isNaN(Number(meterParts[0]))) {
+                        beats = Number(meterParts[0]);
+                      }
+                    } else if (chord.barLength) {
+                      beats = chord.barLength;
+                    } else if (chord.tempo) {
+                      beats = chord.tempo;
+                    }
+                    return Array.from({ length: beats }).map((_, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          width: 14,
+                          height: 14,
+                          borderRadius: '50%',
+                          background: '#228be6',
+                          transition: 'background 0.1s',
+                          boxShadow: undefined
+                        }}
+                      />
+                    ));
+                  })()}
                 </Group>
                 <Stack align="center" gap={4} style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
-                  <Text size="xl" fw={800} style={{ fontSize: 40, letterSpacing: 2, textAlign: 'center' }}>{song.chords_formatada[activeChordIdx].note_fmt || song.chords_formatada[activeChordIdx].note}</Text>
-                  {song.chords_formatada[activeChordIdx].image && (
-                    <img src={song.chords_formatada[activeChordIdx].image} alt={song.chords_formatada[activeChordIdx].note_fmt || song.chords_formatada[activeChordIdx].note} style={{ width: 80, height: 80, objectFit: 'contain', margin: '0 auto', background: '#fff', borderRadius: 8, boxShadow: '0 2px 8px #0001', display: 'block' }} />
-                  )}
+                  <Text size="xl" fw={800} style={{ fontSize: 40, letterSpacing: 2, textAlign: 'center' }}>{transposedChords[activeChordIdx].note_fmt || transposedChords[activeChordIdx].note}</Text>
+                  {/* {transposedChords[activeChordIdx].image && (
+                    <img src={transposedChords[activeChordIdx].image} alt={transposedChords[activeChordIdx].note_fmt || transposedChords[activeChordIdx].note} width={80} height={80} style={{ objectFit: 'contain', margin: '0 auto', background: '#fff', borderRadius: 8, boxShadow: '0 2px 8px #0001', display: 'block' }} />
+                  )} */}
                 </Stack>
               </Stack>
             ) : (
@@ -548,12 +911,12 @@ export default function Player({ song }: PlayerProps) {
             {/* Próximos acordes diferentes */}
             <Stack gap={2} mt="md" style={{ width: '100%' }}>
               {(() => {
-                if (!song.chords_formatada || activeChordIdx === -1) return null;
-                const current = song.chords_formatada[activeChordIdx];
+                if (!transposedChords || activeChordIdx === -1) return null;
+                const current = transposedChords[activeChordIdx];
                 const nextDiffs = [];
                 let lastNote = current.note_fmt || current.note;
-                for (let i = activeChordIdx + 1; i < song.chords_formatada.length && nextDiffs.length < 5; i++) {
-                  const n = song.chords_formatada[i];
+                for (let i = activeChordIdx + 1; i < transposedChords.length && nextDiffs.length < 5; i++) {
+                  const n = transposedChords[i];
                   const note = n.note_fmt || n.note;
                   if (note !== lastNote) {
                     nextDiffs.push(note);
@@ -573,6 +936,18 @@ export default function Player({ song }: PlayerProps) {
       )}
       {/* CSS para esconder scrollbar e responsividade */}
       <style jsx global>{`
+        :root {
+          --alert-bg: #fff3bf;
+          --alert-border: #ffe066;
+          --alert-icon: #fab005;
+          --alert-text: #fab005;
+        }
+        [data-mantine-color-scheme='dark'] {
+          --alert-bg: #2d2a19;
+          --alert-border: #b1973c;
+          --alert-icon: #ffe066;
+          --alert-text: #ffe066;
+        }
         .hide-scrollbar {
           scrollbar-width: none;
         }

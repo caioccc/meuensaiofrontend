@@ -3,8 +3,7 @@ import { Carousel } from '@mantine/carousel';
 import { ActionIcon, Badge, Box, Button, Card, Center, Group, Menu, Modal, Text } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { showNotification } from '@mantine/notifications';
-import { IconDotsVertical, IconEye, IconMusic, IconPlayerPlay, IconTrash } from '@tabler/icons-react';
-import { IconBrandWhatsapp } from '@tabler/icons-react';
+import { IconBrandWhatsapp, IconDotsVertical, IconEye, IconMusic, IconPlayerPlay, IconTrash } from '@tabler/icons-react';
 import { format } from 'date-fns';
 import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
@@ -152,6 +151,16 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
               <Menu.Item leftSection={<IconBrandWhatsapp size={16} color="#25D366" />} onClick={handleShareWhatsapp}>
                 Enviar no WhatsApp
               </Menu.Item>
+              {/* <PDFDownloadLink
+                document={<SetlistPDF setlist={localSetlist} />}
+                fileName={`${localSetlist.name}.pdf`}
+              >
+                {({ loading: pdfLoading }) => (
+                  <Menu.Item leftSection={<IconFileDownload size={16} />} disabled={pdfLoading}>
+                    {pdfLoading ? 'Gerando PDF...' : 'Exportar PDF'}
+                  </Menu.Item>
+                )}
+              </PDFDownloadLink> */}
               <Menu.Item leftSection={<IconTrash size={16} />} color="red" onClick={() => setModalOpen(true)}>
                 Remover
               </Menu.Item>
@@ -257,6 +266,16 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
                 <Menu.Item leftSection={<IconBrandWhatsapp size={16} color="#25D366" />} onClick={handleShareWhatsapp}>
                   Enviar no WhatsApp
                 </Menu.Item>
+                {/* <PDFDownloadLink
+                  document={<SetlistPDF setlist={localSetlist} />}
+                  fileName={`${localSetlist.name}.pdf`}
+                >
+                  {({ loading: pdfLoading }) => (
+                    <Menu.Item leftSection={<IconFileDownload size={16} />} disabled={pdfLoading}>
+                      {pdfLoading ? 'Gerando PDF...' : 'Exportar PDF'}
+                    </Menu.Item>
+                  )}
+                </PDFDownloadLink> */}
                 <Menu.Item leftSection={<IconTrash size={16} />} color="red" onClick={() => setModalOpen(true)}>
                   Remover
                 </Menu.Item>

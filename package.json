@@ -22,6 +22,7 @@
     "@mui/material": "^7.2.0",
     "@mui/x-date-pickers": "^8.6.0",
     "@react-oauth/google": "^0.12.2",
+    "@react-pdf/renderer": "^4.3.0",
     "@tabler/icons-react": "^3.34.0",
     "axios": "^1.10.0",
     "date-fns": "^4.1.0",

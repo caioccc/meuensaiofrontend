@@ -47,12 +47,11 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const [onboarded, setOnboarded] = useState(true);
   useEffect(() => {
     if (user) {
-      const skip = typeof window !== 'undefined' && localStorage.getItem('onboarding_skip');
       api.get('/user-profile/onboarding-status/')
         .then(res => {
           if (res.data && res.data.onboarded === false) {
             setOnboarded(false);
-            if (!skip) setOnboardingOpen(true);
+            setOnboardingOpen(true);
           } else {
             setOnboarded(true);
           }
@@ -170,7 +169,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 }}>
                   Fazer upgrade do plano
                 </Menu.Item>
-                <Menu.Item leftSection={<IconAlertCircle size={18} color={!onboarded ? "#fab005": '#000'} />} onClick={() => setOnboardingOpen(true)}>
+                <Menu.Item leftSection={<IconAlertCircle size={18} color={!onboarded ? "#fab005" : '#000'} />} onClick={() => setOnboardingOpen(true)}>
                   {!onboarded ? 'Completar onboarding' : 'Meu onboarding'}
                 </Menu.Item>
                 <Menu.Item leftSection={<IconUser size={18} />} onClick={() => router.push('/profile')}>

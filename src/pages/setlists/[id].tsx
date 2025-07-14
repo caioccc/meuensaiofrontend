@@ -1,13 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import AppLayout from '@/components/AppLayout';
-import { Anchor, Breadcrumbs, Container, Grid, Loader, Text, TextInput, Title } from '@mantine/core';
-import { IconSearch } from '@tabler/icons-react';
+import { Anchor, Breadcrumbs, Container, Grid, Loader, Text, TextInput, Title, Button, Group } from '@mantine/core';
+import { IconSearch, IconFileDownload } from '@tabler/icons-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import api from '../../../lib/axios';
 import MusicCard from '../../components/MusicCard';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import SetlistPDF from '@/components/SetlistPDF';
 
 export default function SetlistViewPage() {
   const router = useRouter();
@@ -16,6 +18,11 @@ export default function SetlistViewPage() {
   const [songs, setSongs] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -40,7 +47,27 @@ export default function SetlistViewPage() {
           <Anchor onClick={() => router.push('/setlists')}>Setlists</Anchor>
           <Text>{setlist?.name}</Text>
         </Breadcrumbs>
-        <Title order={2} mb="lg">Setlist: {setlist?.name}</Title>
+        <Group justify="space-between" mb="lg">
+          <Title order={2}>Setlist: {setlist?.name}</Title>
+          {isClient && setlist && (
+            <PDFDownloadLink
+              document={<SetlistPDF setlist={setlist} />}
+              fileName={`${setlist.name}.pdf`}
+            >
+              {({ loading: pdfLoading }) => (
+                <Button
+                  leftSection={<IconFileDownload size={18} />}
+                  loading={pdfLoading}
+                  disabled={pdfLoading}
+                  variant="outline"
+                  color="blue"
+                >
+                  Exportar para PDF
+                </Button>
+              )}
+            </PDFDownloadLink>
+          )}
+        </Group>
         {setlist?.date && (
           <Text size="sm" color="dimmed" mb="md">
             {(() => {

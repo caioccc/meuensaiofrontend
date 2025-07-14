@@ -1,10 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Anchor, Breadcrumbs, Button, Divider, Group, LoadingOverlay, Paper, Slider, Stack, Text, Tooltip } from '@mantine/core';
-import { IconBrandYoutube, IconPlayerPause, IconPlayerPlay, IconPlayerStop, IconPlayerTrackNext, IconPlayerTrackPrev } from '@tabler/icons-react';
+import { Anchor, Breadcrumbs, Button, Divider, Group, LoadingOverlay, Modal, Paper, Slider, Stack, Text, Tooltip } from '@mantine/core';
+import { IconArrowDown, IconArrowUp, IconBrandYoutube, IconPlayerPause, IconPlayerPlay, IconPlayerStop, IconPlayerTrackNext, IconPlayerTrackPrev, IconRefresh } from '@tabler/icons-react';
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
 import api from '../../lib/axios';
 import { useAuth } from '../contexts/AuthContext';
+import { getTransposedKey, transposeSongChords } from '../lib/music';
+// Lista de tons maiores e menores para seleção rápida
+const MAJOR_KEYS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const MINOR_KEYS = MAJOR_KEYS.map(k => k + 'm');
 
 interface Song {
   id: number;
@@ -53,6 +57,39 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
   }, [setlistId]);
 
   const currentSong = songs[currentIdx];
+
+  // Estado de transposição por música
+  const [transpositions, setTranspositions] = useState<{ [songId: number]: number }>({});
+
+  // Funções de controle de transposição
+  const currentTransposition = currentSong ? (transpositions[currentSong.id] || 0) : 0;
+  const [keyModalOpen, setKeyModalOpen] = useState(false);
+  const handleTransposeUp = () => currentSong && setTranspositions(t => ({ ...t, [currentSong.id]: Math.min((t[currentSong.id] || 0) + 1, 14) }));
+  const handleTransposeDown = () => currentSong && setTranspositions(t => ({ ...t, [currentSong.id]: Math.max((t[currentSong.id] || 0) - 1, -14) }));
+  const handleTransposeReset = () => currentSong && setTranspositions(t => ({ ...t, [currentSong.id]: 0 }));
+  // Seleção direta de tom (maior/menor)
+  const handleSelectKey = (key: string) => {
+    if (!currentSong) return;
+    // Detecta se o tom base é menor
+    const baseKeyRaw = currentSong.key || 'C';
+    const baseKey = baseKeyRaw.replace('Db', 'C#').replace('Eb', 'D#').replace('Gb', 'F#').replace('Ab', 'G#').replace('Bb', 'A#').replace('m', '');
+    const baseIdx = MAJOR_KEYS.indexOf(baseKey);
+    let targetKey = key;
+    if (key.endsWith('m')) {
+      targetKey = key.replace('m', '');
+    }
+    const targetIdx = MAJOR_KEYS.indexOf(targetKey);
+    let diff = targetIdx - baseIdx;
+    if (diff > 6) diff -= 12;
+    if (diff < -6) diff += 12;
+    // Se o usuário selecionou um menor, mas a música era maior, ou vice-versa, atualiza o campo transpositions e key
+    setTranspositions(t => ({ ...t, [currentSong.id]: diff }));
+    // Opcional: poderia atualizar o campo key da música, mas aqui só transpoe
+    setKeyModalOpen(false);
+  };
+
+  // Transpor acordes da música atual
+  const transposedChords = currentSong?.chords_formatada ? transposeSongChords(currentSong.chords_formatada, currentTransposition) : [];
 
   // YouTube player logic (simplificado)
   useEffect(() => {
@@ -140,7 +177,7 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
     c => currentTime >= c.start && currentTime < c.end
   );
 
-  if (loading) return <LoadingOverlay visible={loading} zIndex={1000}/>;
+  if (loading) return <LoadingOverlay visible={loading} zIndex={1000} />;
   if (!currentSong && !loading) return <Text color="dimmed">Nenhuma música encontrada na setlist.</Text>;
 
   if (!isPro) {
@@ -206,11 +243,97 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
         </Group>
       )}
       {/* Layout responsivo: vídeo/controles + bloco de acordes */}
+      {/* Modal de seleção de tom */}
+      <Modal opened={keyModalOpen} onClose={() => setKeyModalOpen(false)} title="Selecione o tom" centered>
+        <Stack gap={12}>
+          {(() => {
+            const baseKeyRaw = currentSong?.key || 'C';
+            const isBaseMinor = baseKeyRaw.toLowerCase().endsWith('m');
+            if (isBaseMinor) {
+              return <>
+                <Text fw={700} size="sm" style={{ textAlign: 'center' }}>Menores</Text>
+                <Group gap={8} wrap="wrap" style={{ justifyContent: 'center' }}>
+                  {MINOR_KEYS.map((key) => {
+                    const currentKey = getTransposedKey(baseKeyRaw.replace('m', '') || 'C', currentTransposition) + 'm';
+                    const isSelected = key === currentKey;
+                    return (
+                      <Button
+                        key={key}
+                        variant={isSelected ? 'filled' : 'outline'}
+                        color={isSelected ? 'blue' : 'gray'}
+                        onClick={() => handleSelectKey(key)}
+                        style={{ minWidth: 48, fontWeight: 700 }}
+                      >
+                        {key}
+                      </Button>
+                    );
+                  })}
+                </Group>
+              </>;
+            } else {
+              return <>
+                <Text fw={700} size="sm" style={{ textAlign: 'center' }}>Maiores</Text>
+                <Group gap={8} wrap="wrap" style={{ justifyContent: 'center' }}>
+                  {MAJOR_KEYS.map((key) => {
+                    const currentKey = getTransposedKey(baseKeyRaw || 'C', currentTransposition);
+                    const isSelected = key === currentKey && !currentKey.toLowerCase().endsWith('m');
+                    return (
+                      <Button
+                        key={key}
+                        variant={isSelected ? 'filled' : 'outline'}
+                        color={isSelected ? 'blue' : 'gray'}
+                        onClick={() => handleSelectKey(key)}
+                        style={{ minWidth: 48, fontWeight: 700 }}
+                      >
+                        {key}
+                      </Button>
+                    );
+                  })}
+                </Group>
+              </>;
+            }
+          })()}
+        </Stack>
+      </Modal>
       {isMobile ? (
         <Stack gap="md" style={{ width: '100%' }}>
           <div className="player-main-content" style={{ width: '100%' }}>
             <div id="ytplayer" style={{ width: '100%', height: 220, borderRadius: 12, overflow: 'hidden', boxShadow: '0 2px 12px #0001' }} />
           </div>
+          {/* Info TOM/BPM/Transposição */}
+          <Group gap="xl" align="center" style={{ marginBottom: 8, marginTop: 8 }}>
+            <Group gap={4} align="center">
+              <Tooltip label="Diminuir tom">
+                <Button size="xs" variant="subtle" onClick={handleTransposeDown} disabled={currentTransposition <= -14}>-</Button>
+              </Tooltip>
+              <Tooltip label="Selecionar tom">
+                <Button
+                  size="xs"
+                  variant="outline"
+                  color="blue"
+                  onClick={() => setKeyModalOpen(true)}
+                  style={{ fontWeight: 700, minWidth: 60 }}
+                >
+                  TOM: {getTransposedKey(currentSong?.key || '-', currentTransposition)}
+                  {currentTransposition !== 0 && (
+                    <span style={{ fontWeight: 400, fontSize: 14, marginLeft: 4, color: '#888' }}>({currentTransposition > 0 ? '+' : ''}{currentTransposition})</span>
+                  )}
+                </Button>
+              </Tooltip>
+              <Tooltip label="Aumentar tom">
+                <Button size="xs" variant="subtle" onClick={handleTransposeUp} disabled={currentTransposition >= 14}>+</Button>
+              </Tooltip>
+              <Tooltip label="Resetar tom">
+                <Button size="xs" variant="light" color="gray" onClick={handleTransposeReset} style={{ marginLeft: 4 }}>Reset</Button>
+              </Tooltip>
+            </Group>
+            <Text size="md" fw={600}>
+              BPM: <span style={{ fontWeight: 700 }}>{currentSong?.bpm || '-'}</span>
+            </Text>
+            <Text size="md" fw={600}>
+              DURAÇÃO: <span style={{ fontWeight: 700 }}>{currentSong?.duration || '-'}</span>
+            </Text>
+          </Group>
           <Group gap="xs" align="center" mt="md">
             <Tooltip label="Volume do YouTube">
               <IconBrandYoutube size={28} color="#e63946" />
@@ -218,42 +341,57 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
             <Slider min={0} max={100} value={ytVolume} onChange={setYtVolume} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
           </Group>
           {/* Bloco de acordes abaixo do vídeo */}
-          <Paper withBorder shadow="md" p="md" style={{ width: '100%', background: '#f8fafc', display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 8 }}>
+          <Paper withBorder shadow="md" p="md" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 8 }}>
             <Text fw={700} size="lg" mb="xs">Acordes</Text>
             <Text size="sm" color="dimmed" mb="xs">
               {new Date(currentTime * 1000).toISOString().substr(14, 5)} / {currentSong?.duration || '-'}
             </Text>
-            {activeChordIdx !== -1 && currentSong?.chords_formatada && currentSong.chords_formatada[activeChordIdx] ? (
+            {activeChordIdx !== -1 && transposedChords && transposedChords[activeChordIdx] ? (
               <Stack align="center" mb="sm" style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
                 {/* Tap tempo dots */}
                 <Group gap={8} mb={8} style={{ justifyContent: 'center', width: '100%' }}>
-                  {Array.from({ length: currentSong.chords_formatada[activeChordIdx].barLength || 4 }).map((_, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        width: 14,
-                        height: 14,
-                        borderRadius: '50%',
-                        background: i === Math.floor(((currentTime - currentSong.chords_formatada[activeChordIdx].start) / ((currentSong.chords_formatada[activeChordIdx].end - currentSong.chords_formatada[activeChordIdx].start) / (currentSong.chords_formatada[activeChordIdx].barLength || 4))) % (currentSong.chords_formatada[activeChordIdx].barLength || 4)) ? '#228be6' : '#d0ebff',
-                        transition: 'background 0.1s',
-                        boxShadow: i === Math.floor(((currentTime - currentSong.chords_formatada[activeChordIdx].start) / ((currentSong.chords_formatada[activeChordIdx].end - currentSong.chords_formatada[activeChordIdx].start) / (currentSong.chords_formatada[activeChordIdx].barLength || 4))) % (currentSong.chords_formatada[activeChordIdx].barLength || 4)) ? '0 0 8px #228be6' : undefined
-                      }}
-                    />
-                  ))}
+                  {(() => {
+                    const chord = transposedChords[activeChordIdx];
+                    // Detecta o compasso (meter) se existir, senão usa tempo ou 4
+                    // Exemplo: chord.meter = '6/8' ou '4/4'
+                    let dots = 4;
+                    if (chord.meter) {
+                      // Pega o numerador do compasso
+                      const match = /^(\d+)/.exec(chord.meter);
+                      if (match) {
+                        dots = parseInt(match[1], 10) || 4;
+                      }
+                    } else if (chord.tempo && chord.tempo > 0) {
+                      dots = chord.tempo;
+                    }
+                    // Exibe as bolinhas conforme o compasso detectado
+                    return Array.from({ length: dots }).map((_, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          width: 14,
+                          height: 14,
+                          borderRadius: '50%',
+                          background: '#228be6',
+                          transition: 'background 0.1s',
+                        }}
+                      />
+                    ));
+                  })()}
                 </Group>
                 <Stack align="center" gap={4} style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
-                  <Text size="xl" fw={800} style={{ fontSize: 32, letterSpacing: 2, textAlign: 'center' }}>{currentSong.chords_formatada[activeChordIdx].note_fmt || currentSong.chords_formatada[activeChordIdx].note}</Text>
+                  <Text size="xl" fw={800} style={{ fontSize: 32, letterSpacing: 2, textAlign: 'center' }}>{transposedChords[activeChordIdx].note_fmt || transposedChords[activeChordIdx].note}</Text>
                 </Stack>
                 <Divider my={8} style={{ width: '100%' }} />
                 {/* Próximos acordes diferentes centralizados */}
                 <Stack gap={2} mt="md" align="center" style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
                   {(() => {
-                    if (!currentSong?.chords_formatada || activeChordIdx === -1) return null;
-                    const current = currentSong.chords_formatada[activeChordIdx];
+                    if (!transposedChords || activeChordIdx === -1) return null;
+                    const current = transposedChords[activeChordIdx];
                     const nextDiffs = [];
                     let lastNote = current.note_fmt || current.note;
-                    for (let i = activeChordIdx + 1; i < currentSong.chords_formatada.length && nextDiffs.length < 5; i++) {
-                      const n = currentSong.chords_formatada[i];
+                    for (let i = activeChordIdx + 1; i < transposedChords.length && nextDiffs.length < 5; i++) {
+                      const n = transposedChords[i];
                       if ((n.note_fmt || n.note) !== lastNote) {
                         nextDiffs.push(n.note_fmt || n.note);
                         lastNote = n.note_fmt || n.note;
@@ -274,6 +412,39 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
         <Group align="flex-start" gap="xl" style={{ width: '100%', minHeight: 400 }}>
           {/* Bloco principal: vídeo, controles, volumes (80%) */}
           <Stack style={{ flex: 8, minWidth: 0 }}>
+            <Group gap="xl" align="center" style={{ marginBottom: 8, marginTop: 8 }}>
+              <Group gap={4} align="center">
+                <Tooltip label="Diminuir tom">
+                  <Button size="xs" variant="subtle" onClick={handleTransposeDown} disabled={currentTransposition <= -14}><IconArrowDown size={16} /></Button>
+                </Tooltip>
+                <Tooltip label="Selecionar tom">
+                  <Button
+                    size="xs"
+                    variant="outline"
+                    color="blue"
+                    onClick={() => setKeyModalOpen(true)}
+                    style={{ fontWeight: 700, minWidth: 60 }}
+                  >
+                    TOM: {getTransposedKey(currentSong?.key || '-', currentTransposition)}
+                    {currentTransposition !== 0 && (
+                      <span style={{ fontWeight: 400, fontSize: 14, marginLeft: 4, color: '#888' }}>({currentTransposition > 0 ? '+' : ''}{currentTransposition})</span>
+                    )}
+                  </Button>
+                </Tooltip>
+                <Tooltip label="Aumentar tom">
+                  <Button size="xs" variant="subtle" onClick={handleTransposeUp} disabled={currentTransposition >= 14}><IconArrowUp size={16} /></Button>
+                </Tooltip>
+                <Tooltip label="Resetar tom">
+                  <Button size="xs" variant="light" color="gray" onClick={handleTransposeReset} style={{ marginLeft: 4 }}><IconRefresh size={14} /></Button>
+                </Tooltip>
+              </Group>
+              <Text size="md" fw={600} color="#228be6">
+                BPM: <span style={{ fontWeight: 700 }}>{currentSong?.bpm || '-'}</span>
+              </Text>
+              <Text size="md" fw={600} color="#228be6">
+                DURAÇÃO: <span style={{ fontWeight: 700 }}>{currentSong?.duration || '-'}</span>
+              </Text>
+            </Group>
             <div className="player-main-content" style={{ width: '100%' }}>
               <div id="ytplayer" style={{ width: '100%', height: 360, borderRadius: 12, overflow: 'hidden', boxShadow: '0 2px 12px #0001' }} />
             </div>
@@ -290,37 +461,48 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
             <Text size="sm" color="dimmed" mb="xs">
               {new Date(currentTime * 1000).toISOString().substr(14, 5)} / {currentSong?.duration || '-'}
             </Text>
-            {activeChordIdx !== -1 && currentSong?.chords_formatada && currentSong.chords_formatada[activeChordIdx] ? (
+            {activeChordIdx !== -1 && transposedChords && transposedChords[activeChordIdx] ? (
               <Stack align="center" mb="sm" style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
                 {/* Tap tempo dots */}
                 <Group gap={8} mb={8} style={{ justifyContent: 'center', width: '100%' }}>
-                  {Array.from({ length: currentSong.chords_formatada[activeChordIdx].barLength || 4 }).map((_, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        width: 14,
-                        height: 14,
-                        borderRadius: '50%',
-                        background: i === Math.floor(((currentTime - currentSong.chords_formatada[activeChordIdx].start) / ((currentSong.chords_formatada[activeChordIdx].end - currentSong.chords_formatada[activeChordIdx].start) / (currentSong.chords_formatada[activeChordIdx].barLength || 4))) % (currentSong.chords_formatada[activeChordIdx].barLength || 4)) ? '#228be6' : '#d0ebff',
-                        transition: 'background 0.1s',
-                        boxShadow: i === Math.floor(((currentTime - currentSong.chords_formatada[activeChordIdx].start) / ((currentSong.chords_formatada[activeChordIdx].end - currentSong.chords_formatada[activeChordIdx].start) / (currentSong.chords_formatada[activeChordIdx].barLength || 4))) % (currentSong.chords_formatada[activeChordIdx].barLength || 4)) ? '0 0 8px #228be6' : undefined
-                      }}
-                    />
-                  ))}
+                  {(() => {
+                    const chord = transposedChords[activeChordIdx];
+                    let dots = 4;
+                    if (chord.meter) {
+                      const match = /^(\d+)/.exec(chord.meter);
+                      if (match) {
+                        dots = parseInt(match[1], 10) || 4;
+                      }
+                    } else if (chord.tempo && chord.tempo > 0) {
+                      dots = chord.tempo;
+                    }
+                    return Array.from({ length: dots }).map((_, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          width: 14,
+                          height: 14,
+                          borderRadius: '50%',
+                          background: '#228be6',
+                          transition: 'background 0.1s',
+                        }}
+                      />
+                    ));
+                  })()}
                 </Group>
                 <Stack align="center" gap={4} style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
-                  <Text size="xl" fw={800} style={{ fontSize: 32, letterSpacing: 2, textAlign: 'center' }}>{currentSong.chords_formatada[activeChordIdx].note_fmt || currentSong.chords_formatada[activeChordIdx].note}</Text>
+                  <Text size="xl" fw={800} style={{ fontSize: 32, letterSpacing: 2, textAlign: 'center' }}>{transposedChords[activeChordIdx].note_fmt || transposedChords[activeChordIdx].note}</Text>
                 </Stack>
                 <Divider my={8} style={{ width: '100%' }} />
                 {/* Próximos acordes diferentes centralizados */}
                 <Stack gap={2} mt="md" align="center" style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
                   {(() => {
-                    if (!currentSong?.chords_formatada || activeChordIdx === -1) return null;
-                    const current = currentSong.chords_formatada[activeChordIdx];
+                    if (!transposedChords || activeChordIdx === -1) return null;
+                    const current = transposedChords[activeChordIdx];
                     const nextDiffs = [];
                     let lastNote = current.note_fmt || current.note;
-                    for (let i = activeChordIdx + 1; i < currentSong.chords_formatada.length && nextDiffs.length < 5; i++) {
-                      const n = currentSong.chords_formatada[i];
+                    for (let i = activeChordIdx + 1; i < transposedChords.length && nextDiffs.length < 5; i++) {
+                      const n = transposedChords[i];
                       if ((n.note_fmt || n.note) !== lastNote) {
                         nextDiffs.push(n.note_fmt || n.note);
                         lastNote = n.note_fmt || n.note;

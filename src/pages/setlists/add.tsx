@@ -550,7 +550,6 @@ export default function AddSetlistPage() {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        background: '#fff',
                         borderTop: '1px solid #e9ecef',
                         height: 36
                       }}
@@ -570,7 +569,7 @@ export default function AddSetlistPage() {
                     >
                       <Stack gap="sm" mb={24} >
                         {selected.length === 0 ? (
-                          <Card shadow="xs" withBorder style={{ width: '100%', minWidth: 0, padding: 16, textAlign: 'center', background: '#f8f9fa', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                          <Card shadow="xs" withBorder style={{ width: '100%', minWidth: 0, padding: 16, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                             <IconPlaylist size={40} color="#adb5bd" style={{ marginBottom: 8 }} />
                             <Text fw={500} size="sm" color="dimmed">Nenhuma música foi selecionada ainda</Text>
                             <Text size="xs" color="dimmed" mt={4}>Selecione as músicas a partir das músicas disponíveis ao lado.</Text>
@@ -613,7 +612,7 @@ export default function AddSetlistPage() {
                       <ScrollArea h="calc(100% - 110px)" style={{ flex: 1, minHeight: 120, paddingBottom: 100 }}>
                         <Stack gap="sm">
                           {selected.length === 0 ? (
-                            <Card shadow="xs" withBorder style={{ width: '100%', minWidth: 0, padding: 16, textAlign: 'center', background: '#f8f9fa', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                            <Card shadow="xs" withBorder style={{ width: '100%', minWidth: 0, padding: 16, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                               <IconPlaylist size={40} color="#adb5bd" style={{ marginBottom: 8 }} />
                               <Text fw={500} size="sm" color="dimmed">Nenhuma música foi selecionada ainda</Text>
                               <Text size="xs" color="dimmed" mt={4}>Selecione as músicas a partir das músicas disponíveis ao lado.</Text>
@@ -640,7 +639,7 @@ export default function AddSetlistPage() {
                         </Stack>
                       </ScrollArea>
                       {/* Botões Voltar/Confirmar fixos no rodapé da barra lateral */}
-                      <Box style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', padding: 8, background: 'white', borderTop: '1px solid #f1f3f5' }}>
+                      <Box style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', padding: 8, borderTop: '1px solid #f1f3f5' }}>
                         <Group style={{ flexDirection: 'column', gap: 8, width: '100%' }}>
                           <Button variant="default" onClick={() => setActive(1)} fullWidth>Voltar</Button>
                           <Button onClick={source === 'saved' ? () => setActive(3) : enrichSongs} loading={loading} disabled={selected.length === 0} fullWidth>Confirmar</Button>
