@@ -185,50 +185,54 @@ export default function Player({ song }: PlayerProps) {
 
   // Carregar apenas o pad Cloud por padrão
   useEffect(() => {
-    setPadsLoading(true);
-    // Pausa o vídeo ao iniciar carregamento dos pads
-    if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
-      playerRef.current.pauseVideo();
-    }
-    const transposedKey = getTransposedKey(song.key || 'C', transposition);
-    const padCloudUrl = padSamples[transposedKey] || padSamples['C'];
-    padCloudPlayer.current = new Tone.Player({ url: padCloudUrl, autostart: false, onload: () => setPadsLoading(false) }).toDestination();
-    padCloudPlayer.current.volume.value = (padCloudVol - 100);
-    // Dispose shimmer/guitar se não estiverem habilitados
-    if (!shimmerEnabled && padShimmerPlayer.current) {
-      try {
-        if (padShimmerPlayer.current.state === 'started') padShimmerPlayer.current.stop();
-      } catch { }
-      padShimmerPlayer.current.dispose();
-      padShimmerPlayer.current = null;
-    }
-    if (!guitarEnabled && padGuitarPlayer.current) {
-      try {
-        if (padGuitarPlayer.current.state === 'started') padGuitarPlayer.current.stop();
-      } catch { }
-      padGuitarPlayer.current.dispose();
-      padGuitarPlayer.current = null;
-    }
-    return () => {
-      if (padCloudPlayer.current) {
-        try {
-          if (padCloudPlayer.current.state === 'started') padCloudPlayer.current.stop();
-        } catch { }
-        padCloudPlayer.current.dispose();
+    if (isPro) {
+
+      setPadsLoading(true);
+      // Pausa o vídeo ao iniciar carregamento dos pads
+      if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
+        playerRef.current.pauseVideo();
       }
+      const transposedKey = getTransposedKey(song.key || 'C', transposition);
+      const padCloudUrl = padSamples[transposedKey] || padSamples['C'];
+      padCloudPlayer.current = new Tone.Player({ url: padCloudUrl, autostart: false, onload: () => setPadsLoading(false) }).toDestination();
+      padCloudPlayer.current.volume.value = (padCloudVol - 100);
+      // Dispose shimmer/guitar se não estiverem habilitados
       if (!shimmerEnabled && padShimmerPlayer.current) {
         try {
           if (padShimmerPlayer.current.state === 'started') padShimmerPlayer.current.stop();
         } catch { }
         padShimmerPlayer.current.dispose();
+        padShimmerPlayer.current = null;
       }
       if (!guitarEnabled && padGuitarPlayer.current) {
         try {
           if (padGuitarPlayer.current.state === 'started') padGuitarPlayer.current.stop();
         } catch { }
         padGuitarPlayer.current.dispose();
+        padGuitarPlayer.current = null;
       }
-    };
+      return () => {
+        if (padCloudPlayer.current) {
+          try {
+            if (padCloudPlayer.current.state === 'started') padCloudPlayer.current.stop();
+          } catch { }
+          padCloudPlayer.current.dispose();
+        }
+        if (!shimmerEnabled && padShimmerPlayer.current) {
+          try {
+            if (padShimmerPlayer.current.state === 'started') padShimmerPlayer.current.stop();
+          } catch { }
+          padShimmerPlayer.current.dispose();
+        }
+        if (!guitarEnabled && padGuitarPlayer.current) {
+          try {
+            if (padGuitarPlayer.current.state === 'started') padGuitarPlayer.current.stop();
+          } catch { }
+          padGuitarPlayer.current.dispose();
+        }
+      };
+    }
+
   }, [song.key, transposition, shimmerEnabled, guitarEnabled]);
 
   // Carregar shimmer sob demanda
@@ -326,6 +330,7 @@ export default function Player({ song }: PlayerProps) {
       try { padGuitarPlayer.current?.stop(); } catch { }
     }
   }, [isPlaying, padsLoading, shimmerLoading, guitarLoading]);
+
   // Soltar vídeo automaticamente após todos os pads carregarem
   useEffect(() => {
     if (!ytReady) return;
@@ -396,32 +401,6 @@ export default function Player({ song }: PlayerProps) {
 
   const isMobile = useMediaQuery('(max-width: 48em)');
 
-  if (!isPro) {
-    // Usuário não Pro: mostra apenas vídeo e info básica
-    return (
-      <Stack style={{ position: 'relative' }}>
-        <LoadingOverlay visible={loading} zIndex={1000} />
-        <Group gap="xl" align="center" style={{ marginBottom: 16, marginTop: 8 }}>
-          <Text size="md" fw={600} color="#228be6">
-            TOM: <span style={{ fontWeight: 700 }}>{song.key || '-'}</span>
-          </Text>
-          <Text size="md" fw={600} color="#228be6">
-            BPM: <span style={{ fontWeight: 700 }}>{song.bpm || '-'}</span>
-          </Text>
-          <Text size="md" fw={600} color="#228be6">
-            DURAÇÃO: <span style={{ fontWeight: 700 }}>{song.duration || '-'}</span>
-          </Text>
-        </Group>
-        <div className="player-main-content" style={{ width: '100%' }}>
-          <div id="ytplayer" style={{ width: '100%', height: 360, borderRadius: 12, overflow: 'hidden', boxShadow: '0 2px 12px #0001' }} />
-        </div>
-        <Paper withBorder shadow="md" p="md" mt="md" style={{ width: '100%', textAlign: 'center', background: '#fffbe6', border: '1px solid #ffe066' }}>
-          <Text fw={700} size="lg" color="#fab005">Recursos de Pads e Acordes disponíveis apenas para assinantes Pro.</Text>
-        </Paper>
-      </Stack>
-    );
-  }
-
   return (
     <Stack style={{ position: 'relative' }}>
       {/* Modal de seleção de tom */}
@@ -476,7 +455,11 @@ export default function Player({ song }: PlayerProps) {
           })()}
         </Stack>
       </Modal>
-      <LoadingOverlay visible={loading || padsLoading} zIndex={2000} loaderProps={{ color: 'blue', size: 'xl', children: <Text fw={700} size="lg">Carregando áudio dos pads...</Text> }} />
+      {
+        isPro && (
+          <LoadingOverlay visible={loading || padsLoading} zIndex={2000} loaderProps={{ color: 'blue', size: 'xl', children: <Text fw={700} size="lg">Carregando áudio dos pads...</Text> }} />
+        )
+      }
       {isMobile ? (
         <Stack gap="md" style={{ width: '100%' }}>
           {/* Aviso de transposição diferente do original */}
@@ -503,29 +486,42 @@ export default function Player({ song }: PlayerProps) {
             <Group gap="xl" align="center" style={{ marginBottom: 16, marginTop: 8 }}>
               {/* CONTROLES DE TRANSPOSIÇÃO MOBILE */}
               <Group gap={4} align="center">
-                <Tooltip label="Diminuir tom">
-                  <Button size="xs" variant="subtle" onClick={handleTransposeDown} disabled={transposition <= -14}><IconArrowDown size={16} /></Button>
-                </Tooltip>
-                <Tooltip label="Selecionar tom">
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    color="blue"
-                    onClick={() => setKeyModalOpen(true)}
-                    style={{ fontWeight: 700, minWidth: 60 }}
-                  >
-                    TOM: {getTransposedKey(song.key || '-', transposition)}
-                    {transposition !== 0 && (
-                      <span style={{ fontWeight: 400, fontSize: 14, marginLeft: 4, color: '#888' }}>({transposition > 0 ? '+' : ''}{transposition})</span>
-                    )}
-                  </Button>
-                </Tooltip>
-                <Tooltip label="Aumentar tom">
-                  <Button size="xs" variant="subtle" onClick={handleTransposeUp} disabled={transposition >= 14}><IconArrowUp size={16} /></Button>
-                </Tooltip>
-                <Tooltip label="Resetar tom">
-                  <Button size="xs" variant="light" color="gray" onClick={handleTransposeReset} style={{ marginLeft: 4 }}><IconRefresh size={14} /></Button>
-                </Tooltip>
+                {
+                  isPro && (
+                    <>
+                      <Tooltip label="Diminuir tom">
+                        <Button size="xs" variant="subtle" onClick={handleTransposeDown} disabled={transposition <= -14}><IconArrowDown size={16} /></Button>
+                      </Tooltip>
+                      <Tooltip label="Selecionar tom">
+                        <Button
+                          size="xs"
+                          variant="outline"
+                          color="blue"
+                          onClick={() => setKeyModalOpen(true)}
+                          style={{ fontWeight: 700, minWidth: 60 }}
+                        >
+                          TOM: {getTransposedKey(song.key || '-', transposition)}
+                          {transposition !== 0 && (
+                            <span style={{ fontWeight: 400, fontSize: 14, marginLeft: 4, color: '#888' }}>({transposition > 0 ? '+' : ''}{transposition})</span>
+                          )}
+                        </Button>
+                      </Tooltip>
+                      <Tooltip label="Aumentar tom">
+                        <Button size="xs" variant="subtle" onClick={handleTransposeUp} disabled={transposition >= 14}><IconArrowUp size={16} /></Button>
+                      </Tooltip>
+                      <Tooltip label="Resetar tom">
+                        <Button size="xs" variant="light" color="gray" onClick={handleTransposeReset} style={{ marginLeft: 4 }}><IconRefresh size={14} /></Button>
+                      </Tooltip>
+                    </>
+                  )
+                }
+                {
+                  !isPro && (
+                    <Text size="md" fw={600} color="#228be6">
+                      TOM: {song.key || '-'}
+                    </Text>
+                  )
+                }
               </Group>
               <Text size="md" fw={600} color="#228be6">
                 BPM: <span style={{ fontWeight: 700 }}>{song.bpm || '-'}</span>
@@ -571,66 +567,72 @@ export default function Player({ song }: PlayerProps) {
                 <Slider min={0} max={100} value={metroVolume} onChange={setMetroVolume} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
               </Group> */}
               {/* Canal PAD Cloud */}
-              <Group gap="xs" align="center">
-                <Tooltip label="Volume do Pad Cloud">
-                  <IconMusic size={28} color="#51cf66" />
-                </Tooltip>
-                <Tooltip label="Mute">
-                  <Button variant={padCloudMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadCloudMute(m => !m)}><IconVolumeOff size={16} /></Button>
-                </Tooltip>
-                <Tooltip label="Solo">
-                  <Button variant={padCloudSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadCloudSolo(s => !s)}>S</Button>
-                </Tooltip>
-                <Slider min={0} max={100} value={padCloudVol} onChange={setPadCloudVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
-              </Group>
-              {/* Canal Pad Shimmer - só carrega se liberado */}
-              <Group gap="xs" align="center">
-                <Tooltip label="Volume do Pad Shimmer">
-                  <IconWaveSine size={28} color="#845ef7" />
-                </Tooltip>
-                {!shimmerEnabled ? (
-                  <Button size="xs" variant="light" color="blue" onClick={() => {
-                    setShimmerEnabled(true);
-                    if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
-                      playerRef.current.pauseVideo();
-                    }
-                  }} loading={shimmerLoading}>Liberar</Button>
-                ) : (
+              {
+                isPro && (
                   <>
-                    <Tooltip label="Mute">
-                      <Button variant={padShimmerMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadShimmerMute(m => !m)}><IconVolumeOff size={16} /></Button>
-                    </Tooltip>
-                    <Tooltip label="Solo">
-                      <Button variant={padShimmerSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadShimmerSolo(s => !s)}>S</Button>
-                    </Tooltip>
-                    <Slider min={0} max={100} value={padShimmerVol} onChange={setPadShimmerVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+                    <Group gap="xs" align="center">
+                      <Tooltip label="Volume do Pad Cloud">
+                        <IconMusic size={28} color="#51cf66" />
+                      </Tooltip>
+                      <Tooltip label="Mute">
+                        <Button variant={padCloudMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadCloudMute(m => !m)}><IconVolumeOff size={16} /></Button>
+                      </Tooltip>
+                      <Tooltip label="Solo">
+                        <Button variant={padCloudSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadCloudSolo(s => !s)}>S</Button>
+                      </Tooltip>
+                      <Slider min={0} max={100} value={padCloudVol} onChange={setPadCloudVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+                    </Group>
+                    {/* Canal Pad Shimmer - só carrega se liberado */}
+                    <Group gap="xs" align="center">
+                      <Tooltip label="Volume do Pad Shimmer">
+                        <IconWaveSine size={28} color="#845ef7" />
+                      </Tooltip>
+                      {!shimmerEnabled ? (
+                        <Button size="xs" variant="light" color="blue" onClick={() => {
+                          setShimmerEnabled(true);
+                          if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
+                            playerRef.current.pauseVideo();
+                          }
+                        }} loading={shimmerLoading}>Liberar</Button>
+                      ) : (
+                        <>
+                          <Tooltip label="Mute">
+                            <Button variant={padShimmerMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadShimmerMute(m => !m)}><IconVolumeOff size={16} /></Button>
+                          </Tooltip>
+                          <Tooltip label="Solo">
+                            <Button variant={padShimmerSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadShimmerSolo(s => !s)}>S</Button>
+                          </Tooltip>
+                          <Slider min={0} max={100} value={padShimmerVol} onChange={setPadShimmerVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+                        </>
+                      )}
+                    </Group>
+                    {/* Canal Pad Guitar - só carrega se liberado */}
+                    <Group gap="xs" align="center">
+                      <Tooltip label="Volume do Pad Guitar">
+                        <IconGuitarPick size={28} color="#fab005" />
+                      </Tooltip>
+                      {!guitarEnabled ? (
+                        <Button size="xs" variant="light" color="yellow" onClick={() => {
+                          setGuitarEnabled(true);
+                          if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
+                            playerRef.current.pauseVideo();
+                          }
+                        }} loading={guitarLoading}>Liberar</Button>
+                      ) : (
+                        <>
+                          <Tooltip label="Mute">
+                            <Button variant={padGuitarMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadGuitarMute(m => !m)}><IconVolumeOff size={16} /></Button>
+                          </Tooltip>
+                          <Tooltip label="Solo">
+                            <Button variant={padGuitarSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadGuitarSolo(s => !s)}>S</Button>
+                          </Tooltip>
+                          <Slider min={0} max={100} value={padGuitarVol} onChange={setPadGuitarVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+                        </>
+                      )}
+                    </Group>
                   </>
-                )}
-              </Group>
-              {/* Canal Pad Guitar - só carrega se liberado */}
-              <Group gap="xs" align="center">
-                <Tooltip label="Volume do Pad Guitar">
-                  <IconGuitarPick size={28} color="#fab005" />
-                </Tooltip>
-                {!guitarEnabled ? (
-                  <Button size="xs" variant="light" color="yellow" onClick={() => {
-                    setGuitarEnabled(true);
-                    if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
-                      playerRef.current.pauseVideo();
-                    }
-                  }} loading={guitarLoading}>Liberar</Button>
-                ) : (
-                  <>
-                    <Tooltip label="Mute">
-                      <Button variant={padGuitarMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadGuitarMute(m => !m)}><IconVolumeOff size={16} /></Button>
-                    </Tooltip>
-                    <Tooltip label="Solo">
-                      <Button variant={padGuitarSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadGuitarSolo(s => !s)}>S</Button>
-                    </Tooltip>
-                    <Slider min={0} max={100} value={padGuitarVol} onChange={setPadGuitarVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
-                  </>
-                )}
-              </Group>
+                )
+              }
             </Stack>
           </Stack>
           {/* Bloco de acordes abaixo do vídeo no mobile */}
@@ -735,29 +737,42 @@ export default function Player({ song }: PlayerProps) {
             <Group gap="xl" align="center" style={{ marginBottom: 16, marginTop: 8 }}>
               {/* CONTROLES DE TRANSPOSIÇÃO DESKTOP */}
               <Group gap={4} align="center">
-                <Tooltip label="Diminuir tom">
-                  <Button size="xs" variant="subtle" onClick={handleTransposeDown} disabled={transposition <= -14}><IconArrowDown size={16} /></Button>
-                </Tooltip>
-                <Tooltip label="Selecionar tom">
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    color="blue"
-                    onClick={() => setKeyModalOpen(true)}
-                    style={{ fontWeight: 700, minWidth: 60 }}
-                  >
-                    TOM: {getTransposedKey(song.key || '-', transposition)}
-                    {transposition !== 0 && (
-                      <span style={{ fontWeight: 400, fontSize: 14, marginLeft: 4, color: '#888' }}>({transposition > 0 ? '+' : ''}{transposition})</span>
-                    )}
-                  </Button>
-                </Tooltip>
-                <Tooltip label="Aumentar tom">
-                  <Button size="xs" variant="subtle" onClick={handleTransposeUp} disabled={transposition >= 14}><IconArrowUp size={16} /></Button>
-                </Tooltip>
-                <Tooltip label="Resetar tom">
-                  <Button size="xs" variant="light" color="gray" onClick={handleTransposeReset} style={{ marginLeft: 4 }}><IconRefresh size={14} /></Button>
-                </Tooltip>
+                {
+                  !isPro && (
+                    <Text size="md" fw={600} color="#228be6">
+                      TOM: {song.key || '-'}
+                    </Text>
+                  )
+                }
+                {
+                  isPro && (
+                    <>
+                      <Tooltip label="Diminuir tom">
+                        <Button size="xs" variant="subtle" onClick={handleTransposeDown} disabled={transposition <= -14}><IconArrowDown size={16} /></Button>
+                      </Tooltip>
+                      <Tooltip label="Selecionar tom">
+                        <Button
+                          size="xs"
+                          variant="outline"
+                          color="blue"
+                          onClick={() => setKeyModalOpen(true)}
+                          style={{ fontWeight: 700, minWidth: 60 }}
+                        >
+                          TOM: {getTransposedKey(song.key || '-', transposition)}
+                          {transposition !== 0 && (
+                            <span style={{ fontWeight: 400, fontSize: 14, marginLeft: 4, color: '#888' }}>({transposition > 0 ? '+' : ''}{transposition})</span>
+                          )}
+                        </Button>
+                      </Tooltip>
+                      <Tooltip label="Aumentar tom">
+                        <Button size="xs" variant="subtle" onClick={handleTransposeUp} disabled={transposition >= 14}><IconArrowUp size={16} /></Button>
+                      </Tooltip>
+                      <Tooltip label="Resetar tom">
+                        <Button size="xs" variant="light" color="gray" onClick={handleTransposeReset} style={{ marginLeft: 4 }}><IconRefresh size={14} /></Button>
+                      </Tooltip>
+                    </>
+                  )
+                }
               </Group>
               <Text size="md" fw={600} color="#228be6">
                 BPM: <span style={{ fontWeight: 700 }}>{song.bpm || '-'}</span>
@@ -803,57 +818,63 @@ export default function Player({ song }: PlayerProps) {
                 </Tooltip>
                 <Slider min={0} max={100} value={metroVolume} onChange={setMetroVolume} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
               </Group> */}
-              {/* Canal PAD Cloud */}
-              <Group gap="xs" align="center">
-                <Tooltip label="Volume do Pad Cloud">
-                  <IconMusic size={28} color="#51cf66" />
-                </Tooltip>
-                <Tooltip label="Mute">
-                  <Button variant={padCloudMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadCloudMute(m => !m)}><IconVolumeOff size={16} /></Button>
-                </Tooltip>
-                <Tooltip label="Solo">
-                  <Button variant={padCloudSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadCloudSolo(s => !s)}>S</Button>
-                </Tooltip>
-                <Slider min={0} max={100} value={padCloudVol} onChange={setPadCloudVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
-              </Group>
-              {/* Canal Pad Shimmer - só carrega se liberado (desktop) */}
-              <Group gap="xs" align="center">
-                <Tooltip label="Volume do Pad Shimmer">
-                  <IconWaveSine size={28} color="#845ef7" />
-                </Tooltip>
-                {!shimmerEnabled ? (
-                  <Button size="xs" variant="light" color="blue" onClick={() => setShimmerEnabled(true)} loading={shimmerLoading}>Liberar</Button>
-                ) : (
+              {
+                isPro && (
                   <>
-                    <Tooltip label="Mute">
-                      <Button variant={padShimmerMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadShimmerMute(m => !m)}><IconVolumeOff size={16} /></Button>
-                    </Tooltip>
-                    <Tooltip label="Solo">
-                      <Button variant={padShimmerSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadShimmerSolo(s => !s)}>S</Button>
-                    </Tooltip>
-                    <Slider min={0} max={100} value={padShimmerVol} onChange={setPadShimmerVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+                    {/* Canal PAD Cloud */}
+                    <Group gap="xs" align="center">
+                      <Tooltip label="Volume do Pad Cloud">
+                        <IconMusic size={28} color="#51cf66" />
+                      </Tooltip>
+                      <Tooltip label="Mute">
+                        <Button variant={padCloudMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadCloudMute(m => !m)}><IconVolumeOff size={16} /></Button>
+                      </Tooltip>
+                      <Tooltip label="Solo">
+                        <Button variant={padCloudSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadCloudSolo(s => !s)}>S</Button>
+                      </Tooltip>
+                      <Slider min={0} max={100} value={padCloudVol} onChange={setPadCloudVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+                    </Group>
+                    {/* Canal Pad Shimmer - só carrega se liberado (desktop) */}
+                    <Group gap="xs" align="center">
+                      <Tooltip label="Volume do Pad Shimmer">
+                        <IconWaveSine size={28} color="#845ef7" />
+                      </Tooltip>
+                      {!shimmerEnabled ? (
+                        <Button size="xs" variant="light" color="blue" onClick={() => setShimmerEnabled(true)} loading={shimmerLoading}>Liberar</Button>
+                      ) : (
+                        <>
+                          <Tooltip label="Mute">
+                            <Button variant={padShimmerMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadShimmerMute(m => !m)}><IconVolumeOff size={16} /></Button>
+                          </Tooltip>
+                          <Tooltip label="Solo">
+                            <Button variant={padShimmerSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadShimmerSolo(s => !s)}>S</Button>
+                          </Tooltip>
+                          <Slider min={0} max={100} value={padShimmerVol} onChange={setPadShimmerVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+                        </>
+                      )}
+                    </Group>
+                    {/* Canal Pad Guitar - só carrega se liberado (desktop) */}
+                    <Group gap="xs" align="center">
+                      <Tooltip label="Volume do Pad Guitar">
+                        <IconGuitarPick size={28} color="#fab005" />
+                      </Tooltip>
+                      {!guitarEnabled ? (
+                        <Button size="xs" variant="light" color="yellow" onClick={() => setGuitarEnabled(true)} loading={guitarLoading}>Liberar</Button>
+                      ) : (
+                        <>
+                          <Tooltip label="Mute">
+                            <Button variant={padGuitarMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadGuitarMute(m => !m)}><IconVolumeOff size={16} /></Button>
+                          </Tooltip>
+                          <Tooltip label="Solo">
+                            <Button variant={padGuitarSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadGuitarSolo(s => !s)}>S</Button>
+                          </Tooltip>
+                          <Slider min={0} max={100} value={padGuitarVol} onChange={setPadGuitarVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+                        </>
+                      )}
+                    </Group>
                   </>
-                )}
-              </Group>
-              {/* Canal Pad Guitar - só carrega se liberado (desktop) */}
-              <Group gap="xs" align="center">
-                <Tooltip label="Volume do Pad Guitar">
-                  <IconGuitarPick size={28} color="#fab005" />
-                </Tooltip>
-                {!guitarEnabled ? (
-                  <Button size="xs" variant="light" color="yellow" onClick={() => setGuitarEnabled(true)} loading={guitarLoading}>Liberar</Button>
-                ) : (
-                  <>
-                    <Tooltip label="Mute">
-                      <Button variant={padGuitarMute ? 'filled' : 'subtle'} color="red" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadGuitarMute(m => !m)}><IconVolumeOff size={16} /></Button>
-                    </Tooltip>
-                    <Tooltip label="Solo">
-                      <Button variant={padGuitarSolo ? 'filled' : 'subtle'} color="blue" size="xs" style={{ width: 32, minWidth: 0, padding: 0 }} onClick={() => setPadGuitarSolo(s => !s)}>S</Button>
-                    </Tooltip>
-                    <Slider min={0} max={100} value={padGuitarVol} onChange={setPadGuitarVol} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
-                  </>
-                )}
-              </Group>
+                )
+              }
             </Stack>
           </Stack>
           {/* Bloco de acordes (20%) */}

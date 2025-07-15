@@ -180,42 +180,6 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
   if (loading) return <LoadingOverlay visible={loading} zIndex={1000} />;
   if (!currentSong && !loading) return <Text color="dimmed">Nenhuma música encontrada na setlist.</Text>;
 
-  if (!isPro) {
-    // Usuário não Pro: mostra apenas vídeo e info básica
-    return (
-      <Stack style={{ position: 'relative' }}>
-        <LoadingOverlay visible={loading} zIndex={1000} />
-        <Breadcrumbs mb="md">
-          <Anchor onClick={() => router.push('/')}>Início</Anchor>
-          <Anchor onClick={() => router.push('/setlists')}>Setlists</Anchor>
-          <Text>Player</Text>
-          <Text>{setlistName}</Text>
-        </Breadcrumbs>
-        <Text fw={700} size="lg" mb="xs">Setlist: {setlistName}</Text>
-        <Group mb="md">
-          <Button onClick={prev} disabled={currentIdx === 0}>Anterior</Button>
-          <Button onClick={isPlaying ? pause : play}>{isPlaying ? 'Pause' : 'Play'}</Button>
-          <Button onClick={stop}>Stop</Button>
-          <Button onClick={next} disabled={currentIdx === songs.length - 1}>Próxima</Button>
-        </Group>
-        <div className="player-main-content" style={{ width: '100%' }}>
-          <div id="ytplayer" style={{ width: '100%', height: 360, borderRadius: 12, overflow: 'hidden', boxShadow: '0 2px 12px #0001' }} />
-        </div>
-        <Paper withBorder shadow="md" p="md" mt="md" style={{ width: '100%', textAlign: 'center', background: '#fffbe6', border: '1px solid #ffe066' }}>
-          <Text fw={700} size="lg" color="#fab005">Recursos de Pads e Acordes disponíveis apenas para assinantes Pro.</Text>
-        </Paper>
-        <Stack mt="xl" gap="xs">
-          <Text fw={500}>Sequência da setlist:</Text>
-          {songs.map((s, idx) => (
-            <Paper key={s.id} shadow={idx === currentIdx ? "md" : "xs"} p="xs" withBorder style={{ background: idx === currentIdx ? '#e7f5ff' : undefined, cursor: 'pointer' }} onClick={() => goTo(idx)}>
-              <Text size="sm" fw={idx === currentIdx ? 700 : 400} color={idx === currentIdx ? 'blue' : undefined}>{idx + 1}. {s.title} - {s.bpm} - {s.key}</Text>
-            </Paper>
-          ))}
-        </Stack>
-      </Stack>
-    );
-  }
-
   return (
     <Stack style={{ position: 'relative' }}>
       <Breadcrumbs mb="md">
@@ -302,31 +266,42 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
           </div>
           {/* Info TOM/BPM/Transposição */}
           <Group gap="xl" align="center" style={{ marginBottom: 8, marginTop: 8 }}>
-            <Group gap={4} align="center">
-              <Tooltip label="Diminuir tom">
-                <Button size="xs" variant="subtle" onClick={handleTransposeDown} disabled={currentTransposition <= -14}>-</Button>
-              </Tooltip>
-              <Tooltip label="Selecionar tom">
-                <Button
-                  size="xs"
-                  variant="outline"
-                  color="blue"
-                  onClick={() => setKeyModalOpen(true)}
-                  style={{ fontWeight: 700, minWidth: 60 }}
-                >
-                  TOM: {getTransposedKey(currentSong?.key || '-', currentTransposition)}
-                  {currentTransposition !== 0 && (
-                    <span style={{ fontWeight: 400, fontSize: 14, marginLeft: 4, color: '#888' }}>({currentTransposition > 0 ? '+' : ''}{currentTransposition})</span>
-                  )}
-                </Button>
-              </Tooltip>
-              <Tooltip label="Aumentar tom">
-                <Button size="xs" variant="subtle" onClick={handleTransposeUp} disabled={currentTransposition >= 14}>+</Button>
-              </Tooltip>
-              <Tooltip label="Resetar tom">
-                <Button size="xs" variant="light" color="gray" onClick={handleTransposeReset} style={{ marginLeft: 4 }}>Reset</Button>
-              </Tooltip>
-            </Group>
+            {
+              isPro && (
+                <Group gap={4} align="center">
+                  <Tooltip label="Diminuir tom">
+                    <Button size="xs" variant="subtle" onClick={handleTransposeDown} disabled={currentTransposition <= -14}>-</Button>
+                  </Tooltip>
+                  <Tooltip label="Selecionar tom">
+                    <Button
+                      size="xs"
+                      variant="outline"
+                      color="blue"
+                      onClick={() => setKeyModalOpen(true)}
+                      style={{ fontWeight: 700, minWidth: 60 }}
+                    >
+                      TOM: {getTransposedKey(currentSong?.key || '-', currentTransposition)}
+                      {currentTransposition !== 0 && (
+                        <span style={{ fontWeight: 400, fontSize: 14, marginLeft: 4, color: '#888' }}>({currentTransposition > 0 ? '+' : ''}{currentTransposition})</span>
+                      )}
+                    </Button>
+                  </Tooltip>
+                  <Tooltip label="Aumentar tom">
+                    <Button size="xs" variant="subtle" onClick={handleTransposeUp} disabled={currentTransposition >= 14}>+</Button>
+                  </Tooltip>
+                  <Tooltip label="Resetar tom">
+                    <Button size="xs" variant="light" color="gray" onClick={handleTransposeReset} style={{ marginLeft: 4 }}>Reset</Button>
+                  </Tooltip>
+                </Group>
+              )
+            }
+            {
+              !isPro && (
+                <Text size="md" fw={600} >
+                  TOM: {currentSong?.key}
+                </Text>
+              )
+            }
             <Text size="md" fw={600}>
               BPM: <span style={{ fontWeight: 700 }}>{currentSong?.bpm || '-'}</span>
             </Text>
@@ -413,31 +388,42 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
           {/* Bloco principal: vídeo, controles, volumes (80%) */}
           <Stack style={{ flex: 8, minWidth: 0 }}>
             <Group gap="xl" align="center" style={{ marginBottom: 8, marginTop: 8 }}>
-              <Group gap={4} align="center">
-                <Tooltip label="Diminuir tom">
-                  <Button size="xs" variant="subtle" onClick={handleTransposeDown} disabled={currentTransposition <= -14}><IconArrowDown size={16} /></Button>
-                </Tooltip>
-                <Tooltip label="Selecionar tom">
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    color="blue"
-                    onClick={() => setKeyModalOpen(true)}
-                    style={{ fontWeight: 700, minWidth: 60 }}
-                  >
-                    TOM: {getTransposedKey(currentSong?.key || '-', currentTransposition)}
-                    {currentTransposition !== 0 && (
-                      <span style={{ fontWeight: 400, fontSize: 14, marginLeft: 4, color: '#888' }}>({currentTransposition > 0 ? '+' : ''}{currentTransposition})</span>
-                    )}
-                  </Button>
-                </Tooltip>
-                <Tooltip label="Aumentar tom">
-                  <Button size="xs" variant="subtle" onClick={handleTransposeUp} disabled={currentTransposition >= 14}><IconArrowUp size={16} /></Button>
-                </Tooltip>
-                <Tooltip label="Resetar tom">
-                  <Button size="xs" variant="light" color="gray" onClick={handleTransposeReset} style={{ marginLeft: 4 }}><IconRefresh size={14} /></Button>
-                </Tooltip>
-              </Group>
+              {
+                isPro && (
+                  <Group gap={4} align="center">
+                    <Tooltip label="Diminuir tom">
+                      <Button size="xs" variant="subtle" onClick={handleTransposeDown} disabled={currentTransposition <= -14}><IconArrowDown size={16} /></Button>
+                    </Tooltip>
+                    <Tooltip label="Selecionar tom">
+                      <Button
+                        size="xs"
+                        variant="outline"
+                        color="blue"
+                        onClick={() => setKeyModalOpen(true)}
+                        style={{ fontWeight: 700, minWidth: 60 }}
+                      >
+                        TOM: {getTransposedKey(currentSong?.key || '-', currentTransposition)}
+                        {currentTransposition !== 0 && (
+                          <span style={{ fontWeight: 400, fontSize: 14, marginLeft: 4, color: '#888' }}>({currentTransposition > 0 ? '+' : ''}{currentTransposition})</span>
+                        )}
+                      </Button>
+                    </Tooltip>
+                    <Tooltip label="Aumentar tom">
+                      <Button size="xs" variant="subtle" onClick={handleTransposeUp} disabled={currentTransposition >= 14}><IconArrowUp size={16} /></Button>
+                    </Tooltip>
+                    <Tooltip label="Resetar tom">
+                      <Button size="xs" variant="light" color="gray" onClick={handleTransposeReset} style={{ marginLeft: 4 }}><IconRefresh size={14} /></Button>
+                    </Tooltip>
+                  </Group>
+                )
+              }
+              {
+                !isPro && (
+                  <Text size="md" fw={600} color="#228be6">
+                    TOM: {currentSong?.key}
+                  </Text>
+                )
+              }
               <Text size="md" fw={600} color="#228be6">
                 BPM: <span style={{ fontWeight: 700 }}>{currentSong?.bpm || '-'}</span>
               </Text>

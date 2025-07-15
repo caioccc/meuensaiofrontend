@@ -1,15 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import AppLayout from '@/components/AppLayout';
-import { Anchor, Breadcrumbs, Container, Grid, Loader, Text, TextInput, Title, Button, Group } from '@mantine/core';
-import { IconSearch, IconFileDownload } from '@tabler/icons-react';
+import SetlistPDF from '@/components/SetlistPDF';
+import { useAuth } from '@/contexts/AuthContext';
+import { Anchor, Breadcrumbs, Button, Container, Grid, Group, Loader, Text, TextInput, Title } from '@mantine/core';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import { IconFileDownload, IconSearch } from '@tabler/icons-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import api from '../../../lib/axios';
 import MusicCard from '../../components/MusicCard';
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import SetlistPDF from '@/components/SetlistPDF';
 
 export default function SetlistViewPage() {
   const router = useRouter();
@@ -19,6 +20,8 @@ export default function SetlistViewPage() {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
+
+  const { isPro } = useAuth();
 
   useEffect(() => {
     setIsClient(true);
@@ -49,7 +52,7 @@ export default function SetlistViewPage() {
         </Breadcrumbs>
         <Group justify="space-between" mb="lg">
           <Title order={2}>Setlist: {setlist?.name}</Title>
-          {isClient && setlist && (
+          {isClient && setlist && isPro && (
             <PDFDownloadLink
               document={<SetlistPDF setlist={setlist} />}
               fileName={`${setlist.name}.pdf`}
