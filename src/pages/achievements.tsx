@@ -4,6 +4,7 @@ import { IconTrophy, IconLock, IconCategory } from '@tabler/icons-react';
 import api from '../../lib/axios';
 import AppLayout from '@/components/AppLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { useTranslation } from 'next-i18next';
 
 interface Achievement {
   id: number;
@@ -16,6 +17,7 @@ interface Achievement {
 }
 
 const AchievementsPage = () => {
+  const { t } = useTranslation('common');
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +30,7 @@ const AchievementsPage = () => {
         setAchievements(response.data);
         setError(null);
       } catch (err) {
-        setError('Falha ao carregar as conquistas. Tente novamente mais tarde.');
+        setError(t('achievementsPage.loadError'));
         console.error(err);
       } finally {
         setLoading(false);
@@ -36,7 +38,7 @@ const AchievementsPage = () => {
     };
 
     fetchAchievements();
-  }, []);
+  }, [t]);
 
   const groupedAchievements = achievements.reduce((acc, achievement) => {
     const category = achievement.category;
@@ -48,11 +50,11 @@ const AchievementsPage = () => {
   }, {} as Record<string, Achievement[]>);
 
   const categoryNames: Record<string, string> = {
-    ONBOARDING: 'Primeiros Passos',
-    REPERTORIO: 'Repertório',
-    PERFORMANCE: 'Performance',
-    PRO: 'Usuário PRO',
-    SOCIAL: 'Social',
+    ONBOARDING: t('achievementsPage.categories.ONBOARDING'),
+    REPERTORIO: t('achievementsPage.categories.REPERTORIO'),
+    PERFORMANCE: t('achievementsPage.categories.PERFORMANCE'),
+    PRO: t('achievementsPage.categories.PRO'),
+    SOCIAL: t('achievementsPage.categories.SOCIAL'),
   };
 
   if (loading) {
@@ -61,7 +63,7 @@ const AchievementsPage = () => {
         <Container>
           <Group justify="center" mt="xl">
             <Loader />
-            <Text>Carregando conquistas...</Text>
+            <Text>{t('achievementsPage.loading')}</Text>
           </Group>
         </Container>
       </AppLayout>
@@ -72,7 +74,7 @@ const AchievementsPage = () => {
     return (
       <AppLayout>
         <Container>
-          <Alert title="Erro" color="red" withCloseButton>
+          <Alert title={t('achievementsPage.errorTitle')} color="red" withCloseButton>
             {error}
           </Alert>
         </Container>
@@ -80,13 +82,39 @@ const AchievementsPage = () => {
     );
   }
 
+  // Dicionário de traduções por id
+  const achievementTranslations: Record<number, { title: string; description: string }> = {
+    1: { title: t('achievementsPage.achievements.1.title'), description: t('achievementsPage.achievements.1.description') },
+    2: { title: t('achievementsPage.achievements.2.title'), description: t('achievementsPage.achievements.2.description') },
+    3: { title: t('achievementsPage.achievements.3.title'), description: t('achievementsPage.achievements.3.description') },
+    4: { title: t('achievementsPage.achievements.4.title'), description: t('achievementsPage.achievements.4.description') },
+    5: { title: t('achievementsPage.achievements.5.title'), description: t('achievementsPage.achievements.5.description') },
+    6: { title: t('achievementsPage.achievements.6.title'), description: t('achievementsPage.achievements.6.description') },
+    7: { title: t('achievementsPage.achievements.7.title'), description: t('achievementsPage.achievements.7.description') },
+    8: { title: t('achievementsPage.achievements.8.title'), description: t('achievementsPage.achievements.8.description') },
+    9: { title: t('achievementsPage.achievements.9.title'), description: t('achievementsPage.achievements.9.description') },
+    10: { title: t('achievementsPage.achievements.10.title'), description: t('achievementsPage.achievements.10.description') },
+    11: { title: t('achievementsPage.achievements.11.title'), description: t('achievementsPage.achievements.11.description') },
+    12: { title: t('achievementsPage.achievements.12.title'), description: t('achievementsPage.achievements.12.description') },
+    13: { title: t('achievementsPage.achievements.13.title'), description: t('achievementsPage.achievements.13.description') },
+    14: { title: t('achievementsPage.achievements.14.title'), description: t('achievementsPage.achievements.14.description') },
+    15: { title: t('achievementsPage.achievements.15.title'), description: t('achievementsPage.achievements.15.description') },
+    16: { title: t('achievementsPage.achievements.16.title'), description: t('achievementsPage.achievements.16.description') },
+    17: { title: t('achievementsPage.achievements.17.title'), description: t('achievementsPage.achievements.17.description') },
+    18: { title: t('achievementsPage.achievements.18.title'), description: t('achievementsPage.achievements.18.description') },
+    19: { title: t('achievementsPage.achievements.19.title'), description: t('achievementsPage.achievements.19.description') },
+    20: { title: t('achievementsPage.achievements.20.title'), description: t('achievementsPage.achievements.20.description') },
+    21: { title: t('achievementsPage.achievements.21.title'), description: t('achievementsPage.achievements.21.description') },
+    22: { title: t('achievementsPage.achievements.22.title'), description: t('achievementsPage.achievements.22.description') },
+  };
+
   return (
     <ProtectedRoute>
       <AppLayout>
         <Container size="lg">
-          <Title order={1} mb="md">Minhas Conquistas</Title>
+          <Title order={1} mb="md">{t('achievementsPage.title')}</Title>
           <Text c="dimmed" mb="xl">
-            Veja todas as conquistas que você pode desbloquear e acompanhe seu progresso.
+            {t('achievementsPage.subtitle')}
           </Text>
 
           <Accordion defaultValue={Object.keys(groupedAchievements)[0] || ''} variant="separated">
@@ -105,10 +133,10 @@ const AchievementsPage = () => {
                               {ach.earned ? <IconTrophy size={28} /> : <IconLock size={28} />}
                             </ThemeIcon>
                             <div style={{ flex: 1 }}>
-                              <Text fw={700}>{ach.title}</Text>
-                              <Text size="sm" c="dimmed">{ach.description}</Text>
+                              <Text fw={700}>{achievementTranslations[ach.id]?.title || ach.title}</Text>
+                              <Text size="sm" c="dimmed">{achievementTranslations[ach.id]?.description || ach.description}</Text>
                               <Badge color="yellow" variant="light" mt="sm">
-                                {ach.points} Pontos
+                                {ach.points} {t('achievementsPage.points')}
                               </Badge>
                             </div>
                           </Group>

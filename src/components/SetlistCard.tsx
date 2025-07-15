@@ -1,3 +1,4 @@
+import { useTranslation } from 'next-i18next';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Carousel } from '@mantine/carousel';
 import { ActionIcon, Badge, Box, Button, Card, Center, Group, Menu, Modal, Text } from '@mantine/core';
@@ -28,6 +29,7 @@ interface Setlist {
 }
 
 export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, onRemoved?: () => void }) {
+  const { t } = useTranslation('common');
   const router = useRouter();
   const isMobile = useMediaQuery('(max-width: 48em)');
   const [modalOpen, setModalOpen] = useState(false);
@@ -62,11 +64,21 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
     setLoading(true);
     try {
       await api.delete(`/setlists/${setlist.id}/`);
-      showNotification({ color: 'green', title: 'Setlist removido', message: 'Setlist removido com sucesso!', id: 'setlist-removed' });
+      showNotification({
+        color: 'green',
+        title: t('setlistCard.notificationDeleteTitle'),
+        message: t('setlistCard.notificationDeleteSuccess'),
+        id: 'setlist-removed',
+      });
       if (onRemoved) onRemoved();
       setModalOpen(false);
     } catch (e: any) {
-      showNotification({ color: 'red', title: 'Erro ao remover', message: e?.response?.data?.detail || e.message || 'Erro ao remover setlist', id: 'setlist-remove-error' });
+      showNotification({
+        color: 'red',
+        title: t('setlistCard.notificationDeleteErrorTitle'),
+        message: e?.response?.data?.detail || e.message || t('setlistCard.notificationDeleteError'),
+        id: 'setlist-remove-error',
+      });
       setModalOpen(false);
     } finally {
       setLoading(false);
@@ -82,28 +94,29 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
   async function handleShareWhatsapp() {
     const title = localSetlist.name;
     const qtd = localSetlist.songs.length;
-    const musicas = localSetlist.songs.map((s, i) => `🎵 ${i + 1}. ${s.title}${s.artist ? ' - ' + s.artist : ''}`).join("\n");
+    const musicas = localSetlist.songs.map((s, i) => t('setlistCard.whatsappSong', { index: i + 1, title: s.title, artist: s.artist })).join('\n');
     const url = `${window.location.origin}/player/setlist/${localSetlist.id}`;
     const texto =
-      `🔥 Confira minha setlist exclusiva no *Setlistify*!\n` +
-      `\n` +
-      `🎤 *${title}*\n` +
-      `🎼 Total de músicas: *${qtd}*\n` +
-      `-----------------------------\n` +
-      `${musicas}\n` +
-      `-----------------------------\n` +
-      `\n` +
-      `👉 Ouça, toque e compartilhe: ${url}\n` +
-      `\n` +
-      `🚀 Crie suas próprias setlists em ${window.location.origin}`;
-    // Registrar ação de compartilhamento de setlist
+      t('setlistCard.whatsappHeader') + '\n' +
+      '\n' +
+      t('setlistCard.whatsappTitle', { title }) + '\n' +
+      t('setlistCard.whatsappTotalSongs', { qtd }) + '\n' +
+      '-----------------------------\n' +
+      musicas + '\n' +
+      '-----------------------------\n' +
+      '\n' +
+      t('setlistCard.whatsappListen', { url }) + '\n' +
+      '\n' +
+      t('setlistCard.whatsappFooter', { origin: window.location.origin });
+    // Registrar ação de compartilhamento
     try {
       await api.post('/actions/record/', {
         action: 'share',
         related_object_id: String(localSetlist.id),
       });
     } catch (error) {
-      console.log('Erro ao registrar ação de compartilhamento:', error);
+      // eslint-disable-next-line no-console
+      console.log('Error recording share action:', error);
     }
     window.open(`https://api.whatsapp.com/send/?&text=${encodeURIComponent(texto)}`, '_blank');
   }
@@ -143,13 +156,13 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
             </Menu.Target>
             <Menu.Dropdown>
               <Menu.Item leftSection={<IconPlayerPlay size={16} />} onClick={() => router.push(`/player/setlist/${localSetlist.id}`)}>
-                Tocar
+                {t('setlistCard.menuPlay')}
               </Menu.Item>
               <Menu.Item leftSection={<IconEye size={16} />} onClick={() => router.push(`/setlists/${localSetlist.id}`)}>
-                Acessar
+                {t('setlistCard.menuAccess')}
               </Menu.Item>
               <Menu.Item leftSection={<IconBrandWhatsapp size={16} color="#25D366" />} onClick={handleShareWhatsapp}>
-                Enviar no WhatsApp
+                {t('setlistCard.menuWhatsapp')}
               </Menu.Item>
               {/* <PDFDownloadLink
                 document={<SetlistPDF setlist={localSetlist} />}
@@ -162,7 +175,7 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
                 )}
               </PDFDownloadLink> */}
               <Menu.Item leftSection={<IconTrash size={16} />} color="red" onClick={() => setModalOpen(true)}>
-                Remover
+                {t('setlistCard.menuRemove')}
               </Menu.Item>
             </Menu.Dropdown>
           </Menu>
@@ -177,7 +190,7 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
                 })()}
               </Text>
             )}
-            <Badge color="blue" variant="light" mb={8}>{localSetlist.songs.length} músicas</Badge>
+            <Badge color="blue" variant="light" mb={8}>{localSetlist.songs.length} {t('setlistCard.songs')}</Badge>
             <Box mt={4} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {localSetlist.songs.slice(0, 3).map((s, idx) => (
                 <Text key={s.id} size="sm" color="dimmed" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 220 }}>
@@ -196,7 +209,7 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
             style={{ position: 'absolute', bottom: 0, left: 0, right: 0, borderRadius: 0, zIndex: 2, height: 38 }}
             onClick={() => router.push(`/player/setlist/${localSetlist.id}`)}
           >
-            Tocar
+            {t('setlistCard.buttonPlay')}
           </Button>
         </>
       ) : (
@@ -258,13 +271,13 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
               </Menu.Target>
               <Menu.Dropdown>
                 <Menu.Item leftSection={<IconEye size={16} />} onClick={() => router.push(`/setlists/${localSetlist.id}`)}>
-                  Acessar
+                  {t('setlistCard.menuAccess')}
                 </Menu.Item>
                 <Menu.Item leftSection={<IconPlayerPlay size={16} />} onClick={() => router.push(`/player/setlist/${localSetlist.id}`)}>
-                  Tocar
+                  {t('setlistCard.menuPlay')}
                 </Menu.Item>
                 <Menu.Item leftSection={<IconBrandWhatsapp size={16} color="#25D366" />} onClick={handleShareWhatsapp}>
-                  Enviar no WhatsApp
+                  {t('setlistCard.menuWhatsapp')}
                 </Menu.Item>
                 {/* <PDFDownloadLink
                   document={<SetlistPDF setlist={localSetlist} />}
@@ -277,7 +290,7 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
                   )}
                 </PDFDownloadLink> */}
                 <Menu.Item leftSection={<IconTrash size={16} />} color="red" onClick={() => setModalOpen(true)}>
-                  Remover
+                  {t('setlistCard.menuRemove')}
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>
@@ -289,7 +302,7 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
               style={{ position: 'absolute', right: 16, bottom: 8, zIndex: 1 }}
               onClick={() => router.push(`/player/setlist/${localSetlist.id}`)}
             >
-              Tocar
+              {t('setlistCard.buttonPlay')}
             </Button>
             <div>
               <Text mb={4}>{localSetlist.name}</Text>
@@ -302,7 +315,7 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
                   })()}
                 </Text>
               )}
-              <Badge color="blue" variant="light" mb={8}>{localSetlist.songs.length} músicas</Badge>
+              <Badge color="blue" variant="light" mb={8}>{localSetlist.songs.length} {t('setlistCard.songs')}</Badge>
               <Box mt={4} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {localSetlist.songs.slice(0, 3).map((s, idx) => (
                   <Text key={s.id} size="sm" color="dimmed" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 220 }}>
@@ -317,11 +330,11 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
           </Box>
         </Group>
       )}
-      <Modal opened={modalOpen} onClose={() => setModalOpen(false)} title="Remover setlist" centered>
-        <Text>Tem certeza que deseja remover este setlist?</Text>
+      <Modal opened={modalOpen} onClose={() => setModalOpen(false)} title={t('setlistCard.modalRemoveTitle')} centered>
+        <Text>{t('setlistCard.modalRemoveText')}</Text>
         <Group mt="md" justify="flex-end">
-          <Button variant="default" onClick={() => setModalOpen(false)}>Cancelar</Button>
-          <Button color="red" loading={loading} onClick={handleRemove}>Remover</Button>
+          <Button variant="default" onClick={() => setModalOpen(false)}>{t('setlistCard.cancel')}</Button>
+          <Button color="red" loading={loading} onClick={handleRemove}>{t('setlistCard.menuRemove')}</Button>
         </Group>
       </Modal>
     </Card>

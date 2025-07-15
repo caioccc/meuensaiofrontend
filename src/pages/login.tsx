@@ -3,6 +3,7 @@ import { GoogleLoginButton } from '@/components/GoogleLoginButton';
 import { Button, Container, Divider, Group, Loader, Paper, PasswordInput, TextInput, Title } from '@mantine/core';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import axios from '../../lib/axios';
 import { useAuth } from '../contexts/AuthContext';
@@ -14,6 +15,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { isAuthenticated, login } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -32,16 +34,16 @@ export default function LoginPage() {
       login(res.data.access, res.data.refresh);
       router.push('/');
     } catch (err: any) {
-      let msg = 'Usuário ou senha inválidos';
+      let msg = t('login.invalid_credentials', 'Usuário ou senha inválidos');
       if (err?.response?.data?.detail) {
         if (err.response.data.detail === 'No active account found with the given credentials') {
-          msg = 'Nenhuma conta ativa encontrada com as credenciais fornecidas';
+          msg = t('login.no_active_account', 'Nenhuma conta ativa encontrada com as credenciais fornecidas');
         } else if (err?.response?.data?.error) {
-          msg = 'Nenhuma conta ativa encontrada com as credenciais fornecidas';
+          msg = t('login.no_active_account', 'Nenhuma conta ativa encontrada com as credenciais fornecidas');
         }
       }
       setError(msg);
-      console.log('Erro ao fazer login:', err);
+      console.log(t('login.login_error', 'Erro ao fazer login:'), err);
     } finally {
       setLoading(false);
     }
@@ -50,28 +52,48 @@ export default function LoginPage() {
   return (
     <div className={classes.wrapper}>
       <Paper className={classes.form}>
+        {/* <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+          <LanguageSwitcher size="xs" />
+        </div> */}
         <Title order={2} className={classes.title}>
-          Bem vindo ao Setlistify
+          {t('login.welcome', 'Bem vindo ao Setlistify')}
         </Title>
 
         <Container size={420} my={40}>
           <Paper withBorder shadow="md" p={30} mt={30} radius="md">
             <form onSubmit={handleSubmit(onSubmit)}>
-              <TextInput label="E-mail" placeholder="seu@email.com" {...register('email', { required: true })} error={errors.email && 'Campo obrigatório'} />
+              <TextInput
+                label={t('login.email_label', 'E-mail')}
+                placeholder={t('login.email_placeholder', 'seu@email.com')}
+                {...register('email', { required: true })}
+                error={errors.email && t('login.required_field', 'Campo obrigatório')}
+              />
               <PasswordInput
-                label="Senha" type="password" mt="md" {...register('password', { required: true })} error={errors.password && 'Campo obrigatório'} />
+                label={t('login.password_label', 'Senha')}
+                type="password"
+                mt="md"
+                {...register('password', { required: true })}
+                error={errors.password && t('login.required_field', 'Campo obrigatório')}
+              />
               {error && <div style={{ color: 'red', marginTop: 8 }}>{error}</div>}
-              <Button fullWidth mt="xl" type="submit" loading={loading} disabled={loading} leftSection={loading ? <Loader size={18} color="white" /> : undefined}>
-                {loading ? <Loader size={18} color="white" /> : "Entrar"}
+              <Button
+                fullWidth
+                mt="xl"
+                type="submit"
+                loading={loading}
+                disabled={loading}
+                leftSection={loading ? <Loader size={18} color="white" /> : undefined}
+              >
+                {loading ? <Loader size={18} color="white" /> : t('login.enter', 'Entrar')}
               </Button>
             </form>
-            <Divider label={'Ou entre com'} my="lg" />
+            <Divider label={t('login.or_login_with', 'Ou entre com')} my="lg" />
 
             <Group justify="center">
               <GoogleLoginButton />
             </Group>
 
-            <Divider my="lg" label="ou" labelPosition="center" />
+            <Divider my="lg" label={t('login.or', 'ou')} labelPosition="center" />
 
             <Button
               variant="subtle"
@@ -79,7 +101,7 @@ export default function LoginPage() {
               mt="md"
               onClick={() => router.push('/register')}
             >
-              Não tem conta? Cadastre-se
+              {t('login.no_account', 'Não tem conta? Cadastre-se')}
             </Button>
           </Paper>
         </Container>

@@ -5,8 +5,10 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import api from "../../lib/axios";
 import Player from "../components/Player";
+import { useTranslation } from "next-i18next";
 
 export default function PlayerPage() {
+  const { t } = useTranslation('common');
   const router = useRouter();
   const { id } = router.query;
   const [song, setSong] = useState<any>(null);
@@ -20,7 +22,7 @@ export default function PlayerPage() {
         related_object_id: objectId,
       });
     } catch (error) {
-      console.log('Erro ao registrar ação:', error);
+      console.log(t('playerPage.actionError'), error);
     }
   };
 
@@ -41,7 +43,7 @@ export default function PlayerPage() {
   return (
     <AppLayout>
       <Container>
-        <Title order={2}>Player</Title>
+        <Title order={2}>{t('playerPage.title')}</Title>
         {song ? (
           <>
             <Text>{song.title}</Text>
@@ -50,7 +52,7 @@ export default function PlayerPage() {
             />
           </>
         ) : (
-          <Text color="dimmed">Música não encontrada.</Text>
+          <Text color="dimmed">{t('playerPage.notFound')}</Text>
         )}
       </Container>
     </AppLayout>

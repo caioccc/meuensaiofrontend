@@ -9,10 +9,12 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'next-i18next';
 import api from '../../../lib/axios';
 import MusicCard from '../../components/MusicCard';
 
 export default function SetlistViewPage() {
+  const { t } = useTranslation('common');
   const router = useRouter();
   const { id } = router.query;
   const [setlist, setSetlist] = useState<any>(null);
@@ -46,12 +48,12 @@ export default function SetlistViewPage() {
     <AppLayout>
       <Container size="lg" py="xl">
         <Breadcrumbs mb="md">
-          <Anchor onClick={() => router.push('/')}>Início</Anchor>
-          <Anchor onClick={() => router.push('/setlists')}>Setlists</Anchor>
+          <Anchor onClick={() => router.push('/')}>{t('setlistsPage.breadcrumbHome')}</Anchor>
+          <Anchor onClick={() => router.push('/setlists')}>{t('setlistsPage.breadcrumbSetlists')}</Anchor>
           <Text>{setlist?.name}</Text>
         </Breadcrumbs>
         <Group justify="space-between" mb="lg">
-          <Title order={2}>Setlist: {setlist?.name}</Title>
+          <Title order={2}>{t('setlistsPage.title')}: {setlist?.name}</Title>
           {isClient && setlist && isPro && (
             <PDFDownloadLink
               document={<SetlistPDF setlist={setlist} />}
@@ -65,7 +67,7 @@ export default function SetlistViewPage() {
                   variant="outline"
                   color="blue"
                 >
-                  Exportar para PDF
+                  {t('setlistsPage.exportPDF')}
                 </Button>
               )}
             </PDFDownloadLink>
@@ -82,7 +84,7 @@ export default function SetlistViewPage() {
         )}
         <TextInput
           leftSection={<IconSearch size={16} />}
-          placeholder="Buscar música por nome ou artista"
+          placeholder={t('setlistsPage.searchSongPlaceholder')}
           value={search}
           onChange={e => setSearch(e.currentTarget.value)}
           mb="md"
@@ -108,7 +110,7 @@ export default function SetlistViewPage() {
           </Grid>
         )}
         {filteredSongs.length === 0 && !loading && (
-          <Text color="dimmed" ta="center" mt="md">Nenhuma música encontrada.</Text>
+          <Text color="dimmed" ta="center" mt="md">{t('setlistsPage.noSongsFound')}</Text>
         )}
       </Container>
     </AppLayout>

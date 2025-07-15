@@ -3,6 +3,7 @@ import { ActionIcon, Badge, Button, Card, Group, Image, Loader, Menu, Modal, Num
 import { notifications } from '@mantine/notifications';
 import { IconBrandWhatsapp, IconClock, IconDotsVertical, IconEdit, IconEye, IconMusic, IconPlayerPlay, IconTrash, IconWaveSine } from '@tabler/icons-react';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import api from '../../lib/axios';
@@ -33,6 +34,7 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
       console.log('Erro ao registrar ação:', error);
     }
   };
+  const { t } = useTranslation();
   const [hovered, setHovered] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -51,15 +53,15 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
       await onDelete?.();
       notifications.show({
         color: 'green',
-        title: 'Removida',
-        message: 'Música removida com sucesso!',
+        title: t('musicCard.notificationDeleteTitle'),
+        message: t('musicCard.notificationDeleteSuccess'),
         icon: <IconTrash size={18} />, position: 'top-right', autoClose: 2000
       });
     } catch {
       notifications.show({
         color: 'red',
-        title: 'Erro',
-        message: 'Erro ao remover música',
+        title: t('musicCard.notificationErrorTitle'),
+        message: t('musicCard.notificationDeleteError'),
         icon: <IconTrash size={18} />, position: 'top-right', autoClose: 2000
       });
     } finally {
@@ -83,16 +85,16 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
       }
       notifications.show({
         color: 'green',
-        title: 'Atualizada',
-        message: 'Música atualizada com sucesso!',
+        title: t('musicCard.notificationEditTitle'),
+        message: t('musicCard.notificationEditSuccess'),
         icon: <IconEdit size={18} />, position: 'top-right', autoClose: 2000
       });
       setEditModalOpen(false);
     } catch {
       notifications.show({
         color: 'red',
-        title: 'Erro',
-        message: 'Erro ao atualizar música',
+        title: t('musicCard.notificationErrorTitle'),
+        message: t('musicCard.notificationEditError'),
         icon: <IconEdit size={18} />, position: 'top-right', autoClose: 2000
       });
     } finally {
@@ -102,17 +104,21 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
 
   // Função para compartilhar música no WhatsApp
   async function handleShareWhatsapp() {
-    const musica = `🎵 *${title}*${typeof songKey === 'string' && songKey.trim() ? ` (Tom: ${songKey})` : ''}${bpm ? ` • ${bpm} BPM` : ''}`;
-    const duracao = duration ? `⏱️ Duração: ${duration}\n` : '';
+    const musica = t('musicCard.whatsappSong', {
+      title,
+      songKey: typeof songKey === 'string' && songKey.trim() ? songKey : undefined,
+      bpm: bpm || undefined
+    });
+    const duracao = duration ? t('musicCard.whatsappDuration', { duration }) + '\n' : '';
     const url = `${window.location.origin}/player?id=${id}`;
     const texto =
-      `🔥 Olha essa música do meu repertório no *Setlistify*!\n\n` +
-      `${musica}\n` +
-      `${duracao}` +
-      `\n` +
-      `👉 Ouça agora: ${url}\n` +
-      `\n` +
-      `🚀 Crie seu repertório em ${window.location.origin}`;
+      t('musicCard.whatsappHeader') + '\n\n' +
+      musica + '\n' +
+      duracao +
+      '\n' +
+      t('musicCard.whatsappListen', { url }) + '\n' +
+      '\n' +
+      t('musicCard.whatsappFooter', { origin: window.location.origin });
     // Registrar ação de compartilhamento
     await recordAction('share', String(id));
     window.open(`https://api.whatsapp.com/send/?&text=${encodeURIComponent(texto)}`, '_blank');
@@ -158,16 +164,16 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
           </Menu.Target>
           <Menu.Dropdown>
             <Menu.Item leftSection={<IconPlayerPlay size={16} />} onClick={() => router.push({ pathname: '/player', query: { youtubeId: id, id } })}>
-              Tocar música
+              {t('musicCard.menuPlay')}
             </Menu.Item>
             <Menu.Item leftSection={<IconEdit size={16} />} onClick={() => setEditModalOpen(true)}>
-              Editar música
+              {t('musicCard.menuEdit')}
             </Menu.Item>
             <Menu.Item leftSection={<IconBrandWhatsapp size={16} color="#25D366" />} onClick={handleShareWhatsapp}>
-              Enviar no WhatsApp
+              {t('musicCard.menuWhatsapp')}
             </Menu.Item>
             <Menu.Item leftSection={<IconTrash size={16} />} color="red" onClick={() => setModalOpen(true)}>
-              Remover
+              {t('musicCard.menuRemove')}
             </Menu.Item>
           </Menu.Dropdown>
         </Menu>
@@ -175,73 +181,73 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
       {/* Badges responsivos, quebram linha se necessário */}
       <Group gap={4} wrap="wrap" style={{ rowGap: 4, columnGap: 4, marginBottom: compact ? 0 : 36 }}>
         {bpm && (
-          <Badge color={compact ? 'gray' : 'blue'} leftSection={<IconWaveSine size={14} />}>{bpm} BPM</Badge>
+          <Badge color={compact ? 'gray' : 'blue'} leftSection={<IconWaveSine size={14} />}>{t('musicCard.badgeBpm', { bpm })}</Badge>
         )}
         {compact && typeof songKey === 'string' && songKey.trim() && (
-          <Badge color="teal" leftSection={<IconMusic size={14} />}>Tom: {songKey}</Badge>
+          <Badge color="teal" leftSection={<IconMusic size={14} />}>{t('musicCard.badgeKey', { key: songKey })}</Badge>
         )}
-        {!compact && duration && <Badge color="gray" leftSection={<IconClock size={14} />}>{duration}</Badge>}
+        {!compact && duration && <Badge color="gray" leftSection={<IconClock size={14} />}>{t('musicCard.badgeDuration', { duration })}</Badge>}
         {!compact && typeof songKey === 'string' && songKey.trim() && (
-          <Badge color="teal" leftSection={<IconMusic size={14} />}>Tom: {songKey}</Badge>
+          <Badge color="teal" leftSection={<IconMusic size={14} />}>{t('musicCard.badgeKey', { key: songKey })}</Badge>
         )}
       </Group>
       {/* Botão de play ocupa toda a linha inferior */}
       {!compact && (
-        <Button
-          color="blue"
-          variant="filled"
-          size="md"
-          leftSection={<IconPlayerPlay size={18} />}
-          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, borderRadius: 0, zIndex: 2, height: 38 }}
-          onClick={() => router.push({ pathname: '/player', query: { youtubeId: id, id } })}
-          aria-label="Tocar música"
-        >
-          Tocar
-        </Button>
+      <Button
+        color="blue"
+        variant="filled"
+        size="md"
+        leftSection={<IconPlayerPlay size={18} />}
+        style={{ position: 'absolute', bottom: 0, left: 0, right: 0, borderRadius: 0, zIndex: 2, height: 38 }}
+        onClick={() => router.push({ pathname: '/player', query: { youtubeId: id, id } })}
+        aria-label={t('musicCard.menuPlay')}
+      >
+        {t('musicCard.menuPlay')}
+      </Button>
       )}
       {/* Modal de remover */}
-      <Modal opened={modalOpen} onClose={() => setModalOpen(false)} title="Remover música" centered>
-        <Text>Tem certeza que deseja remover esta música?</Text>
+      <Modal opened={modalOpen} onClose={() => setModalOpen(false)} title={t('musicCard.modalRemoveTitle')} centered>
+        <Text>{t('musicCard.modalRemoveText')}</Text>
         <Group mt="md" justify="flex-end">
-          <Button variant="default" onClick={() => setModalOpen(false)}>Cancelar</Button>
-          <Button color="red" loading={loadingDelete} onClick={handleDelete}>Remover</Button>
+          <Button variant="default" onClick={() => setModalOpen(false)}>{t('musicCard.cancel')}</Button>
+          <Button color="red" loading={loadingDelete} onClick={handleDelete}>{t('musicCard.menuRemove')}</Button>
         </Group>
       </Modal>
       {/* Modal de editar */}
-      <Modal opened={editModalOpen} onClose={() => setEditModalOpen(false)} title="Editar música" size={isMobile ? 'xl' : 'xl'} centered>
+      <Modal opened={editModalOpen} onClose={() => setEditModalOpen(false)} title={t('musicCard.modalEditTitle')} size={isMobile ? 'xl' : 'xl'} centered>
         <Group align="flex-start" gap="xl">
           {/* Formulário de edição */}
           <Stack style={{ minWidth: 320, flex: 1 }}>
             <Text fw={600} mb="sm">{title}</Text>
             <TextInput
-              label="Tom customizado"
+              label={t('musicCard.inputKeyLabel')}
               value={editKey}
               onChange={e => setEditKey(e.currentTarget.value)}
-              placeholder="Ex: C, D#, F#m..."
+              placeholder={t('musicCard.inputKeyPlaceholder')}
               mb="md"
             />
             <NumberInput
-              label="BPM customizado"
+              label={t('musicCard.inputBpmLabel')}
               value={editBpm}
               onChange={value => setEditBpm(value === '' ? '' : Number(value))}
               min={30}
               max={300}
               step={1}
-              placeholder="Ex: 120"
+              placeholder={t('musicCard.inputBpmPlaceholder')}
             />
             <Group mt="md" justify="flex-end">
-              <Button variant="default" onClick={() => setEditModalOpen(false)}>Cancelar</Button>
-              <Button color="blue" loading={loadingEdit} onClick={handleEdit}>Salvar</Button>
+              <Button variant="default" onClick={() => setEditModalOpen(false)}>{t('musicCard.cancel')}</Button>
+              <Button color="blue" loading={loadingEdit} onClick={handleEdit}>{t('musicCard.save')}</Button>
             </Group>
           </Stack>
           {/* Histórico/timeline */}
           <Stack style={{ minWidth: 320, flex: 1, maxWidth: 420 }}>
-            <Text fw={600} mb="xs">Histórico de uso</Text>
+            <Text fw={600} mb="xs">{t('musicCard.historyTitle')}</Text>
             {loadingHistory ? (
               <Loader />
             ) : history && history.setlists.length > 0 ? (
               <>
-                <Text size="sm" color="dimmed" mb="xs">{history.setlists.length} setlist{history.setlists.length > 1 ? 's' : ''} encontrad{history.setlists.length > 1 ? 'os' : 'o'}</Text>
+                <Text size="sm" color="dimmed" mb="xs">{t('musicCard.historyCount', { count: history.setlists.length })}</Text>
                 <ScrollArea h={260}>
                   <Timeline active={0} bulletSize={24} lineWidth={2}>
                     {history.setlists.map((setlist, idx) => (
@@ -251,14 +257,14 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
                         bullet={<IconEye size={16} />}
                         lineVariant={idx === 0 ? 'dashed' : 'solid'}
                       >
-                        <Text size="sm" color="dimmed">{setlist.date ? format(new Date(setlist.date), 'dd/MM/yyyy') : 'Sem data'}</Text>
+                        <Text size="sm" color="dimmed">{setlist.date ? format(new Date(setlist.date), 'dd/MM/yyyy') : t('musicCard.noDate')}</Text>
                         {
                           setlist.songs && setlist.songs.length > 0 ? (
                             <Text size="xs" color="dimmed">
                               {setlist.songs.map((s) => s.title).join(', ')}
                             </Text>
                           ) : (
-                            <Text size="xs" color="dimmed">Nenhuma música registrada</Text>
+                            <Text size="xs" color="dimmed">{t('musicCard.noSongs')}</Text>
                           )
                         }
 
@@ -268,7 +274,7 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
                 </ScrollArea>
               </>
             ) : (
-              <Text size="sm" color="dimmed">Nenhum histórico encontrado.</Text>
+              <Text size="sm" color="dimmed">{t('musicCard.noHistory')}</Text>
             )}
           </Stack>
         </Group>

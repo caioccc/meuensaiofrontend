@@ -1,4 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 import {
   ActionIcon,
   AppShell,
@@ -22,6 +23,7 @@ import { ReactNode, useEffect, useState } from "react";
 import api from '../../lib/axios';
 import OnboardingModal from "./OnboardingModal";
 import PlansModal from "./PlansModal";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 
 interface AppLayoutProps {
@@ -29,9 +31,10 @@ interface AppLayoutProps {
 }
 
 export default function AppLayout({ children }: AppLayoutProps) {
+  const { t } = useTranslation();
   const router = useRouter();
   const { user, isPro, subscription } = useAuth();
-  const userEmail = user?.email || 'usuario@email.com';
+  const userEmail = user?.email || t('appLayout.defaultEmail', 'usuario@email.com');
   const isMobile = useMediaQuery('(max-width: 48em)');
   const [navbarCollapsed, setNavbarCollapsed] = useState(false); // Começa aberto no desktop
   const pathname = usePathname();
@@ -85,19 +88,21 @@ export default function AppLayout({ children }: AppLayoutProps) {
               variant="subtle"
               color="blue"
               onClick={() => setNavbarCollapsed(c => !c)}
-              // Mostra sempre o botão de colapso
               display={{ base: 'inline-flex', sm: 'inline-flex' }}
-              aria-label="Abrir/fechar menu"
+              aria-label={t('appLayout.toggleMenu', 'Abrir/fechar menu')}
             >
               <IconMenu2 size={28} />
             </ActionIcon>
             <Group>
-              <Title order={2}>Setlistify</Title>
+              <Title order={2}>{t('appLayout.title', 'Setlistify')}</Title>
             </Group>
           </Group>
 
           <Group>
-            <Tooltip label="Mudar tema" position="bottom" withArrow>
+            {!isMobile &&
+              <LanguageSwitcher size="xs" />
+            }
+            <Tooltip label={t('appLayout.changeTheme', 'Mudar tema')} position="bottom" withArrow>
               <ActionIcon
                 variant="subtle"
                 onClick={() => toggleColorScheme()}
@@ -107,13 +112,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
               </ActionIcon>
             </Tooltip>
             {user && !onboarded && (
-              <Tooltip label="Complete seu onboarding para personalizar sua experiência" position="bottom" withArrow>
+              <Tooltip label={t('appLayout.completeOnboardingTooltip', 'Complete seu onboarding para personalizar sua experiência')} position="bottom" withArrow>
                 <ActionIcon
                   variant="light"
                   color="yellow"
                   size="lg"
                   onClick={() => setOnboardingOpen(true)}
-                  title="Complete seu onboarding para personalizar sua experiência"
+                  title={t('appLayout.completeOnboardingTooltip', 'Complete seu onboarding para personalizar sua experiência')}
                   style={{ marginLeft: 4 }}
                 >
                   <IconAlertCircle size={20} />
@@ -124,7 +129,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
               // Botão de login só aparece se não estiver autenticado
               !user && (
                 <Button variant="filled" onClick={() => router.push('/login')}>
-                  Login
+                  {t('appLayout.login', 'Login')}
                 </Button>
               )
             }
@@ -133,7 +138,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 <Group gap={8} align="center" style={{ cursor: 'pointer' }}>
                   {!isMobile && (
                     <>
-                      <Text size="sm" fw={500}>Olá, {userEmail}</Text>
+                      <Text size="sm" fw={500}>{t('appLayout.hello', { email: userEmail, defaultValue: 'Olá, {{email}}' })}</Text>
                       {subscription && (
                         <Text size="xs" fw={700} px={8} py={2} style={{
                           background: isPro ? '#228be6' : '#fab005',
@@ -143,13 +148,19 @@ export default function AppLayout({ children }: AppLayoutProps) {
                           textTransform: 'uppercase',
                           letterSpacing: 0.5,
                         }}>
-                          {isPro ? 'PRO' : (subscription.plan?.name || 'Gratuito')}
+                          {(() => {
+                            if (isPro) return t('appLayout.pro', 'PRO');
+                            if (subscription.plan?.name?.toLowerCase() === 'gratuito' || subscription.plan?.name?.toLowerCase() === 'free' || subscription.plan?.name?.toLowerCase() === 'gratis') {
+                              return t('appLayout.free', 'Gratuito');
+                            }
+                            return subscription.plan?.name || t('appLayout.free', 'Gratuito');
+                          })()}
                         </Text>
                       )}
                       {!subscription && (
                         <Text size="xs" fw={700} px={8} py={2} style={{
                           background: '#adb5bd', color: '#fff', borderRadius: 8, marginLeft: 8, textTransform: 'uppercase', letterSpacing: 0.5
-                        }}>Gratuito</Text>
+                        }}>{t('appLayout.free', 'Gratuito')}</Text>
                       )}
                     </>
                   )}
@@ -164,22 +175,27 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   <Text size="xs" c="dimmed" truncate>{userEmail}</Text>
                 </Menu.Label>
                 <Divider my="xs" />
+                {isMobile &&
+                  <Menu.Item>
+                    <LanguageSwitcher size="xs" />
+                  </Menu.Item>
+                }
                 <Menu.Item leftSection={<IconArrowUpRight size={18} />} onClick={() => {
                   setOpened(true);
                 }}>
-                  Fazer upgrade do plano
+                  {t('appLayout.upgradePlan', 'Fazer upgrade do plano')}
                 </Menu.Item>
                 <Menu.Item leftSection={<IconAlertCircle size={18} color={!onboarded ? "#fab005" : '#000'} />} onClick={() => setOnboardingOpen(true)}>
-                  {!onboarded ? 'Completar onboarding' : 'Meu onboarding'}
+                  {!onboarded ? t('appLayout.completeOnboarding', 'Completar onboarding') : t('appLayout.myOnboarding', 'Meu onboarding')}
                 </Menu.Item>
                 <Menu.Item leftSection={<IconUser size={18} />} onClick={() => router.push('/profile')}>
-                  Meu Perfil
+                  {t('appLayout.myProfile', 'Meu Perfil')}
                 </Menu.Item>
                 <Menu.Item leftSection={<IconTrophy size={18} />} onClick={() => router.push('/achievements')}>
-                  Minhas Conquistas
+                  {t('appLayout.myAchievements', 'Minhas Conquistas')}
                 </Menu.Item>
                 <Menu.Item color="red" leftSection={loadingLogout ? <Loader size={18} color="red" /> : <IconLogout size={18} />} onClick={handleLogout} disabled={loadingLogout}>
-                  Sair
+                  {t('appLayout.logout', 'Sair')}
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>
@@ -191,40 +207,40 @@ export default function AppLayout({ children }: AppLayoutProps) {
           <NavLink
             component={Link}
             href="/"
-            label="Início"
+            label={t('appLayout.home', 'Início')}
             leftSection={<IconLayoutDashboard size={18} />}
             active={pathname === "/"}
           />
           <NavLink
             component={Link}
             href="/songs"
-            label="Músicas"
+            label={t('appLayout.songs', 'Músicas')}
             leftSection={<IconMusic size={18} />}
             active={pathname === "/songs" || pathname.startsWith("/songs/")}
           />
           <NavLink
             component={Link}
             href="/setlists"
-            label="Setlists"
+            label={t('appLayout.setlists', 'Setlists')}
             leftSection={<IconTable size={18} />}
             active={pathname === "/setlists" || pathname.startsWith("/setlists/")}
           />
           <NavLink
             component={Link}
             href="/achievements"
-            label="Conquistas"
+            label={t('appLayout.achievements', 'Conquistas')}
             leftSection={<IconTrophy size={18} />}
             active={pathname === "/achievements"}
           />
           <NavLink
             component={Link}
             href="/profile"
-            label="Meu Perfil"
+            label={t('appLayout.myProfile', 'Meu Perfil')}
             leftSection={<IconUser size={18} />}
             active={pathname === "/profile"}
           />
           <NavLink
-            label="Sair"
+            label={t('appLayout.logout', 'Sair')}
             leftSection={<IconLogout size={18} />}
             color="red"
             onClick={handleLogout}
@@ -237,10 +253,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
             <NavLink
               label={
                 <Group gap={4} align="center">
-                  <Text size="xs" fw={600} color="blue.7">Fazer upgrade do plano</Text>
+                  <Text size="xs" fw={600} color="blue.7">{t('appLayout.upgradePlan', 'Fazer upgrade do plano')}</Text>
                 </Group>
               }
-              description={<Text size="xs" c="dimmed">Tenha acesso completo às setlists</Text>}
+              description={<Text size="xs" c="dimmed">{t('appLayout.upgradePlanDesc', 'Tenha acesso completo às setlists')}</Text>}
               leftSection={<IconArrowUpRight size={18} color="#228be6" />}
               onClick={() => {
                 setOpened(true);
@@ -255,7 +271,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
       </AppShell.Main>
       <AppShell.Footer>
         <Group h="100%" px="md" justify="space-between">
-          <Text size="sm">&copy; {new Date().getFullYear()} Setlistify</Text>
+          <Text size="sm">&copy; {new Date().getFullYear()} {t('appLayout.title', 'Setlistify')}</Text>
         </Group>
       </AppShell.Footer>
 

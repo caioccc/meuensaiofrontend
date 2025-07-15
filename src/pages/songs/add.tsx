@@ -8,6 +8,7 @@ import { notifications, showNotification } from '@mantine/notifications';
 import { IconCheck, IconChevronLeft, IconChevronRight, IconMusic, IconSearch, IconX } from "@tabler/icons-react";
 import { useRouter } from "next/router";
 import api from "../../../lib/axios";
+import { useTranslation } from 'next-i18next';
 
 interface YoutubeResult {
   youtube_id: string;
@@ -20,6 +21,7 @@ interface YoutubeResult {
 }
 
 export default function AddMusicPage() {
+  const { t } = useTranslation('common');
 
   useEffect(() => {
     setActive(0);
@@ -54,17 +56,15 @@ export default function AddMusicPage() {
     setLoading(true);
     setResults([]);
     setSelected(null);
-
     try {
       const res = await api.get(`/search/?q=${encodeURIComponent(search)}`);
-      console.log(res.data);
       setResults(res.data.results || []);
       setActive(1);
     } catch {
       notifications.show({
         color: 'red',
-        title: 'Erro',
-        message: 'Erro ao buscar no YouTube',
+        title: t('addSong.notification.errorTitle', 'Erro'),
+        message: t('addSong.error', 'Erro ao buscar no YouTube'),
         icon: <IconX />,
         position: 'top-right',
         autoClose: 2000,
@@ -78,14 +78,14 @@ export default function AddMusicPage() {
     if (!selected) {
       notifications.show({
         color: 'red',
-        title: 'Erro',
-        message: 'Selecione uma música antes de salvar',
+        title: t('addSong.notification.errorTitle', 'Erro'),
+        message: t('addSong.confirmText', 'Selecione uma música antes de salvar'),
         icon: <IconX />,
         position: 'top-right',
         autoClose: 2000,
       });
       return;
-    };
+    }
     setLoading(true);
     try {
       await api.post("songs/", {
@@ -97,8 +97,8 @@ export default function AddMusicPage() {
       });
       showNotification({
         color: 'green',
-        title: 'Sucesso',
-        message: 'Música adicionada com sucesso!',
+        title: t('addSong.notification.successTitle', 'Sucesso'),
+        message: t('addSong.notification.success', 'Música adicionada com sucesso!'),
         icon: <IconCheck />,
         position: 'top-right',
         autoClose: 2000,
@@ -108,14 +108,14 @@ export default function AddMusicPage() {
       if (err.response?.status === 403 && err.response.data.detail?.includes('Plano gratuito')) {
         showNotification({
           color: 'red',
-          message: err.response.data.detail || 'Você precisa de um plano pago para criar mais músicas.',
+          message: err.response.data.detail || t('addSong.notification.error', 'Você precisa de um plano pago para criar mais músicas.'),
         });
         return;
       }
       notifications.show({
         color: 'red',
-        title: 'Erro',
-        message: 'Erro ao salvar música',
+        title: t('addSong.notification.errorTitle', 'Erro'),
+        message: t('addSong.notification.error', 'Erro ao salvar música'),
         icon: <IconX />,
         position: 'top-right',
         autoClose: 2000,
@@ -157,32 +157,32 @@ export default function AddMusicPage() {
     <AppLayout>
       <Container size="100%" py="xl">
         <Breadcrumbs mb="md">
-          <Anchor onClick={() => router.push('/')}>Início</Anchor>
-          <Anchor onClick={() => router.push('/songs')}>Minhas músicas</Anchor>
-          <Text>Adicionar Música</Text>
+          <Anchor onClick={() => router.push('/')}>{t('appLayout.home', 'Início')}</Anchor>
+          <Anchor onClick={() => router.push('/songs')}>{t('songs.mySongs', 'Minhas músicas')}</Anchor>
+          <Text>{t('addSong.title', 'Adicionar Música')}</Text>
         </Breadcrumbs>
-        <Title order={2} mb="lg">Adicionar Música</Title>
+        <Title order={2} mb="lg">{t('addSong.title', 'Adicionar Música')}</Title>
         <Paper shadow="md" p="xl" radius="md" withBorder>
           <Stepper active={active} onStepClick={setActive}>
-            <Stepper.Step label="Buscar" description="YouTube">
-              <Text mb="xs">Busque por uma música no YouTube. Apenas o primeiro resultado será adicionado.</Text>
+            <Stepper.Step label={t('addSong.search', 'Buscar')} description="YouTube">
+              <Text mb="xs">{t('addSong.placeholder', 'Busque por uma música no YouTube. Apenas o primeiro resultado será adicionado.')}</Text>
               {isMobile ? (
                 <Stack>
                   <TextInput
-                    placeholder="Digite o nome da música ou artista"
+                    placeholder={t('addSong.placeholder', 'Digite o nome da música ou artista')}
                     value={search}
                     onChange={e => setSearch(e.currentTarget.value)}
                     disabled={loading}
                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                   />
                   <Button fullWidth leftSection={loading ? <Loader size={16} /> : <IconSearch size={16} />} onClick={handleSearch} loading={loading} disabled={!search.trim()}>
-                    Buscar
+                    {loading ? t('addSong.searching', 'Buscando...') : t('addSong.search', 'Buscar')}
                   </Button>
                 </Stack>
               ) : (
                 <Group>
                   <TextInput
-                    placeholder="Digite o nome da música ou artista"
+                    placeholder={t('addSong.placeholder', 'Digite o nome da música ou artista')}
                     value={search}
                     onChange={e => setSearch(e.currentTarget.value)}
                     style={{ flex: 1 }}
@@ -190,13 +190,13 @@ export default function AddMusicPage() {
                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                   />
                   <Button leftSection={loading ? <Loader size={16} /> : <IconSearch size={16} />} onClick={handleSearch} loading={loading} disabled={!search.trim()}>
-                    Buscar
+                    {loading ? t('addSong.searching', 'Buscando...') : t('addSong.search', 'Buscar')}
                   </Button>
                 </Group>
               )}
             </Stepper.Step>
-            <Stepper.Step label="Selecionar" description="Resultado">
-              <Text mb="xs">Selecione a música desejada dos resultados abaixo:</Text>
+            <Stepper.Step label={t('onboarding.select', 'Selecionar')} description={t('addSong.confirmTitle', 'Resultado')}>
+              <Text mb="xs">{t('addSong.confirmText', 'Selecione a música desejada dos resultados abaixo:')}</Text>
               {loading ? <Loader /> : (
                 <Grid gutter="md">
                   {results.map((r) => (
@@ -225,7 +225,7 @@ export default function AddMusicPage() {
                 </Grid>
               )}
             </Stepper.Step>
-            <Stepper.Step label="Detalhes" description="Preview">
+            <Stepper.Step label={t('chords', 'Detalhes')} description="Preview">
               {selected && (
                 <Stack>
                   {isMobile ? (
@@ -237,7 +237,7 @@ export default function AddMusicPage() {
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                           <Text>{selected.title}</Text>
                           <Text size="xs" color="dimmed">{selected.channel_name}</Text>
-                          <Text size="xs">Duração: {selected.duration} | {selected.view_count}</Text>
+                          <Text size="xs">{t('duration', 'Duração')}: {selected.duration} | {selected.view_count}</Text>
                         </div>
                       </Group>
                     </Card>
@@ -249,24 +249,24 @@ export default function AddMusicPage() {
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                         <Text>{selected.title}</Text>
                         <Text size="xs" color="dimmed">{selected.channel_name}</Text>
-                        <Text size="xs">Duração: {selected.duration} | {selected.view_count}</Text>
+                        <Text size="xs">{t('duration', 'Duração')}: {selected.duration} | {selected.view_count}</Text>
                       </div>
                     </Group>
                   )}
                   <Group grow>
                     <TextInput
-                      label="BPM"
+                      label={t('bpm', 'BPM')}
                       value={bpm ?? ""}
                       readOnly
-                      description="Detectado automaticamente. Você pode editar no player."
+                      description={t('musicCard.inputBpmPlaceholder', 'Detectado automaticamente. Você pode editar no player.')}
                       leftSection={<IconMusic size={16} />} min={40} max={220}
                     />
                     <Select
-                      label="Tom"
+                      label={t('key', 'Tom')}
                       data={KEY_OPTIONS}
                       value={key}
                       readOnly
-                      description="Detectado automaticamente. Você pode editar no player."
+                      description={t('musicCard.inputKeyPlaceholder', 'Detectado automaticamente. Você pode editar no player.')}
                       leftSection={<IconMusic size={16} />}
                     />
                   </Group>
@@ -276,38 +276,32 @@ export default function AddMusicPage() {
           </Stepper>
           {!isMobile && (
             <Group mt="md" style={{ justifyContent: 'space-between' }}>
-              <Button variant="default" leftSection={<IconChevronLeft size={16} />} onClick={() => setActive(a => Math.max(0, a - 1))} disabled={active === 0}>Voltar</Button>
-              {active < 2 && <Button rightSection={<IconChevronRight size={16} />} onClick={handleNext} disabled={active === 0 || (active === 1 && !selected) || (active === 1 && fetchingDetails)} loading={fetchingDetails}>Próximo</Button>}
+              <Button variant="default" leftSection={<IconChevronLeft size={16} />} onClick={() => setActive(a => Math.max(0, a - 1))} disabled={active === 0}>{t('onboarding.back', 'Voltar')}</Button>
+              {active < 2 && <Button rightSection={<IconChevronRight size={16} />} onClick={handleNext} disabled={active === 0 || (active === 1 && !selected) || (active === 1 && fetchingDetails)} loading={fetchingDetails}>{t('onboarding.next', 'Próximo')}</Button>}
               {active === 2 && (
                 <Button leftSection={loading ? <Loader size={16} /> : <IconCheck size={16} />} onClick={handleSave} loading={loading}>
-                  Salvar música
+                  {t('addSong.add', 'Salvar música')}
                 </Button>
               )}
             </Group>
           )}
-          {
-            isMobile && (
-              <Stack gap={8} mt="md">
-                {
-                  active === 2 && (
-                    <Button fullWidth leftSection={loading ? <Loader size={16} /> : <IconCheck size={16} />} onClick={handleSave} loading={loading} mt="md">
-                      Salvar música
-                    </Button>
-                  )
-                }
-                {
-                  active < 2 && active > 0 && (
-                    <Button fullWidth rightSection={<IconChevronRight size={16} />} onClick={handleNext} disabled={active === 0 || (active === 1 && !selected) || (active === 1 && fetchingDetails)} loading={fetchingDetails}>
-                      Próximo
-                    </Button>
-                  )
-                }
-                <Button fullWidth variant="default" leftSection={<IconChevronLeft size={16} />} onClick={() => setActive(a => Math.max(0, a - 1))} disabled={active === 0}>
-                  Voltar
+          {isMobile && (
+            <Stack gap={8} mt="md">
+              {active === 2 && (
+                <Button fullWidth leftSection={loading ? <Loader size={16} /> : <IconCheck size={16} />} onClick={handleSave} loading={loading} mt="md">
+                  {t('addSong.add', 'Salvar música')}
                 </Button>
-              </Stack>
-            )
-          }
+              )}
+              {active < 2 && active > 0 && (
+                <Button fullWidth rightSection={<IconChevronRight size={16} />} onClick={handleNext} disabled={active === 0 || (active === 1 && !selected) || (active === 1 && fetchingDetails)} loading={fetchingDetails}>
+                  {t('onboarding.next', 'Próximo')}
+                </Button>
+              )}
+              <Button fullWidth variant="default" leftSection={<IconChevronLeft size={16} />} onClick={() => setActive(a => Math.max(0, a - 1))} disabled={active === 0}>
+                {t('onboarding.back', 'Voltar')}
+              </Button>
+            </Stack>
+          )}
         </Paper>
       </Container>
     </AppLayout>

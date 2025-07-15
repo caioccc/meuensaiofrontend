@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import AppLayout from "@/components/AppLayout";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { useTranslation } from "react-i18next";
 import { ActionIcon, Button, Container, Grid, Group, LoadingOverlay, Modal, MultiSelect, Select, Stack, Text, TextInput, Title } from "@mantine/core";
 import { useMediaQuery } from '@mantine/hooks';
 import { IconFilter, IconPlus, IconSearch } from "@tabler/icons-react";
@@ -35,6 +36,7 @@ const KEY_OPTIONS = [
 ].map(k => ({ value: k, label: k }));
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const [songs, setSongs] = useState<SongApi[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(""); // valor realmente buscado
@@ -117,20 +119,16 @@ export default function DashboardPage() {
   }, [page]);
 
   const orderOptions = [
-    { value: "-created_at", label: "Mais recente" },
-    { value: "created_at", label: "Mais antigo" },
+    { value: "-created_at", label: t('songs.orderNewest', 'Mais recente') },
+    { value: "created_at", label: t('songs.orderOldest', 'Mais antigo') },
   ];
 
   return (
     <ProtectedRoute>
       <AppLayout>
-        {/*
-          IMPORTANTE: Para evitar múltiplos scrolls, não defina height ou overflow no Container ou no InfiniteScrollWrapper.
-          O scroll infinito já usa o scroll global (window) por padrão.
-        */}
-        <Container size="100%" py="md" /* style={{ overflow: 'visible' }} */>
+        <Container size="100%" py="md">
           <Group justify="space-between" mb="md" style={{ flexWrap: 'wrap' }}>
-            <Title order={2}>Minhas Músicas</Title>
+            <Title order={2}>{t('songs.mySongs', 'Minhas Músicas')}</Title>
             <Button
               leftSection={<IconPlus />}
               onClick={() => {
@@ -139,31 +137,30 @@ export default function DashboardPage() {
               color="blue"
               style={{ marginLeft: 'auto' }}
             >
-              Adicionar Música
+              {t('songs.addSong', 'Adicionar Música')}
             </Button>
           </Group>
           <Group mb="md" gap="xs" align="center" style={{ width: '100%' }}>
             <Text size="sm" color="dimmed">
-              Total de {totalSongs} música{totalSongs !== 1 ? 's' : ''}
+              {t('songs.totalSongs', { count: totalSongs, defaultValue: 'Total de {{count}} música' + (totalSongs !== 1 ? 's' : '') })}
             </Text>
             <Text size="sm" color="dimmed">|</Text>
             <Text size="sm" color="dimmed">
-              {totalSetlists} setlist{totalSetlists !== 1 ? 's' : ''}
+              {t('songs.totalSetlists', { count: totalSetlists, defaultValue: '{{count}} setlist' + (totalSetlists !== 1 ? 's' : '') })}
             </Text>
           </Group>
           {/* Barra de busca e filtros */}
-
           {isMobile ? (
             <Stack mb="md" gap="xs">
               <Group gap="xs" align="center" style={{ width: '100%' }}>
                 <TextInput
-                  placeholder="Buscar por título..."
+                  placeholder={t('songs.searchPlaceholder', 'Buscar por título...')}
                   leftSection={<IconSearch size={18} />}
                   value={searchInput}
                   onChange={e => setSearchInput(e.currentTarget.value)}
                   style={{ flex: 7, minWidth: 0 }}
                 />
-                <ActionIcon variant="light" color="blue" size="lg" onClick={() => setModalOpen(true)} title="Filtros avançados">
+                <ActionIcon variant="light" color="blue" size="lg" onClick={() => setModalOpen(true)} title={t('songs.advancedFilters', 'Filtros avançados')}>
                   <IconFilter size={20} />
                 </ActionIcon>
               </Group>
@@ -175,7 +172,7 @@ export default function DashboardPage() {
           ) : (
             <Group mb="md" align="center">
               <TextInput
-                placeholder="Buscar por título..."
+                placeholder={t('songs.searchPlaceholder', 'Buscar por título...')}
                 leftSection={<IconSearch size={18} />}
                 value={searchInput}
                 onChange={e => setSearchInput(e.currentTarget.value)}
@@ -185,25 +182,25 @@ export default function DashboardPage() {
                 setPage(1);
                 setOrder(v || "-created_at")
               }} options={orderOptions} />
-              <ActionIcon variant="light" color="blue" size="lg" onClick={() => setModalOpen(true)} title="Filtros avançados">
+              <ActionIcon variant="light" color="blue" size="lg" onClick={() => setModalOpen(true)} title={t('songs.advancedFilters', 'Filtros avançados')}>
                 <IconFilter size={20} />
               </ActionIcon>
             </Group>
           )}
-          <Modal opened={modalOpen} onClose={() => setModalOpen(false)} title="Filtros avançados" centered>
+          <Modal opened={modalOpen} onClose={() => setModalOpen(false)} title={t('songs.advancedFilters', 'Filtros avançados')} centered>
             <Stack>
-              <Text size="sm" fw={500}>Tom</Text>
+              <Text size="sm" fw={500}>{t('songs.key', 'Tom')}</Text>
               <Select
-                placeholder="Tom"
+                placeholder={t('songs.key', 'Tom')}
                 data={KEY_OPTIONS}
                 value={key}
                 onChange={v => setKey(v)}
                 clearable
                 mb="sm"
               />
-              <Text size="sm" fw={500}>Setlists</Text>
+              <Text size="sm" fw={500}>{t('songs.setlists', 'Setlists')}</Text>
               <MultiSelect
-                placeholder="Setlists"
+                placeholder={t('songs.setlists', 'Setlists')}
                 data={setlists.map(s => ({ value: String(s.id), label: s.name }))}
                 value={selectedSetlists}
                 onChange={v => setSelectedSetlists(v)}
@@ -211,14 +208,14 @@ export default function DashboardPage() {
                 mb="sm"
               />
               <Group mt="md" justify="flex-end">
-                <Button variant="default" onClick={() => setModalOpen(false)}>Cancelar</Button>
+                <Button variant="default" onClick={() => setModalOpen(false)}>{t('songs.cancel', 'Cancelar')}</Button>
                 <Button variant="outline" color="gray" onClick={() => {
                   setArtist("");
                   setKey(null);
                   setBpm([40, 220]);
                   setSelectedSetlists([]);
-                }}>Limpar filtros</Button>
-                <Button onClick={() => { setPage(1); setModalOpen(false); }}>Filtrar</Button>
+                }}>{t('songs.clearFilters', 'Limpar filtros')}</Button>
+                <Button onClick={() => { setPage(1); setModalOpen(false); }}>{t('songs.filter', 'Filtrar')}</Button>
               </Group>
             </Stack>
           </Modal>
@@ -227,7 +224,7 @@ export default function DashboardPage() {
               visible={loading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }}
             /></Group>
           ) : songs.length === 0 ? (
-            <Text ta="center" color="dimmed">Nenhuma música encontrada.</Text>
+            <Text ta="center" color="dimmed">{t('songs.noSongsFound', 'Nenhuma música encontrada.')}</Text>
           ) : (
             <InfiniteScrollWrapper
               dataLength={songs.length}
@@ -236,10 +233,9 @@ export default function DashboardPage() {
               style={{
                 overflow: 'auto',
                 overflowX: 'hidden',
-                height: '100%', // Ajuste conforme necessário
-                //esconder os scroll
-                scrollbarWidth: 'none', // Firefox
-                msOverflowStyle: 'none', // Internet Explorer 10+
+                height: '100%',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
               }}
               loader={<LoadingOverlay />}>
               <Grid>
@@ -255,8 +251,19 @@ export default function DashboardPage() {
                       custom_bpm={song.custom_bpm}
                       custom_key={song.custom_key}
                       onDelete={async () => {
-                        await api.delete(`songs/${song.id}/`);
-                        setSongs(songs => songs.filter(s => s.id !== song.id));
+                        try {
+                          await api.delete(`songs/${song.id}/`);
+                          setSongs(songs => songs.filter(s => s.id !== song.id));
+                          // Notificação de sucesso
+                          if (typeof window !== 'undefined' && window?.showNotification) {
+                            window.showNotification({ color: 'green', message: t('songs.deleteSuccess', 'Música removida com sucesso!') });
+                          }
+                        } catch (e) {
+                          console.log(e);
+                          if (typeof window !== 'undefined' && window?.showNotification) {
+                            window.showNotification({ color: 'red', message: t('songs.deleteError', 'Erro ao remover música. Tente novamente.') });
+                          }
+                        }
                       }}
                     />
                   </Grid.Col>

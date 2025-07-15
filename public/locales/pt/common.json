@@ -1,0 +1,582 @@
+{
+  "welcome": "Bem-vindo ao Meu Ensaio!",
+  "setlist": "Setlist",
+  "chords": "Acordes",
+  "key": "Tom",
+  "bpm": "BPM",
+  "duration": "Duração",
+  "next": "Próxima",
+  "previous": "Anterior",
+  "save": "Salvar",
+  "cancel": "Cancelar",
+  "register": {
+    "title": "Criar Conta",
+    "name": "Nome",
+    "email": "Email",
+    "password": "Senha",
+    "confirm_password": "Confirmar Senha",
+    "submit": "Registrar",
+    "back_to_login": "Voltar para o login",
+    "success": "Sucesso",
+    "success_message": "Usuário registrado! Enviamos um link de confirmação para seu e-mail.",
+    "error": "Erro ao registrar usuário",
+    "error_message": "Não foi possível realizar o cadastro. Verifique seus dados ou tente novamente mais tarde.",
+    "validation": {
+      "name_required": "Nome obrigatório",
+      "email_invalid": "Email inválido",
+      "password_min": "Senha deve ter no mínimo 6 caracteres",
+      "password_max": "Senha deve ter no máximo 64 caracteres",
+      "password_regex": "A senha deve conter letras, números e caracteres especiais",
+      "passwords_not_match": "As senhas não coincidem"
+    }
+  },
+  "login": {
+    "welcome": "Bem vindo ao Setlistify",
+    "email_label": "E-mail",
+    "email_placeholder": "seu@email.com",
+    "password_label": "Senha",
+    "required_field": "Campo obrigatório",
+    "invalid_credentials": "Usuário ou senha inválidos",
+    "no_active_account": "Nenhuma conta ativa encontrada com as credenciais fornecidas",
+    "login_error": "Erro ao fazer login:",
+    "enter": "Entrar",
+    "or_login_with": "Ou entre com",
+    "or": "ou",
+    "no_account": "Não tem conta? Cadastre-se"
+  },
+  "check_email": {
+    "title": "Checar Email",
+    "instruction": "Enviamos um link de confirmação para o seu email. Clique no link para ativar sua conta e poder acessar o sistema.",
+    "attention": "Atenção: Caso não encontre o e-mail na sua caixa de entrada, verifique também a caixa de SPAM ou lixo eletrônico. Alguns provedores podem filtrar mensagens automáticas.",
+    "go_to_login": "Ir para o Login"
+  },
+  "confirm_email": {
+    "success": "Sucesso!",
+    "error": "Erro",
+    "success_message": "Email confirmado com sucesso! Você já pode fazer login.",
+    "invalid_token": "Token inválido ou expirado.",
+    "go_to_login": "Ir para o Login"
+  },
+  "onboarding": {
+    "title": "Bem-vindo ao Setlistify!",
+    "step1": { "label": "Bem-vindo", "desc": "Seus objetivos" },
+    "step2": { "label": "Perfil musical", "desc": "Seu estilo" },
+    "step3": { "label": "Preferências", "desc": "Como você pratica?" },
+    "step4": { "label": "Finalização", "desc": "Confirme" },
+    "goals": {
+      "label": "Quais seus objetivos?",
+      "learn_songs": "Aprender músicas",
+      "create_setlists": "Criar setlists",
+      "practice_techniques": "Praticar técnicas",
+      "teach": "Ensinar",
+      "error": "Selecione pelo menos um objetivo"
+    },
+    "experience": {
+      "label": "Nível de experiência",
+      "beginner": "Iniciante",
+      "intermediate": "Intermediário",
+      "advanced": "Avançado",
+      "error": "Selecione o nível de experiência"
+    },
+    "instruments": {
+      "label": "Instrumentos",
+      "guitar": "Guitarra",
+      "acoustic": "Violão",
+      "bass": "Baixo",
+      "keyboard": "Teclado",
+      "vocal": "Vocal",
+      "tooltip": "Você pode escolher mais de um.",
+      "error": "Selecione pelo menos um instrumento"
+    },
+    "genres": {
+      "label": "Gêneros preferidos",
+      "rock": "Rock",
+      "pop": "Pop",
+      "mpb": "MPB",
+      "jazz": "Jazz",
+      "sertanejo": "Sertanejo",
+      "gospel": "Gospel",
+      "funk": "Funk",
+      "classical": "Clássico",
+      "error": "Selecione pelo menos um gênero"
+    },
+    "artists": {
+      "label": "Artistas favoritos",
+      "placeholder": "Ex: Red Hot Chili Peppers, Djavan"
+    },
+    "practice": {
+      "label": "Foco de prática",
+      "rhythm": "Ritmo",
+      "chords": "Acordes",
+      "transpositions": "Transposições",
+      "tempo": "Tempo",
+      "pads": "Pads Contínuos",
+      "tooltip": "Transposição ajuda a adaptar músicas para sua voz.",
+      "error": "Selecione pelo menos um foco"
+    },
+    "bpm": {
+      "label": "BPM padrão",
+      "error": "Informe o BPM padrão"
+    },
+    "chords": {
+      "label": "Mostrar acordes em tempo real"
+    },
+    "not_informed": "Não informado",
+    "yes": "Sim",
+    "no": "Não",
+    "notification": {
+      "success": "Perfil atualizado com sucesso!",
+      "error_title": "Erro",
+      "error_message": "Não foi possível salvar seu perfil. Tente novamente mais tarde."
+    },
+    "skip": "Pular agora",
+    "back": "Voltar",
+    "next": "Próximo",
+    "finish": "Concluir",
+    "select": "Selecione..."
+  },
+  "appLayout": {
+    "title": "Setlistify",
+    "defaultEmail": "usuario@email.com",
+    "toggleMenu": "Abrir/fechar menu",
+    "changeTheme": "Mudar tema",
+    "completeOnboardingTooltip": "Complete seu onboarding para personalizar sua experiência",
+    "login": "Login",
+    "hello": "Olá, {{email}}",
+    "pro": "PRO",
+    "free": "Gratuito",
+    "upgradePlan": "Fazer upgrade do plano",
+    "upgradePlanDesc": "Tenha acesso completo às setlists",
+    "completeOnboarding": "Completar onboarding",
+    "myOnboarding": "Meu onboarding",
+    "myProfile": "Meu Perfil",
+    "myAchievements": "Minhas Conquistas",
+    "logout": "Sair",
+    "home": "Início",
+    "songs": "Músicas",
+    "setlists": "Setlists",
+    "achievements": "Conquistas"
+  },
+  "index": {
+    "setlistsOfWeek": "Setlists da Semana",
+    "seeAll": "Ver todos",
+    "mostPlayedSongs": "Músicas mais tocadas",
+    "personalRanking": "Seu ranking pessoal",
+    "key": "Tom",
+    "setlists": "setlists",
+    "playSong": "Tocar música",
+    "musicStats": "Suas estatísticas musicais",
+    "totalSongs": "Total de músicas",
+    "playlists": "Playlists",
+    "mostCommonKey": "Tom mais comum",
+    "avgBPM": "BPM médio",
+    "addSetlistTitle": "Adicionar setlist",
+    "addSetlistQuestion": "Deseja adicionar esta setlist à sua lista?",
+    "cancel": "Cancelar",
+    "add": "Adicionar",
+    "plays": "execuções",
+    "playSetlist": "Tocar Setlist",
+    "addToMyList": "Adicionar à minha lista",
+    "addSetlistSuccess": "Setlist adicionada com sucesso!",
+    "addSetlistError": "Erro ao adicionar setlist. Tente novamente mais tarde."
+  },
+  "songs": {
+    "mySongs": "Minhas Músicas",
+    "addSong": "Adicionar Música",
+    "totalSongs": "Total de {{count}} música",
+    "totalSongs_plural": "Total de {{count}} músicas",
+    "totalSetlists": "{{count}} setlist",
+    "totalSetlists_plural": "{{count}} setlists",
+    "searchPlaceholder": "Buscar por título...",
+    "advancedFilters": "Filtros avançados",
+    "key": "Tom",
+    "setlists": "Setlists",
+    "cancel": "Cancelar",
+    "clearFilters": "Limpar filtros",
+    "filter": "Filtrar",
+    "noSongsFound": "Nenhuma música encontrada.",
+    "deleteSuccess": "Música removida com sucesso!",
+    "deleteError": "Erro ao remover música. Tente novamente.",
+    "orderNewest": "Mais recente",
+    "orderOldest": "Mais antigo"
+  },
+  "musicCard": {
+    "whatsappHeader": "🔥 Olha essa música do meu repertório no *Setlistify*!",
+    "whatsappSong": "🎵 *{{title}}*{{songKey, select, undefined {} other { (Tom: {{songKey}})}}}{{bpm, select, undefined {} other { • {{bpm}} BPM}}}",
+    "whatsappDuration": "⏱️ Duração: {{duration}}",
+    "whatsappListen": "👉 Ouça agora: {{url}}",
+    "whatsappFooter": "🚀 Crie seu repertório em {{origin}}",
+    "menuPlay": "Tocar música",
+    "menuEdit": "Editar música",
+    "menuWhatsapp": "Enviar no WhatsApp",
+    "menuRemove": "Remover",
+    "badgeBpm": "{{bpm}} BPM",
+    "badgeKey": "Tom: {{key}}",
+    "badgeDuration": "{{duration}}",
+    "modalRemoveTitle": "Remover música",
+    "modalRemoveText": "Tem certeza que deseja remover esta música?",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "modalEditTitle": "Editar música",
+    "inputKeyLabel": "Tom customizado",
+    "inputKeyPlaceholder": "Ex: C, D#, F#m...",
+    "inputBpmLabel": "BPM customizado",
+    "inputBpmPlaceholder": "Ex: 120",
+    "historyTitle": "Histórico de uso",
+    "historyCount_one": "1 setlist encontrado",
+    "historyCount_other": "{{count}} setlists encontrados",
+    "noDate": "Sem data",
+    "noSongs": "Nenhuma música registrada",
+    "noHistory": "Nenhum histórico encontrado.",
+    "notificationDeleteTitle": "Removida",
+    "notificationDeleteSuccess": "Música removida com sucesso!",
+    "notificationDeleteError": "Erro ao remover música.",
+    "notificationEditTitle": "Atualizada",
+    "notificationEditSuccess": "Música atualizada com sucesso!",
+    "notificationEditError": "Erro ao atualizar música.",
+    "notificationErrorTitle": "Erro"
+  },
+  "addSong": {
+    "title": "Adicionar Música",
+    "placeholder": "Digite uma URL do YouTube ou pesquise por uma música",
+    "search": "Buscar",
+    "searching": "Buscando...",
+    "error": "Erro ao buscar música.",
+    "invalidUrl": "URL do YouTube inválida.",
+    "confirmTitle": "Adicionar esta música?",
+    "confirmText": "Selecione uma música antes de salvar.",
+    "add": "Salvar música",
+    "notification": {
+      "successTitle": "Sucesso!",
+      "success": "Música adicionada com sucesso!",
+      "errorTitle": "Erro",
+      "error": "Erro ao salvar música."
+    }
+  },
+  "player": {
+    "selectKeyModal": "Selecione o tom",
+    "majorKeys": "Maiores",
+    "minorKeys": "Menores",
+    "loadingPads": "Carregando áudio dos pads...",
+    "transposeAlert": "Para melhor experiência, sugerimos zerar o volume do YouTube e aumentar o volume dos pads ao transpor o tom.",
+    "key": "TOM",
+    "bpm": "BPM",
+    "duration": "DURAÇÃO",
+    "chords": "Acordes",
+    "nextChords": "Próximos acordes",
+    "unlock": "Liberar",
+    "volumeYoutube": "Volume do YouTube",
+    "mute": "Mute",
+    "solo": "Solo",
+    "volumePadCloud": "Volume do Pad Cloud",
+    "volumePadShimmer": "Volume do Pad Shimmer",
+    "volumePadGuitar": "Volume do Pad Guitar",
+    "unlockPad": "Liberar",
+    "resetKey": "Resetar tom",
+    "increaseKey": "Aumentar tom",
+    "decreaseKey": "Diminuir tom"
+  },
+  "setlistsPage": {
+    "title": "Setlists",
+    "breadcrumbHome": "Início",
+    "breadcrumbSetlists": "Setlists",
+    "newSetlist": "Novo Setlist",
+    "searchPlaceholder": "Buscar por nome do setlist ou música",
+    "orderNewest": "Mais recente",
+    "orderOldest": "Mais antigo",
+    "orderMostSongs": "Mais músicas",
+    "orderLeastSongs": "Menos músicas",
+    "fetchError": "Erro ao buscar setlists",
+    "loadMore": "Carregar mais",
+    "exportPDF": "Exportar para PDF",
+    "searchSongPlaceholder": "Buscar música por nome ou artista",
+    "noSongsFound": "Nenhuma música encontrada."
+  },
+  "setlistCard": {
+    "menuPlay": "Tocar",
+    "menuAccess": "Acessar",
+    "menuWhatsapp": "Enviar no WhatsApp",
+    "menuRemove": "Remover",
+    "buttonPlay": "Tocar",
+    "songs": "músicas",
+    "modalRemoveTitle": "Remover setlist",
+    "modalRemoveText": "Tem certeza que deseja remover este setlist?",
+    "cancel": "Cancelar",
+    "notificationDeleteTitle": "Setlist removida",
+    "notificationDeleteSuccess": "Setlist removida com sucesso!",
+    "notificationDeleteErrorTitle": "Erro ao remover",
+    "notificationDeleteError": "Erro ao remover setlist.",
+    "whatsappHeader": "🔥 Confira minha setlist exclusiva no *Setlistify*!",
+    "whatsappTitle": "🎤 *{{title}}*",
+    "whatsappTotalSongs": "🎼 Total de músicas: *{{qtd}}*",
+    "whatsappSong": "🎵 {{index}}. {{title}}{{artist, select, undefined {} other { - {{artist}}}}}",
+    "whatsappListen": "👉 Ouça, toque e compartilhe: {{url}}",
+    "whatsappFooter": "🚀 Crie suas próprias setlists em {{origin}}"
+  },
+  "setlistPDF": {
+    "key": "Tom",
+    "bpm": "BPM",
+    "notInformed": "N/A"
+  },
+  "setlistPlayer": {
+    "breadcrumbHome": "Início",
+    "breadcrumbSetlists": "Setlists",
+    "breadcrumbPlayer": "Player",
+    "noSongs": "Nenhuma música encontrada na setlist.",
+    "setlist": "Setlist",
+    "previous": "Anterior",
+    "play": "Tocar",
+    "pause": "Pausar",
+    "stop": "Parar",
+    "next": "Próxima",
+    "selectKeyModal": "Selecione o tom",
+    "majorKeys": "Maiores",
+    "minorKeys": "Menores",
+    "decreaseKey": "Diminuir tom",
+    "selectKey": "Selecionar tom",
+    "increaseKey": "Aumentar tom",
+    "resetKey": "Resetar tom",
+    "key": "TOM",
+    "bpm": "BPM",
+    "duration": "DURAÇÃO",
+    "youtubeVolume": "Volume do YouTube",
+    "chords": "Acordes",
+    "currentTime": "Tempo atual",
+    "sequence": "Sequência da setlist:",
+    "tapTempo": "Tap tempo",
+    "nextChords": "Próximos acordes",
+    "none": "-"
+  },
+  "addSetlist": {
+    "breadcrumbHome": "Início",
+    "breadcrumbSetlists": "Setlists",
+    "breadcrumbAdd": "Adicionar Setlist",
+    "title": "Criar novo Setlist",
+    "stepSourceLabel": "Fonte",
+    "stepSourceDesc": "Escolha a fonte das músicas",
+    "stepNameLabel": "Nome",
+    "stepNameDesc": "Defina o nome",
+    "stepSongsLabel": "Músicas",
+    "stepSongsDesc": "Escolha músicas",
+    "stepPreviewLabel": "Preview",
+    "stepPreviewDesc": "Confirme e salve",
+    "sourceSavedTitle": "Músicas Salvas",
+    "sourceSavedDesc": "Selecionar músicas já salvas no sistema",
+    "sourceNewTitle": "Novo Setlist",
+    "sourceNewDesc": "Buscar músicas novas no YouTube (processamento assíncrono)",
+    "next": "Próximo",
+    "back": "Voltar",
+    "confirm": "Confirmar",
+    "selected": "Selecionadas",
+    "noneSelected": "Nenhuma música foi selecionada ainda",
+    "selectFromList": "Selecione as músicas a partir das músicas disponíveis ao lado.",
+    "remove": "Remover",
+    "searchSavedPlaceholder": "Buscar nas músicas salvas",
+    "searchNewPlaceholder": "Buscar músicas",
+    "search": "Buscar",
+    "previewTitle": "Preview do Setlist",
+    "bpm": "BPM",
+    "key": "Tom",
+    "dateLabel": "Data do setlist (opcional)",
+    "datePlaceholder": "Selecione a data",
+    "description": "Descrição",
+    "nameLabel": "Nome do setlist",
+    "save": "Salvar",
+    "modalSelectedTitle": "Músicas Selecionadas ({{count}})",
+    "errorMaxSongs": "No modo 'Novo Setlist' só é permitido adicionar até 10 músicas por setlist.",
+    "errorEnrich": "Erro ao processar músicas",
+    "errorSave": "Erro ao salvar setlist",
+    "successSave": "Setlist criado com sucesso!",
+    "errorPlan": "Você precisa de um plano pago para criar mais setlists.",
+    "missingData": "Não foi possível capturar BPM e Tom. Este item não será salvo.",
+    "viewCount": "visualizações",
+    "duration": "Duração"
+  },
+  "achievementsPage": {
+    "title": "Minhas Conquistas",
+    "subtitle": "Veja todas as conquistas que você pode desbloquear e acompanhe seu progresso.",
+    "loading": "Carregando conquistas...",
+    "errorTitle": "Erro",
+    "loadError": "Falha ao carregar as conquistas. Tente novamente mais tarde.",
+    "points": "Pontos",
+    "categories": {
+      "ONBOARDING": "Primeiros Passos",
+      "REPERTORIO": "Repertório",
+      "PERFORMANCE": "Performance",
+      "PRO": "Usuário PRO",
+      "SOCIAL": "Social"
+    },
+    "achievements": {
+      "1": {
+        "title": "Primeiros Passos",
+        "description": "Complete o tutorial inicial."
+      },
+      "2": {
+        "title": "Conta Verificada",
+        "description": "Confirme seu endereço de e-mail."
+      },
+      "3": {
+        "title": "Explorador Musical",
+        "description": "Adicione a 1ª música ao seu repertório."
+      },
+      "4": {
+        "title": "Colecionador de Músicas",
+        "description": "Adicione 10 músicas ao seu repertório."
+      },
+      "5": {
+        "title": "Curador Musical",
+        "description": "Adicione 25 músicas ao seu repertório."
+      },
+      "6": {
+        "title": "Mestre do Repertório",
+        "description": "Adicione 50 músicas ao seu repertório."
+      },
+      "7": {
+        "title": "Lenda do Repertório",
+        "description": "Adicione 100 músicas ao seu repertório."
+      },
+      "8": {
+        "title": "Maestro de Primeira Viagem",
+        "description": "Crie seu primeiro setlist."
+      },
+      "9": { "title": "Organizador", "description": "Crie 5 setlists." },
+      "10": { "title": "Curador de Shows", "description": "Crie 20 setlists." },
+      "11": {
+        "title": "DJ de Bolso",
+        "description": "Crie um setlist com mais de 2 músicas."
+      },
+      "12": {
+        "title": "Maratonista Musical",
+        "description": "Crie um setlist com mais de 8 músicas."
+      },
+      "13": {
+        "title": "Aficionado por Acordes",
+        "description": "Visualize os acordes de 10 músicas."
+      },
+      "14": {
+        "title": "Mestre dos Acordes",
+        "description": "Visualize os acordes de 50 músicas."
+      },
+      "15": {
+        "title": "Ouvido Absoluto",
+        "description": "Edite o tom (key) de 5 músicas."
+      },
+      "16": {
+        "title": "Metrônomo Humano",
+        "description": "Edite o BPM de 5 músicas."
+      },
+      "17": {
+        "title": "Membro de Elite",
+        "description": "Torne-se um usuário PRO."
+      },
+      "18": {
+        "title": "Apoiador Fiel",
+        "description": "Mantenha a assinatura PRO por 3 meses."
+      },
+      "19": {
+        "title": "Compartilhador",
+        "description": "Compartilhe um setlist ou música pela primeira vez."
+      },
+      "20": {
+        "title": "Evangelista Musical",
+        "description": "Compartilhe 10 vezes."
+      },
+      "21": {
+        "title": "Conector de Pessoas",
+        "description": "Compartilhe 50 vezes."
+      },
+      "22": {
+        "title": "Favorito da Galera",
+        "description": "Favorite 10 músicas."
+      }
+    }
+  },
+  "playerPage": {
+    "title": "Player",
+    "notFound": "Música não encontrada.",
+    "actionError": "Erro ao registrar ação:"
+  },
+  "profilePage": {
+    "free": "Gratuito",
+    "bio": "Apaixonado por música e performance. Sempre criando setlists únicas para cada ocasião.",
+    "memberSince": "Membro desde {{date}}",
+    "stats": {
+      "songs": "Músicas",
+      "setlists": "Setlists Criados",
+      "practiceTime": "Tempo de Prática",
+      "mostCommonKey": "Tom mais comum",
+      "avgBPM": "BPM médio",
+      "achievements": "Conquistas",
+      "achievementPoints": "Pontos de Conquista"
+    },
+    "recentAchievements": "Conquistas Recentes",
+    "seeAll": "Ver todas",
+    "recentActivity": "Atividade Recente",
+    "mySongs": "Minhas Músicas ({{count}})",
+    "addSong": "Adicionar Música",
+    "loadingMoreSongs": "Carregando mais músicas...",
+    "allSongsLoaded": "Todas as músicas carregadas.",
+    "mySetlists": "Meus Setlists ({{count}})",
+    "newSetlist": "Novo Setlist",
+    "loadingMoreSetlists": "Carregando mais setlists...",
+    "allSetlistsLoaded": "Todos os setlists carregados.",
+    "noSetlists": "Seus setlists aparecerão aqui",
+    "myAchievements": "Minhas Conquistas ({{count}})",
+    "noAchievements": "Nenhuma conquista encontrada.",
+    "highlights": "Destaques do Setlistify",
+    "highlightsSyncChordsTitle": "Acesso a cifras sincronizadas",
+    "highlightsSyncChordsDesc": "Visualize acordes em tempo real enquanto toca suas músicas favoritas.",
+    "highlightsPadsTitle": "Pads e sons ambientes",
+    "highlightsPadsDesc": "Crie atmosferas únicas com pads exclusivos para cada tom.",
+    "highlightsShareTitle": "Monte e compartilhe setlists",
+    "highlightsShareDesc": "Organize suas músicas e compartilhe listas com sua banda.",
+    "highlightsProTitle": "Assinatura PRO",
+    "highlightsProDesc": "Desbloqueie todos os recursos e tenha a melhor experiência musical.",
+    "editProfile": "Editar Perfil",
+    "firstName": "Nome",
+    "firstNamePlaceholder": "Digite seu nome",
+    "lastName": "Sobrenome",
+    "lastNamePlaceholder": "Digite seu sobrenome",
+    "email": "E-mail",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "updatedTitle": "Perfil atualizado",
+    "updatedMessage": "Suas informações foram salvas com sucesso!",
+    "errorTitle": "Erro",
+    "errorMessage": "Não foi possível atualizar o perfil.",
+    "tabs": {
+      "overview": "Visão Geral",
+      "songs": "Minhas Músicas",
+      "setlists": "Setlists",
+      "achievements": "Conquistas"
+    },
+    "simpleGrid": {
+      "songs": "Músicas",
+      "setlists": "Setlists Criados",
+      "practiceTime": "Tempo de Prática",
+      "mostCommonKey": "Tom mais comum",
+      "avgBPM": "BPM médio",
+      "achievements": "Conquistas",
+      "achievementPoints": "Pontos de Conquista"
+    },
+    "menu": {
+      "edit": "Editar",
+      "delete": "Excluir",
+      "view": "Visualizar"
+    },
+    "notifications": {
+      "profileUpdated": "Perfil atualizado com sucesso!",
+      "profileUpdateError": "Erro ao atualizar perfil.",
+      "dataLoadErrorTitle": "Erro ao carregar dados",
+      "dataLoadErrorMessage": "Não foi possível carregar suas músicas e setlists. Tente novamente mais tarde.",
+      "linkCopied": "Link copiado!",
+      "shareCopied": "Informações da música copiadas para compartilhar."
+    }
+  },
+  "successPage": {
+    "title": "Pagamento aprovado!",
+    "message": "Sua assinatura foi liberada com sucesso.\nVocê será redirecionado para a página inicial em <b>{{seconds}}</b> segundos.",
+    "goHome": "Ir para início agora",
+    "error": "Não foi possível confirmar o pagamento."
+  }
+}

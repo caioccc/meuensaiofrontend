@@ -46,6 +46,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import api from "../../lib/axios";
+import { useTranslation } from "react-i18next";
 
 interface UserStats {
   totalSongs: number;
@@ -93,6 +94,7 @@ interface Achievement {
 }
 
 export default function ProfilePage() {
+  const { t } = useTranslation('common');
   const { user, subscription, isPro } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<string>('overview');
@@ -298,7 +300,7 @@ export default function ProfilePage() {
     return null;
   }
 
-  const planName = isPro ? 'PRO' : (subscription?.plan?.name || 'Gratuito');
+  const planName = isPro ? 'PRO' : (subscription?.plan?.name || t('profilePage.free'));
   const planColor = isPro ? 'blue' : (subscription ? 'yellow' : 'gray');
 
 
@@ -382,68 +384,6 @@ export default function ProfilePage() {
     </Paper>
   );
 
-  const AchievementCard = ({ achievement }: { achievement: any }) => (
-    <Paper withBorder p="md" radius="md">
-      <Group>
-        <ThemeIcon size="lg" radius="md" color="yellow" variant='light'>
-          <IconTrophy size={24} />
-        </ThemeIcon>
-        <div style={{ flex: 1 }}>
-          <Text fw={500}>{achievement.title}</Text>
-          <Text size="sm" c="dimmed">{achievement.description}</Text>
-          <Badge color="yellow" variant="light" mt="sm">
-            {achievement.points} Pontos
-          </Badge>
-        </div>
-      </Group>
-    </Paper>
-  );
-
-
-  // const AchievementCard = ({ achievement }: { achievement: Achievement }) => (
-  //   <Paper
-  //     p="md"
-  //     radius="md"
-  //     withBorder
-  //     opacity={achievement.unlocked ? 1 : 0.6}
-  //     style={{
-  //       backgroundColor: achievement.unlocked ? undefined : 'var(--mantine-color-gray-0)',
-  //       borderColor: achievement.unlocked ? 'var(--mantine-color-blue-4)' : undefined
-  //     }}
-  //   >
-  //     <Group>
-  //       <ThemeIcon
-  //         size={40}
-  //         radius="md"
-  //         color={achievement.unlocked ? 'blue' : 'gray'}
-  //       >
-  //         {achievement.unlocked ? achievement.icon : <IconX size={20} />}
-  //       </ThemeIcon>
-  //       <div style={{ flex: 1 }}>
-  //         <Text fw={500} size="sm">
-  //           {achievement.title}
-  //         </Text>
-  //         <Text size="xs" c="dimmed">
-  //           {achievement.description}
-  //         </Text>
-  //         {achievement.progress && achievement.maxProgress && (
-  //           <Progress
-  //             value={(achievement.progress / achievement.maxProgress) * 100}
-  //             size="xs"
-  //             mt="xs"
-  //             color="blue"
-  //           />
-  //         )}
-  //       </div>
-  //       {achievement.unlocked && (
-  //         <ActionIcon color="blue" variant="light" size="sm">
-  //           <IconCheck size={16} />
-  //         </ActionIcon>
-  //       )}
-  //     </Group>
-  //   </Paper>
-  // );
-
   // Função utilitária para calcular duração total de um setlist
   function getSetlistTotalDuration(songs: Song[] = []): string {
     let totalSeconds = 0;
@@ -480,16 +420,16 @@ export default function ProfilePage() {
           last_name: editLastName
         });
       showNotification({
-        title: 'Perfil atualizado',
-        message: 'Suas informações foram salvas com sucesso!',
+        title: t('profilePage.updatedTitle'),
+        message: t('profilePage.updatedMessage'),
         color: 'green'
       });
       setEditModalOpen(false);
       window.location.reload();
     } catch (e) {
       showNotification({
-        title: 'Erro',
-        message: 'Não foi possível atualizar o perfil.',
+        title: t('profilePage.errorTitle'),
+        message: t('profilePage.errorMessage'),
         color: 'red'
       });
       console.log('Erro ao salvar perfil:', e);
@@ -531,9 +471,9 @@ export default function ProfilePage() {
             <Stack gap="sm" style={{ flex: 1 }}>
               <Group justify="space-between" align="flex-start">
                 <div>
-                  <Title order={2} mb="xs">
-                    {user.email.split('@')[0]}
-                  </Title>
+        <Title order={2} mb="xs">
+          {user.email.split('@')[0]}
+        </Title>
                   <Group gap="sm" mb="xs">
                     <Badge
                       color={planColor}
@@ -549,17 +489,17 @@ export default function ProfilePage() {
                     </Badge> */}
                   </Group>
                   <Text size="sm" c="dimmed" mb="sm">
-                    Apaixonado por música e performance. Sempre criando setlists únicas para cada ocasião.
+                    {t('profilePage.bio')}
                   </Text>
                   <Group gap="sm">
-                    <Text size="sm" c="dimmed">
-                      <IconCalendar size={16} style={{ marginRight: 4 }} />
-                      Membro desde {new Date(user.date_joined).toLocaleDateString('pt-BR')}
-                    </Text>
-                    <Text size="sm" c="dimmed">
-                      <IconMail size={16} style={{ marginRight: 4 }} />
-                      {user.email}
-                    </Text>
+                  <Text size="sm" c="dimmed">
+                    <IconCalendar size={16} style={{ marginRight: 4 }} />
+                    {t('profilePage.memberSince', { date: new Date(user.date_joined).toLocaleDateString('pt-BR') })}
+                  </Text>
+                  <Text size="sm" c="dimmed">
+                    <IconMail size={16} style={{ marginRight: 4 }} />
+                    {user.email}
+                  </Text>
                   </Group>
                 </div>
 
@@ -601,43 +541,43 @@ export default function ProfilePage() {
           <StatCard
             icon={<IconMusic size={24} />}
             value={userStats.totalSongs}
-            label="Músicas"
+            label={t('profilePage.stats.songs')}
             color="blue"
           />
           <StatCard
             icon={<IconPlaylist size={24} />}
             value={userStats.totalSetlists}
-            label="Setlists Criados"
+            label={t('profilePage.stats.setlists')}
             color="green"
           />
           <StatCard
             icon={<IconClock size={24} />}
             value={userStats.practiceTime}
-            label="Tempo de Prática"
+            label={t('profilePage.stats.practiceTime')}
             color="orange"
           />
           <StatCard
             icon={<IconKey size={24} />}
             value={musicStats?.mostCommonKey || '-'}
-            label="Tom mais comum"
+            label={t('profilePage.stats.mostCommonKey')}
             color="violet"
           />
           <StatCard
             icon={<IconFlame size={24} />}
             value={musicStats?.avgBPM ? Math.round(musicStats.avgBPM) : '-'}
-            label="BPM médio"
+            label={t('profilePage.stats.avgBPM')}
             color="red"
           />
           <StatCard
             icon={<IconTrophy size={24} />}
             value={userAchievements.length}
-            label="Conquistas"
+            label={t('profilePage.stats.achievements')}
             color="yellow"
           />
           <StatCard
             icon={<IconTrophy size={24} />}
             value={userAchievements.reduce((acc, ua) => acc + (ua.achievement?.points || 0), 0)}
-            label="Pontos de Conquista"
+            label={t('profilePage.stats.achievementPoints')}
             color="orange"
           />
         </SimpleGrid>
@@ -646,9 +586,9 @@ export default function ProfilePage() {
         {achievements.length > 0 && (
           <Card shadow="sm" p="lg" radius="md" withBorder mb="xl">
             <Group justify="space-between" mb="md">
-              <Title order={4}>Conquistas Recentes</Title>
+              <Title order={4}>{t('profilePage.recentAchievements')}</Title>
               <Anchor size="sm" onClick={() => router.push('/achievements')}>
-                Ver todas
+                {t('profilePage.seeAll')}
               </Anchor>
             </Group>
             <SimpleGrid cols={{ base: 2, sm: 3, md: 5 }} spacing="lg">
@@ -657,7 +597,14 @@ export default function ProfilePage() {
                   <ThemeIcon size="xl" radius="xl" color="yellow" variant="light">
                     <IconTrophy size={28} />
                   </ThemeIcon>
-                  <Text size="xs" ta="center" fw={500}>{ach.title}</Text>
+                  <Text size="xs" ta="center" fw={500}>
+                    {t(`achievementsPage.achievements.${ach.id}.title`)}
+                  </Text>
+                  {/* {ach.description && (
+                    <Text size="xs" ta="center" c="dimmed">
+                      {t(`achievementsPage.achievements.${ach.id}.description`)}
+                    </Text>
+                  )} */}
                 </Stack>
               ))}
             </SimpleGrid>
@@ -668,16 +615,16 @@ export default function ProfilePage() {
         <Tabs value={activeTab} onChange={setActiveTab} keepMounted={false}>
           <Tabs.List>
             <Tabs.Tab value="overview" leftSection={<IconChartBar size={16} />}>
-              Visão Geral
+              {t('profilePage.tabs.overview')}
             </Tabs.Tab>
             <Tabs.Tab value="songs" leftSection={<IconMusic size={16} />}>
-              Minhas Músicas
+              {t('profilePage.tabs.songs')}
             </Tabs.Tab>
             <Tabs.Tab value="setlists" leftSection={<IconPlaylist size={16} />}>
-              Setlists
+              {t('profilePage.tabs.setlists')}
             </Tabs.Tab>
             <Tabs.Tab value="achievements" leftSection={<IconTrophy size={16} />}>
-              Conquistas
+              {t('profilePage.tabs.achievements')}
             </Tabs.Tab>
           </Tabs.List>
 
@@ -687,10 +634,10 @@ export default function ProfilePage() {
               <Grid.Col>
                 <Card shadow="sm" p="md" radius="md" withBorder mb="md">
                   <Group justify="space-between" mb="md">
-                    <Title order={4}>Atividade Recente</Title>
-                    <Anchor size="sm" href="#" onClick={(e) => { e.preventDefault(); router.push('/songs'); }}>
-                      Ver tudo
-                    </Anchor>
+                <Title order={4}>{t('profilePage.recentActivity')}</Title>
+                <Anchor size="sm" href="#" onClick={(e) => { e.preventDefault(); router.push('/songs'); }}>
+                  {t('profilePage.seeAll')}
+                </Anchor>
                   </Group>
                   <Stack gap="sm">
                     {recentSongs.map((song) => (
@@ -744,17 +691,17 @@ export default function ProfilePage() {
           <Tabs.Panel value="songs" pt="md">
             <Card shadow="sm" p="md" radius="md" withBorder>
               <Group justify="space-between" mb="md">
-                <Title order={4}>Minhas Músicas ({userStats.totalSongs})</Title>
-                <Button size="sm" leftSection={<IconMusic size={16} />} onClick={() => router.push('/songs/add')}>
-                  Adicionar Música
-                </Button>
+              <Title order={4}>{t('profilePage.mySongs', { count: userStats.totalSongs })}</Title>
+              <Button size="sm" leftSection={<IconMusic size={16} />} onClick={() => router.push('/songs/add')}>
+                {t('profilePage.addSong')}
+              </Button>
               </Group>
               <Box style={{ maxHeight: 400, overflowY: 'auto' }}>
                 <InfiniteScrollWrapper
                   dataLength={songs.length}
                   next={loadMoreSongs}
                   hasMore={songsHasMore}
-                  loader={<Text ta="center">Carregando mais músicas...</Text>}
+                  loader={<Text ta="center">{t('profilePage.loadingMoreSongs')}</Text>}
                   style={{ overflow: 'visible' }}
                 >
                   <Stack gap="sm">
@@ -766,7 +713,7 @@ export default function ProfilePage() {
                   </Stack>
                 </InfiniteScrollWrapper>
                 {!songsHasMore && !songsLoadingMore && (
-                  <Text ta="center" c="dimmed" mt="md">Todas as músicas carregadas.</Text>
+                  <Text ta="center" c="dimmed" mt="md">{t('profilePage.allSongsLoaded')}</Text>
                 )}
               </Box>
             </Card>
@@ -776,10 +723,10 @@ export default function ProfilePage() {
           <Tabs.Panel value="setlists" pt="md">
             <Card shadow="sm" p="md" radius="md" withBorder>
               <Group justify="space-between" mb="md">
-                <Title order={4}>Meus Setlists ({userStats.totalSetlists})</Title>
-                <Button size="sm" leftSection={<IconPlaylist size={16} />} onClick={() => router.push('/setlists/add')}>
-                  Novo Setlist
-                </Button>
+              <Title order={4}>{t('profilePage.mySetlists', { count: userStats.totalSetlists })}</Title>
+              <Button size="sm" leftSection={<IconPlaylist size={16} />} onClick={() => router.push('/setlists/add')}>
+                {t('profilePage.newSetlist')}
+              </Button>
               </Group>
               {setlists && setlists.length > 0 ? (
                 <Box style={{ maxHeight: 300, overflowY: 'auto' }}>
@@ -787,7 +734,7 @@ export default function ProfilePage() {
                     dataLength={setlists.length}
                     next={loadMoreSetlists}
                     hasMore={setlistsHasMore}
-                    loader={<Text ta="center">Carregando mais setlists...</Text>}
+                    loader={<Text ta="center">{t('profilePage.loadingMoreSetlists')}</Text>}
                     style={{ overflow: 'visible' }}
                   >
                     <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
@@ -795,17 +742,17 @@ export default function ProfilePage() {
                         <div key={setlist.id} ref={idx === setlists.length - 1 ? lastSetlistRef : undefined}>
                           <Paper p="md" radius="md" withBorder shadow="xs" style={{ minHeight: 120, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                             <div>
-                              <Text fw={600} size="md" mb="xs" truncate>{setlist.name || setlist.title || 'Setlist sem nome'}</Text>
+                              <Text fw={600} size="md" mb="xs" truncate>{setlist.name || setlist.title || t('setlistsPage.title')}</Text>
                               <Text size="xs" c="dimmed" mb="xs">
-                                {setlist.songs ? `${setlist.songs.length} músicas` : '0 músicas'}
+                                {setlist.songs ? `${setlist.songs.length} ${t('setlistCard.songs')}` : `0 ${t('setlistCard.songs')}`}
                               </Text>
                               <Text size="xs" c="dimmed">
-                                Duração total: {getSetlistTotalDuration(setlist.songs)}
+                                {t('duration')}: {getSetlistTotalDuration(setlist.songs)}
                               </Text>
                             </div>
                             <Group justify="space-between" mt="8">
                               <Button fullWidth size="xs" variant="light" leftSection={<IconPlaylist size={16} />} onClick={() => router.push(`/setlists/${setlist.id}`)}>
-                                Ver Setlist
+                                {t('setlistCard.buttonPlay')}
                               </Button>
                             </Group>
                           </Paper>
@@ -814,12 +761,12 @@ export default function ProfilePage() {
                     </SimpleGrid>
                   </InfiniteScrollWrapper>
                   {!setlistsHasMore && !setlistsLoadingMore && (
-                    <Text ta="center" c="dimmed" mt="md">Todos os setlists carregados.</Text>
+                  <Text ta="center" c="dimmed" mt="md">{t('profilePage.allSetlistsLoaded')}</Text>
                   )}
                 </Box>
               ) : (
                 <Text c="dimmed" ta="center" py="xl">
-                  Seus setlists aparecerão aqui
+                  {t('profilePage.noSetlists')}
                 </Text>
               )}
             </Card>
@@ -828,19 +775,36 @@ export default function ProfilePage() {
           {/* Conquistas */}
           <Tabs.Panel value="achievements" pt="md">
             <Card shadow="sm" p="md" radius="md" withBorder>
-              <Title order={4} mb="md">Minhas Conquistas ({userAchievements.length})</Title>
+              <Title order={4} mb="md">{t('profilePage.myAchievements', { count: userAchievements.length })}</Title>
               <Box style={{ maxHeight: 400, overflowY: 'auto' }}>
                 <Stack gap="sm">
                   {userAchievements.map((userAch) => (
                     userAch.achievement ? (
                       <div key={userAch.achievement.id}>
-                        <AchievementCard achievement={userAch.achievement} />
+                        <Paper withBorder p="md" radius="md">
+                          <Group>
+                            <ThemeIcon size="lg" radius="md" color="yellow" variant='light'>
+                              <IconTrophy size={24} />
+                            </ThemeIcon>
+                            <div style={{ flex: 1 }}>
+                              <Text fw={500}>
+                                {t(`achievementsPage.achievements.${userAch.achievement.id}.title`)}
+                              </Text>
+                              <Text size="sm" c="dimmed">
+                                {t(`achievementsPage.achievements.${userAch.achievement.id}.description`)}
+                              </Text>
+                              <Badge color="yellow" variant="light" mt="sm">
+                                {userAch.achievement.points} {t('achievementsPage.points')}
+                              </Badge>
+                            </div>
+                          </Group>
+                        </Paper>
                       </div>
                     ) : null
                   ))}
                 </Stack>
                 {userAchievements.length === 0 && (
-                  <Text ta="center" c="dimmed" mt="md">Nenhuma conquista encontrada.</Text>
+                  <Text ta="center" c="dimmed" mt="md">{t('profilePage.noAchievements')}</Text>
                 )}
               </Box>
             </Card>
@@ -850,30 +814,30 @@ export default function ProfilePage() {
 
         {/* Destaques do Setlistify */}
         <Card shadow="sm" p="md" radius="md" withBorder mt="xl">
-          <Title order={4} mb="md">Destaques do Setlistify</Title>
+          <Title order={4} mb="md">{t('profilePage.highlights')}</Title>
           <Carousel slideSize="60%" height={180} align="start" slideGap="md" loop withIndicators>
             <Carousel.Slide>
               <Paper p="md" shadow="sm" radius="md" h="100%">
-                <Text fw={700}>Acesso a cifras sincronizadas</Text>
-                <Text size="sm" color="dimmed">Visualize acordes em tempo real enquanto toca suas músicas favoritas.</Text>
+                <Text fw={700}>{t('profilePage.highlightsSyncChordsTitle')}</Text>
+                <Text size="sm" color="dimmed">{t('profilePage.highlightsSyncChordsDesc')}</Text>
               </Paper>
             </Carousel.Slide>
             <Carousel.Slide>
               <Paper p="md" shadow="sm" radius="md" h="100%">
-                <Text fw={700}>Pads e sons ambientes</Text>
-                <Text size="sm" color="dimmed">Crie atmosferas únicas com pads exclusivos para cada tom.</Text>
+                <Text fw={700}>{t('profilePage.highlightsPadsTitle')}</Text>
+                <Text size="sm" color="dimmed">{t('profilePage.highlightsPadsDesc')}</Text>
               </Paper>
             </Carousel.Slide>
             <Carousel.Slide>
               <Paper p="md" shadow="sm" radius="md" h="100%">
-                <Text fw={700}>Monte e compartilhe setlists</Text>
-                <Text size="sm" color="dimmed">Organize suas músicas e compartilhe listas com sua banda.</Text>
+                <Text fw={700}>{t('profilePage.highlightsShareTitle')}</Text>
+                <Text size="sm" color="dimmed">{t('profilePage.highlightsShareDesc')}</Text>
               </Paper>
             </Carousel.Slide>
             <Carousel.Slide>
               <Paper p="md" shadow="sm" radius="md" h="100%">
-                <Text fw={700}>Assinatura PRO</Text>
-                <Text size="sm" color="dimmed">Desbloqueie todos os recursos e tenha a melhor experiência musical.</Text>
+                <Text fw={700}>{t('profilePage.highlightsProTitle')}</Text>
+                <Text size="sm" color="dimmed">{t('profilePage.highlightsProDesc')}</Text>
               </Paper>
             </Carousel.Slide>
           </Carousel>
@@ -884,33 +848,33 @@ export default function ProfilePage() {
       <Modal
         opened={editModalOpen}
         onClose={() => setEditModalOpen(false)}
-        title="Editar Perfil"
+        title={t('profilePage.editProfile')}
         size="md"
       >
         <Stack gap="md">
           <TextInput
-            label="Nome"
-            placeholder="Digite seu nome"
+            label={t('profilePage.firstName')}
+            placeholder={t('profilePage.firstNamePlaceholder')}
             value={editFirstName}
             onChange={e => setEditFirstName(e.currentTarget.value)}
           />
           <TextInput
-            label="Sobrenome"
-            placeholder="Digite seu sobrenome"
+            label={t('profilePage.lastName')}
+            placeholder={t('profilePage.lastNamePlaceholder')}
             value={editLastName}
             onChange={e => setEditLastName(e.currentTarget.value)}
           />
           <TextInput
-            label="E-mail"
+            label={t('profilePage.email')}
             value={user.email}
             disabled
           />
           <Group justify="flex-end">
             <Button variant="outline" onClick={() => setEditModalOpen(false)} disabled={editLoading}>
-              Cancelar
+              {t('profilePage.cancel')}
             </Button>
             <Button onClick={handleSaveProfile} loading={editLoading}>
-              Salvar
+              {t('profilePage.save')}
             </Button>
           </Group>
         </Stack>

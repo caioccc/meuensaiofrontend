@@ -1,3 +1,4 @@
+import { useTranslation } from 'next-i18next';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 
@@ -80,23 +81,26 @@ const styles = StyleSheet.create({
   },
 });
 
-const SetlistPDF = ({ setlist }: SetlistPDFProps) => (
-  <Document>
-    <Page size="A4" style={styles.page}>
-      <Text style={styles.header}>{setlist.name}</Text>
-      {setlist.songs.map((song, index) => (
-        <View key={song.id} style={styles.songContainer} wrap={false}>
-          <Text style={styles.songTitle}>{index + 1}. {song.title} - {song.artist}</Text>
-          <Text style={styles.songDetails}>
-            Tom: {song.key || 'N/A'} | BPM: {song.bpm || 'N/A'}
-          </Text>
-        </View>
-      ))}
-      <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => (
-        `${pageNumber} / ${totalPages}`
-      )} fixed />
-    </Page>
-  </Document>
-);
+const SetlistPDF = ({ setlist }: SetlistPDFProps) => {
+  const { t } = useTranslation('common');
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        <Text style={styles.header}>{setlist.name}</Text>
+        {setlist.songs.map((song, index) => (
+          <View key={song.id} style={styles.songContainer} wrap={false}>
+            <Text style={styles.songTitle}>{index + 1}. {song.title} - {song.artist}</Text>
+            <Text style={styles.songDetails}>
+              {t('setlistPDF.key')}: {song.key || t('setlistPDF.notInformed')} | {t('setlistPDF.bpm')}: {song.bpm || t('setlistPDF.notInformed')}
+            </Text>
+          </View>
+        ))}
+        <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => (
+          `${pageNumber} / ${totalPages}`
+        )} fixed />
+      </Page>
+    </Document>
+  );
+};
 
 export default SetlistPDF;

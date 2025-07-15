@@ -1,10 +1,13 @@
 import { Button, Container, LoadingOverlay, Paper, Text } from '@mantine/core';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../../lib/axios';
+
 
 const ConfirmEmailPage = () => {
   const router = useRouter();
+  const { t } = useTranslation();
   const { token } = router.query;
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState<boolean | null>(null);
@@ -21,16 +24,16 @@ const ConfirmEmailPage = () => {
     confirmEmail(token as string)
       .then(() => {
         setSuccess(true);
-        setMessage('Email confirmado com sucesso! Você já pode fazer login.');
+        setMessage(t('confirm_email.success_message', 'Email confirmado com sucesso! Você já pode fazer login.'));
       })
       .catch((error) => {
         setSuccess(false);
         setMessage(
-          error?.response?.data?.detail || 'Token inválido ou expirado.'
+          error?.response?.data?.detail || t('confirm_email.invalid_token', 'Token inválido ou expirado.')
         );
       })
       .finally(() => setLoading(false));
-  }, [token]);
+  }, [token, t]);
 
   return (
     <Container size={420} maw={400} mx="auto" mt={60}>
@@ -40,7 +43,7 @@ const ConfirmEmailPage = () => {
         ) : (
           <>
             <Text size="lg" fw={700} mb="md" color={success ? 'green' : 'red'}>
-              {success ? 'Sucesso!' : 'Erro'}
+              {success ? t('confirm_email.success', 'Sucesso!') : t('confirm_email.error', 'Erro')}
             </Text>
             <Text mb="md">{message}</Text>
             <Button
@@ -48,7 +51,7 @@ const ConfirmEmailPage = () => {
               onClick={() => router.push('/login')}
               fullWidth
             >
-              Ir para o Login
+              {t('confirm_email.go_to_login', 'Ir para o Login')}
             </Button>
           </>
         )}

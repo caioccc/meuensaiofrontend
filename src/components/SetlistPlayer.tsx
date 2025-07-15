@@ -2,6 +2,7 @@
 import { Anchor, Breadcrumbs, Button, Divider, Group, LoadingOverlay, Modal, Paper, Slider, Stack, Text, Tooltip } from '@mantine/core';
 import { IconArrowDown, IconArrowUp, IconBrandYoutube, IconPlayerPause, IconPlayerPlay, IconPlayerStop, IconPlayerTrackNext, IconPlayerTrackPrev, IconRefresh } from '@tabler/icons-react';
 import { useRouter } from 'next/router';
+import { useTranslation } from 'next-i18next';
 import { useEffect, useRef, useState } from 'react';
 import api from '../../lib/axios';
 import { useAuth } from '../contexts/AuthContext';
@@ -37,6 +38,7 @@ interface SetlistPlayerProps {
 }
 
 export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
+  const { t } = useTranslation('common');
   const { isPro } = useAuth();
   const [songs, setSongs] = useState<Song[]>([]);
   const [setlistName, setSetlistName] = useState('');
@@ -178,44 +180,44 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
   );
 
   if (loading) return <LoadingOverlay visible={loading} zIndex={1000} />;
-  if (!currentSong && !loading) return <Text color="dimmed">Nenhuma música encontrada na setlist.</Text>;
+  if (!currentSong && !loading) return <Text color="dimmed">{t('setlistPlayer.noSongs')}</Text>;
 
   return (
     <Stack style={{ position: 'relative' }}>
       <Breadcrumbs mb="md">
-        <Anchor onClick={() => router.push('/')}>Início</Anchor>
-        <Anchor onClick={() => router.push('/setlists')}>Setlists</Anchor>
-        <Text>Player</Text>
+        <Anchor onClick={() => router.push('/')}>{t('setlistPlayer.breadcrumbHome')}</Anchor>
+        <Anchor onClick={() => router.push('/setlists')}>{t('setlistPlayer.breadcrumbSetlists')}</Anchor>
+        <Text>{t('setlistPlayer.breadcrumbPlayer')}</Text>
         <Text>{setlistName}</Text>
       </Breadcrumbs>
       <LoadingOverlay visible={loading} zIndex={1000} />
-      <Text fw={700} size="lg" mb="xs">Setlist: {setlistName}</Text>
+      <Text fw={700} size="lg" mb="xs">{t('setlistPlayer.setlist')}: {setlistName}</Text>
       {/* Controles principais */}
       {isMobile ? (
         <Group mb="md" width="100%" align="center" justify="space-between">
-          <Button onClick={prev} disabled={currentIdx === 0} variant="subtle" size="md" px={8} style={{ minWidth: 0 }} leftSection={<IconPlayerTrackPrev size={20} />} />
-          <Button onClick={isPlaying ? pause : play} leftSection={isPlaying ? <IconPlayerPause size={18} /> : <IconPlayerPlay size={18} />}>{isPlaying ? 'Pause' : 'Play'}</Button>
-          <Button onClick={stop} variant="subtle" size="md" px={8} style={{ minWidth: 0 }} leftSection={<IconPlayerStop size={20} />} />
-          <Button onClick={next} disabled={currentIdx === songs.length - 1} variant="subtle" size="md" px={8} style={{ minWidth: 0 }} leftSection={<IconPlayerTrackNext size={20} />} />
+          <Button onClick={prev} disabled={currentIdx === 0} variant="subtle" size="md" px={8} style={{ minWidth: 0 }} leftSection={<IconPlayerTrackPrev size={20} />} >{t('setlistPlayer.previous')}</Button>
+          <Button onClick={isPlaying ? pause : play} leftSection={isPlaying ? <IconPlayerPause size={18} /> : <IconPlayerPlay size={18} />}>{isPlaying ? t('setlistPlayer.pause') : t('setlistPlayer.play')}</Button>
+          <Button onClick={stop} variant="subtle" size="md" px={8} style={{ minWidth: 0 }} leftSection={<IconPlayerStop size={20} />} >{t('setlistPlayer.stop')}</Button>
+          <Button onClick={next} disabled={currentIdx === songs.length - 1} variant="subtle" size="md" px={8} style={{ minWidth: 0 }} leftSection={<IconPlayerTrackNext size={20} />} >{t('setlistPlayer.next')}</Button>
         </Group>
       ) : (
         <Group mb="md">
-          <Button onClick={prev} disabled={currentIdx === 0} leftSection={<IconPlayerTrackPrev size={18} />}>Anterior</Button>
-          <Button onClick={isPlaying ? pause : play} leftSection={isPlaying ? <IconPlayerPause size={18} /> : <IconPlayerPlay size={18} />}>{isPlaying ? 'Pause' : 'Play'}</Button>
-          <Button onClick={stop} leftSection={<IconPlayerStop size={18} />}>Stop</Button>
-          <Button onClick={next} disabled={currentIdx === songs.length - 1} leftSection={<IconPlayerTrackNext size={18} />}>Próxima</Button>
+          <Button onClick={prev} disabled={currentIdx === 0} leftSection={<IconPlayerTrackPrev size={18} />}>{t('setlistPlayer.previous')}</Button>
+          <Button onClick={isPlaying ? pause : play} leftSection={isPlaying ? <IconPlayerPause size={18} /> : <IconPlayerPlay size={18} />}>{isPlaying ? t('setlistPlayer.pause') : t('setlistPlayer.play')}</Button>
+          <Button onClick={stop} leftSection={<IconPlayerStop size={18} />}>{t('setlistPlayer.stop')}</Button>
+          <Button onClick={next} disabled={currentIdx === songs.length - 1} leftSection={<IconPlayerTrackNext size={18} />}>{t('setlistPlayer.next')}</Button>
         </Group>
       )}
       {/* Layout responsivo: vídeo/controles + bloco de acordes */}
       {/* Modal de seleção de tom */}
-      <Modal opened={keyModalOpen} onClose={() => setKeyModalOpen(false)} title="Selecione o tom" centered>
+      <Modal opened={keyModalOpen} onClose={() => setKeyModalOpen(false)} title={t('setlistPlayer.selectKeyModal')} centered>
         <Stack gap={12}>
           {(() => {
             const baseKeyRaw = currentSong?.key || 'C';
             const isBaseMinor = baseKeyRaw.toLowerCase().endsWith('m');
             if (isBaseMinor) {
               return <>
-                <Text fw={700} size="sm" style={{ textAlign: 'center' }}>Menores</Text>
+                <Text fw={700} size="sm" style={{ textAlign: 'center' }}>{t('setlistPlayer.minorKeys')}</Text>
                 <Group gap={8} wrap="wrap" style={{ justifyContent: 'center' }}>
                   {MINOR_KEYS.map((key) => {
                     const currentKey = getTransposedKey(baseKeyRaw.replace('m', '') || 'C', currentTransposition) + 'm';
@@ -236,7 +238,7 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
               </>;
             } else {
               return <>
-                <Text fw={700} size="sm" style={{ textAlign: 'center' }}>Maiores</Text>
+                <Text fw={700} size="sm" style={{ textAlign: 'center' }}>{t('setlistPlayer.majorKeys')}</Text>
                 <Group gap={8} wrap="wrap" style={{ justifyContent: 'center' }}>
                   {MAJOR_KEYS.map((key) => {
                     const currentKey = getTransposedKey(baseKeyRaw || 'C', currentTransposition);
@@ -269,10 +271,10 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
             {
               isPro && (
                 <Group gap={4} align="center">
-                  <Tooltip label="Diminuir tom">
+                  <Tooltip label={t('setlistPlayer.decreaseKey')}>
                     <Button size="xs" variant="subtle" onClick={handleTransposeDown} disabled={currentTransposition <= -14}>-</Button>
                   </Tooltip>
-                  <Tooltip label="Selecionar tom">
+                  <Tooltip label={t('setlistPlayer.selectKey')}>
                     <Button
                       size="xs"
                       variant="outline"
@@ -280,17 +282,17 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
                       onClick={() => setKeyModalOpen(true)}
                       style={{ fontWeight: 700, minWidth: 60 }}
                     >
-                      TOM: {getTransposedKey(currentSong?.key || '-', currentTransposition)}
+                      {t('setlistPlayer.key')}: {getTransposedKey(currentSong?.key || '-', currentTransposition)}
                       {currentTransposition !== 0 && (
                         <span style={{ fontWeight: 400, fontSize: 14, marginLeft: 4, color: '#888' }}>({currentTransposition > 0 ? '+' : ''}{currentTransposition})</span>
                       )}
                     </Button>
                   </Tooltip>
-                  <Tooltip label="Aumentar tom">
+                  <Tooltip label={t('setlistPlayer.increaseKey')}>
                     <Button size="xs" variant="subtle" onClick={handleTransposeUp} disabled={currentTransposition >= 14}>+</Button>
                   </Tooltip>
-                  <Tooltip label="Resetar tom">
-                    <Button size="xs" variant="light" color="gray" onClick={handleTransposeReset} style={{ marginLeft: 4 }}>Reset</Button>
+                  <Tooltip label={t('setlistPlayer.resetKey')}>
+                    <Button size="xs" variant="light" color="gray" onClick={handleTransposeReset} style={{ marginLeft: 4 }}>{t('setlistPlayer.resetKey')}</Button>
                   </Tooltip>
                 </Group>
               )
@@ -298,28 +300,28 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
             {
               !isPro && (
                 <Text size="md" fw={600} >
-                  TOM: {currentSong?.key}
+                  {t('setlistPlayer.key')}: {currentSong?.key}
                 </Text>
               )
             }
             <Text size="md" fw={600}>
-              BPM: <span style={{ fontWeight: 700 }}>{currentSong?.bpm || '-'}</span>
+              {t('setlistPlayer.bpm')}: <span style={{ fontWeight: 700 }}>{currentSong?.bpm || '-'}</span>
             </Text>
             <Text size="md" fw={600}>
-              DURAÇÃO: <span style={{ fontWeight: 700 }}>{currentSong?.duration || '-'}</span>
+              {t('setlistPlayer.duration')}: <span style={{ fontWeight: 700 }}>{currentSong?.duration || '-'}</span>
             </Text>
           </Group>
           <Group gap="xs" align="center" mt="md">
-            <Tooltip label="Volume do YouTube">
+            <Tooltip label={t('setlistPlayer.youtubeVolume')}>
               <IconBrandYoutube size={28} color="#e63946" />
             </Tooltip>
             <Slider min={0} max={100} value={ytVolume} onChange={setYtVolume} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
           </Group>
           {/* Bloco de acordes abaixo do vídeo */}
           <Paper withBorder shadow="md" p="md" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 8 }}>
-            <Text fw={700} size="lg" mb="xs">Acordes</Text>
+            <Text fw={700} size="lg" mb="xs">{t('setlistPlayer.chords')}</Text>
             <Text size="sm" color="dimmed" mb="xs">
-              {new Date(currentTime * 1000).toISOString().substr(14, 5)} / {currentSong?.duration || '-'}
+              {new Date(currentTime * 1000).toISOString().substr(14, 5)} / {currentSong?.duration || t('setlistPlayer.none')}
             </Text>
             {activeChordIdx !== -1 && transposedChords && transposedChords[activeChordIdx] ? (
               <Stack align="center" mb="sm" style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
@@ -355,7 +357,7 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
                   })()}
                 </Group>
                 <Stack align="center" gap={4} style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
-                  <Text size="xl" fw={800} style={{ fontSize: 32, letterSpacing: 2, textAlign: 'center' }}>{transposedChords[activeChordIdx].note_fmt || transposedChords[activeChordIdx].note}</Text>
+              <Text size="xl" fw={800} style={{ fontSize: 32, letterSpacing: 2, textAlign: 'center' }}>{transposedChords[activeChordIdx].note_fmt || transposedChords[activeChordIdx].note}</Text>
                 </Stack>
                 <Divider my={8} style={{ width: '100%' }} />
                 {/* Próximos acordes diferentes centralizados */}
@@ -379,7 +381,7 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
                 </Stack>
               </Stack>
             ) : (
-              <Text size="md" color="dimmed">-</Text>
+              <Text size="md" color="dimmed">{t('setlistPlayer.none')}</Text>
             )}
           </Paper>
         </Stack>
@@ -391,10 +393,10 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
               {
                 isPro && (
                   <Group gap={4} align="center">
-                    <Tooltip label="Diminuir tom">
+                    <Tooltip label={t('setlistPlayer.decreaseKey')}>
                       <Button size="xs" variant="subtle" onClick={handleTransposeDown} disabled={currentTransposition <= -14}><IconArrowDown size={16} /></Button>
                     </Tooltip>
-                    <Tooltip label="Selecionar tom">
+                    <Tooltip label={t('setlistPlayer.selectKey')}>
                       <Button
                         size="xs"
                         variant="outline"
@@ -402,16 +404,16 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
                         onClick={() => setKeyModalOpen(true)}
                         style={{ fontWeight: 700, minWidth: 60 }}
                       >
-                        TOM: {getTransposedKey(currentSong?.key || '-', currentTransposition)}
+                        {t('setlistPlayer.key')}: {getTransposedKey(currentSong?.key || '-', currentTransposition)}
                         {currentTransposition !== 0 && (
                           <span style={{ fontWeight: 400, fontSize: 14, marginLeft: 4, color: '#888' }}>({currentTransposition > 0 ? '+' : ''}{currentTransposition})</span>
                         )}
                       </Button>
                     </Tooltip>
-                    <Tooltip label="Aumentar tom">
+                    <Tooltip label={t('setlistPlayer.increaseKey')}>
                       <Button size="xs" variant="subtle" onClick={handleTransposeUp} disabled={currentTransposition >= 14}><IconArrowUp size={16} /></Button>
                     </Tooltip>
-                    <Tooltip label="Resetar tom">
+                    <Tooltip label={t('setlistPlayer.resetKey')}>
                       <Button size="xs" variant="light" color="gray" onClick={handleTransposeReset} style={{ marginLeft: 4 }}><IconRefresh size={14} /></Button>
                     </Tooltip>
                   </Group>
@@ -420,22 +422,22 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
               {
                 !isPro && (
                   <Text size="md" fw={600} color="#228be6">
-                    TOM: {currentSong?.key}
+                    {t('setlistPlayer.key')}: {currentSong?.key}
                   </Text>
                 )
               }
               <Text size="md" fw={600} color="#228be6">
-                BPM: <span style={{ fontWeight: 700 }}>{currentSong?.bpm || '-'}</span>
+                {t('setlistPlayer.bpm')}: <span style={{ fontWeight: 700 }}>{currentSong?.bpm || '-'}</span>
               </Text>
               <Text size="md" fw={600} color="#228be6">
-                DURAÇÃO: <span style={{ fontWeight: 700 }}>{currentSong?.duration || '-'}</span>
+                {t('setlistPlayer.duration')}: <span style={{ fontWeight: 700 }}>{currentSong?.duration || '-'}</span>
               </Text>
             </Group>
             <div className="player-main-content" style={{ width: '100%' }}>
               <div id="ytplayer" style={{ width: '100%', height: 360, borderRadius: 12, overflow: 'hidden', boxShadow: '0 2px 12px #0001' }} />
             </div>
             <Group gap="xs" align="center" mt="md">
-              <Tooltip label="Volume do YouTube">
+              <Tooltip label={t('setlistPlayer.youtubeVolume')}>
                 <IconBrandYoutube size={28} color="#e63946" />
               </Tooltip>
               <Slider min={0} max={100} value={ytVolume} onChange={setYtVolume} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
@@ -443,9 +445,9 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
           </Stack>
           {/* Bloco de acordes (20%) */}
           <Paper withBorder shadow="md" p="md" style={{ flex: 2, minWidth: 180, maxWidth: 320, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <Text fw={700} size="lg" mb="xs">Acordes</Text>
+            <Text fw={700} size="lg" mb="xs">{t('setlistPlayer.chords')}</Text>
             <Text size="sm" color="dimmed" mb="xs">
-              {new Date(currentTime * 1000).toISOString().substr(14, 5)} / {currentSong?.duration || '-'}
+              {new Date(currentTime * 1000).toISOString().substr(14, 5)} / {currentSong?.duration || t('setlistPlayer.none')}
             </Text>
             {activeChordIdx !== -1 && transposedChords && transposedChords[activeChordIdx] ? (
               <Stack align="center" mb="sm" style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
@@ -501,14 +503,14 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
                 </Stack>
               </Stack>
             ) : (
-              <Text size="md" color="dimmed">-</Text>
+              <Text size="md" color="dimmed">{t('setlistPlayer.none')}</Text>
             )}
           </Paper>
         </Group>
       )}
       {/* Sequência de músicas */}
       <Stack mt="xl" gap="xs">
-        <Text fw={500}>Sequência da setlist:</Text>
+        <Text fw={500}>{t('setlistPlayer.sequence')}</Text>
         {songs.map((s, idx) => (
           <Paper key={s.id} shadow={idx === currentIdx ? "md" : "xs"} p="xs" withBorder style={{ background: idx === currentIdx ? '#e7f5ff' : undefined, cursor: 'pointer' }} onClick={() => goTo(idx)}>
             <Text size="sm" fw={idx === currentIdx ? 700 : 400} color={idx === currentIdx ? 'blue' : undefined}>{idx + 1}. {s.title} - {s.bpm} - {s.key}</Text>

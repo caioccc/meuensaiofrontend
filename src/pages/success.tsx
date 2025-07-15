@@ -2,8 +2,10 @@ import { Button, Center, LoadingOverlay, Paper, Stack, Text, Title } from '@mant
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import api from '../../lib/axios';
+import { useTranslation } from 'next-i18next';
 
 export default function PaymentSuccessPage() {
+  const { t } = useTranslation('common');
   const router = useRouter();
   const { payment } = router.query;
   const [loading, setLoading] = useState(true);
@@ -17,10 +19,10 @@ export default function PaymentSuccessPage() {
         .then(() => {
           setError(null);
         })
-        .catch(() => setError('Não foi possível confirmar o pagamento.'))
+        .catch(() => setError(t('successPage.error')))
         .finally(() => setLoading(false));
     }
-  }, [payment]);
+  }, [payment, t]);
 
   useEffect(() => {
     if (!loading && !error && seconds > 0) {
@@ -34,15 +36,15 @@ export default function PaymentSuccessPage() {
     <Center style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #e3f0ff 0%, #f8fbff 100%)' }}>
       <Paper p="xl" radius="md" shadow="md" withBorder style={{ minWidth: 320, maxWidth: 400 }}>
         <Stack align="center" gap="md">
-          <Title order={2} ta="center">Pagamento aprovado!</Title>
+          <Title order={2} ta="center">{t('successPage.title')}</Title>
           {loading ? (
             <LoadingOverlay visible={loading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
           ) : error ? (
             <Text color="red" ta="center">{error}</Text>
           ) : (
             <>
-              <Text ta="center">Sua assinatura foi liberada com sucesso.<br />Você será redirecionado para a página inicial em <b>{seconds}</b> segundos.</Text>
-              <Button mt="md" onClick={() => router.push('/')}>Ir para início agora</Button>
+              <Text ta="center">{t('successPage.message', { seconds })}</Text>
+              <Button mt="md" onClick={() => router.push('/')}>{t('successPage.goHome')}</Button>
             </>
           )}
         </Stack>

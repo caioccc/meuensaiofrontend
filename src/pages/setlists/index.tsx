@@ -6,6 +6,7 @@ import { showNotification } from "@mantine/notifications";
 import { IconPlus, IconSearch } from "@tabler/icons-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { useTranslation } from 'next-i18next';
 import api from "../../../lib/axios";
 import InfiniteScrollWrapper from "../../components/InfiniteScrollWrapper";
 import OrderSelect from "../../components/OrderSelect";
@@ -24,10 +25,11 @@ interface Setlist {
 }
 
 export default function SetlistsPage() {
+  const { t } = useTranslation('common');
   const router = useRouter();
   const [setlists, setSetlists] = useState<Setlist[]>([]);
-  const [search, setSearch] = useState(""); // valor realmente buscado
-  const [searchInput, setSearchInput] = useState(""); // valor do input
+  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [order, setOrder] = useState("-date, -created_at");
@@ -46,10 +48,10 @@ export default function SetlistsPage() {
   }, [searchInput]);
 
   const orderOptions = [
-    { value: "-date, -created_at", label: "Mais recente" },
-    { value: "date, created_at", label: "Mais antigo" },
-    { value: "-num_songs", label: "Mais músicas" },
-    { value: "num_songs", label: "Menos músicas" },
+    { value: "-date, -created_at", label: t('setlistsPage.orderNewest') },
+    { value: "date, created_at", label: t('setlistsPage.orderOldest') },
+    { value: "-num_songs", label: t('setlistsPage.orderMostSongs') },
+    { value: "num_songs", label: t('setlistsPage.orderLeastSongs') },
   ];
 
   const fetchSetlists = async (append = false) => {
@@ -63,7 +65,7 @@ export default function SetlistsPage() {
         showNotification({
           color: "red",
           id: "setlists-fetch-error",
-          message: "Erro ao buscar setlists",
+          message: t('setlistsPage.fetchError'),
         });
         return;
       }
@@ -74,7 +76,8 @@ export default function SetlistsPage() {
       }
       setHasMore(!!res.data.next);
     } catch (e: any) {
-      showNotification({ color: "red", message: e.message });
+      console.log(e);
+      showNotification({ color: "red", message: t('setlistsPage.fetchError') });
     } finally {
       setLoading(false);
     }
@@ -107,11 +110,11 @@ export default function SetlistsPage() {
     <AppLayout>
       <Container size="100%">
         <Breadcrumbs mb="md">
-          <Anchor onClick={() => router.push('/')}>Início</Anchor>
-          <Anchor onClick={() => router.push('/setlists')}>Setlists</Anchor>
+          <Anchor onClick={() => router.push('/')}>{t('setlistsPage.breadcrumbHome')}</Anchor>
+          <Anchor onClick={() => router.push('/setlists')}>{t('setlistsPage.breadcrumbSetlists')}</Anchor>
         </Breadcrumbs>
         <Group justify="space-between" mb="md" align="center" style={{ width: '100%' }}>
-          <Title order={2}>Setlists</Title>
+          <Title order={2}>{t('setlistsPage.title')}</Title>
           <Button
             leftSection={<IconPlus size={18} />}
             color="blue"
@@ -119,14 +122,14 @@ export default function SetlistsPage() {
             style={{ marginLeft: 'auto' }}
             onClick={() => router.push('/setlists/add')}
           >
-            Novo Setlist
+            {t('setlistsPage.newSetlist')}
           </Button>
         </Group>
         {isMobile ? (
           <Stack mb="md" gap="xs">
             <TextInput
               leftSection={<IconSearch size={16} />}
-              placeholder="Buscar por nome do setlist ou música"
+              placeholder={t('setlistsPage.searchPlaceholder')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.currentTarget.value)}
               mb={0}
@@ -140,7 +143,7 @@ export default function SetlistsPage() {
           <Group mb="md" gap="xs" align="center" style={{ width: '100%' }}>
             <TextInput
               leftSection={<IconSearch size={16} />}
-              placeholder="Buscar por nome do setlist ou música"
+              placeholder={t('setlistsPage.searchPlaceholder')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.currentTarget.value)}
               style={{ flex: 7, minWidth: 0 }}

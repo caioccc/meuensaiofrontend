@@ -34,6 +34,7 @@ import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../../lib/axios';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -64,6 +65,7 @@ interface MusicStats {
 }
 
 const MusicDashboard: React.FC = () => {
+  const { t } = useTranslation();
   // Estados para dados reais
   const [setlistsOfWeek, setSetlistsOfWeek] = useState<Playlist[]>([]);
   const [mostPlayedSongs, setMostPlayedSongs] = useState<Song[]>([]);
@@ -173,11 +175,11 @@ const MusicDashboard: React.FC = () => {
         date: undefined,
         songs_data: enrichedFiltered,
       });
-      showNotification({ color: 'green', message: 'Setlist adicionada com sucesso!' });
+      showNotification({ color: 'green', message: t('index.addSetlistSuccess', 'Setlist adicionada com sucesso!') });
       setAddModalOpen(false);
     } catch (e: any) {
       console.log(e);
-      showNotification({ color: 'red', message: 'Erro ao adicionar setlist. Tente novamente mais tarde.' });
+      showNotification({ color: 'red', message: t('index.addSetlistError', 'Erro ao adicionar setlist. Tente novamente mais tarde.') });
     } finally {
       setAddLoading(false);
     }
@@ -191,20 +193,18 @@ const MusicDashboard: React.FC = () => {
             <Avatar src={song.image} size={64} radius="md" />
           </Box>
           <Box style={{ flex: 1, minWidth: 0 }}>
-
             <Text fw={500} size="sm" truncate title={song.title} style={{ maxWidth: '100%', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {song.title}
             </Text>
-
             <Text size="xs" c="dimmed">
               {song.bpm} bpm
             </Text>
             <Text size="xs" c="dimmed">
-              Tom: {song.key}
+              {t('index.key', 'Tom')}: {song.key}
             </Text>
             {showPlays && (
               <Text size="xs" c="dimmed">
-                {song.plays.toLocaleString()} plays
+                {song.plays.toLocaleString()} {t('index.plays', 'plays')}
               </Text>
             )}
           </Box>
@@ -215,7 +215,7 @@ const MusicDashboard: React.FC = () => {
           </Text>
           <Group gap="xs">
             <ActionIcon variant="subtle" size="sm">
-              <Tooltip label="Tocar música" withArrow>
+              <Tooltip label={t('index.playSong', 'Tocar música')} withArrow>
                 <IconPlayerPlay size={16} onClick={() => router.push({ pathname: '/player', query: { youtubeId: song.youtube_id, id: song.id } })} />
               </Tooltip>
             </ActionIcon>
@@ -244,10 +244,10 @@ const MusicDashboard: React.FC = () => {
             </Menu.Target>
             <Menu.Dropdown>
               <Menu.Item leftSection={<IconPlayerPlay size={16} />} onClick={() => router.push(`/player/setlist/${playlist.id}`)}>
-                Tocar Setlist
+                {t('index.playSetlist', 'Tocar Setlist')}
               </Menu.Item>
               <Menu.Item leftSection={<IconPlus size={16} />} onClick={() => { setSelectedSetlist(playlist); setAddModalOpen(true); }}>
-                Adicionar à minha lista
+                {t('index.addToMyList', 'Adicionar à minha lista')}
               </Menu.Item>
             </Menu.Dropdown>
           </Menu>
@@ -343,9 +343,9 @@ const MusicDashboard: React.FC = () => {
           {setlistsOfWeek.length > 0 && (
             <section>
               <Group justify="space-between" mb="md">
-                <Title order={2}>Setlists da Semana</Title>
+                <Title order={2}>{t('index.setlistsOfWeek', 'Setlists da Semana')}</Title>
                 {/* <Button variant="subtle" rightSection={<IconChevronRight size={16} />}>
-                  Ver todos
+                  {t('index.seeAll', 'Ver todos')}
                 </Button> */}
               </Group>
 
@@ -376,7 +376,7 @@ const MusicDashboard: React.FC = () => {
           {/* Músicas mais tocadas */}
           <section>
             <Group justify="space-between" mb="md">
-              <Title order={2}>Músicas mais tocadas</Title>
+              <Title order={2}>{t('index.mostPlayedSongs', 'Músicas mais tocadas')}</Title>
               {/* <ActionIcon variant="subtle">
                 <IconChevronRight size={16} />
               </ActionIcon> */}
@@ -411,7 +411,7 @@ const MusicDashboard: React.FC = () => {
               {/* Seu ranking pessoal */}
               {personalRanking.length > 0 && (
                 <section>
-                  <Title order={2} mb="md">Seu ranking pessoal</Title>
+                  <Title order={2} mb="md">{t('index.personalRanking', 'Seu ranking pessoal')}</Title>
                   <Stack gap="sm">
                     {personalRanking.map((song, index) => (
                       <Paper key={song.id} p={isMobile ? 'md' : 'sm'} radius="md" withBorder>
@@ -429,14 +429,14 @@ const MusicDashboard: React.FC = () => {
                             </Text>
 
                             <Text size="xs" c="dimmed">
-                              Tom: {song.key} - {song.bpm} bpm
+                              {t('index.key', 'Tom')}: {song.key} - {song.bpm} bpm
                             </Text>
                             <Text size="xs" c="dimmed">
-                              {song.plays.toLocaleString()} setlists
+                              {song.plays.toLocaleString()} {t('index.setlists', 'setlists')}
                             </Text>
                           </Box>
                           <ActionIcon variant="subtle" size="sm">
-                            <Tooltip label="Tocar música" withArrow>
+                            <Tooltip label={t('index.playSong', 'Tocar música')} withArrow>
                               <IconPlayerPlay size={14} onClick={() => router.push({ pathname: '/player', query: { youtubeId: song.youtube_id, id: song.id } })} />
                             </Tooltip>
                           </ActionIcon>
@@ -451,27 +451,27 @@ const MusicDashboard: React.FC = () => {
 
           {/* Suas estatísticas musicais */}
           <section>
-            <Title order={2} mb="md">Suas estatísticas musicais</Title>
+            <Title order={2} mb="md">{t('index.musicStats', 'Suas estatísticas musicais')}</Title>
             <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="md">
               <StatCard
                 icon={<IconMusic size={24} />}
                 value={musicStats.totalSongs.toLocaleString()}
-                label="Total de músicas"
+                label={t('index.totalSongs', 'Total de músicas')}
               />
               <StatCard
                 icon={<IconPlaylist size={24} />}
                 value={musicStats.playlists}
-                label="Playlists"
+                label={t('index.playlists', 'Playlists')}
               />
               <StatCard
                 icon={<IconMusic size={24} />}
                 value={musicStats.mostCommonKey}
-                label="Tom mais comum"
+                label={t('index.mostCommonKey', 'Tom mais comum')}
               />
               <StatCard
                 icon={<IconMusic size={24} />}
                 value={musicStats.avgBPM}
-                label="BPM médio"
+                label={t('index.avgBPM', 'BPM médio')}
               />
             </SimpleGrid>
           </section>
@@ -479,11 +479,11 @@ const MusicDashboard: React.FC = () => {
       </Container>
 
       {/* Modal de confirmação para adicionar setlist */}
-      <Modal opened={addModalOpen} onClose={() => setAddModalOpen(false)} title="Adicionar setlist" centered>
-        <Text>Deseja adicionar esta setlist à sua lista?</Text>
+      <Modal opened={addModalOpen} onClose={() => setAddModalOpen(false)} title={t('index.addSetlistTitle', 'Adicionar setlist')} centered>
+        <Text>{t('index.addSetlistQuestion', 'Deseja adicionar esta setlist à sua lista?')}</Text>
         <Group mt="md" justify="flex-end">
-          <Button variant="default" onClick={() => setAddModalOpen(false)}>Cancelar</Button>
-          <Button color="blue" loading={addLoading} onClick={handleAddSetlist}>Adicionar</Button>
+          <Button variant="default" onClick={() => setAddModalOpen(false)}>{t('index.cancel', 'Cancelar')}</Button>
+          <Button color="blue" loading={addLoading} onClick={handleAddSetlist}>{t('index.add', 'Adicionar')}</Button>
         </Group>
       </Modal>
     </AppLayout>
