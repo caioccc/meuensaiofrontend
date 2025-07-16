@@ -140,7 +140,7 @@ export default function OnboardingModal({ opened, onClose, onSuccess }: { opened
   };
 
   return (
-    <Modal opened={opened} onClose={onClose} title={t('onboarding.title', 'Bem-vindo ao Setlistify!')} centered size="xl" withCloseButton={false}>
+    <Modal opened={opened} onClose={onClose} title={t('onboarding.title', 'Bem-vindo ao BeatKey!')} centered size="xl" withCloseButton={false}>
       <Box pos="relative">
         <LoadingOverlay visible={loadingOverlay} zIndex={1000} overlayProps={{ radius: 'sm', blur: 2 }} />
         <form onSubmit={e => { e.preventDefault(); handleSubmit(); }}>

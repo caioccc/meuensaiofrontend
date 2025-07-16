@@ -31,7 +31,7 @@
     }
   },
   "login": {
-    "welcome": "Bienvenido a Setlistify",
+    "welcome": "Bienvenido a BeatKey",
     "email_label": "Correo electrónico",
     "email_placeholder": "tu@email.com",
     "password_label": "Contraseña",
@@ -58,7 +58,7 @@
     "go_to_login": "Ir al inicio de sesión"
   },
   "onboarding": {
-    "title": "¡Bienvenido a Setlistify!",
+    "title": "¡Bienvenido a BeatKey!",
     "step1": { "label": "Bienvenido", "desc": "Tus objetivos" },
     "step2": { "label": "Perfil musical", "desc": "Tu estilo" },
     "step3": { "label": "Preferencias", "desc": "¿Cómo practicas?" },
@@ -136,7 +136,7 @@
     "select": "Seleccionar..."
   },
   "appLayout": {
-    "title": "Setlistify",
+    "title": "BeatKey",
     "defaultEmail": "usuario@email.com",
     "toggleMenu": "Abrir/cerrar menú",
     "changeTheme": "Cambiar tema",
@@ -201,7 +201,7 @@
     "orderOldest": "Más antigua"
   },
   "musicCard": {
-    "whatsappHeader": "🔥 ¡Mira esta canción de mi repertorio en *Setlistify*!",
+    "whatsappHeader": "🔥 ¡Mira esta canción de mi repertorio en *BeatKey*!",
     "whatsappSong": "🎵 *{{title}}*{{songKey, select, undefined {} other { (Tono: {{songKey}})}}}{{bpm, select, undefined {} other { • {{bpm}} BPM}}}",
     "whatsappDuration": "⏱️ Duración: {{duration}}",
     "whatsappListen": "👉 Escucha ahora: {{url}}",
@@ -306,7 +306,7 @@
     "notificationDeleteSuccess": "¡Setlist eliminada con éxito!",
     "notificationDeleteErrorTitle": "Error al eliminar",
     "notificationDeleteError": "Error al eliminar setlist.",
-    "whatsappHeader": "🔥 ¡Mira mi setlist exclusiva en *Setlistify*!",
+    "whatsappHeader": "🔥 ¡Mira mi setlist exclusiva en *BeatKey*!",
     "whatsappTitle": "🎤 *{{title}}*",
     "whatsappTotalSongs": "🎼 Total de canciones: *{{qtd}}*",
     "whatsappSong": "🎵 {{index}}. {{title}}{{artist, select, undefined {} other { - {{artist}}}}}",
@@ -529,7 +529,7 @@
     "noSetlists": "Tus listas aparecerán aquí",
     "myAchievements": "Mis logros ({{count}})",
     "noAchievements": "No se encontraron logros.",
-    "highlights": "Destacados de Setlistify",
+    "highlights": "Destacados de BeatKey",
     "highlightsSyncChordsTitle": "Acceso a acordes sincronizados",
     "highlightsSyncChordsDesc": "Visualiza acordes en tiempo real mientras tocas tus canciones favoritas.",
     "highlightsPadsTitle": "Pads y sonidos ambientales",

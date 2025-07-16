@@ -31,7 +31,7 @@
     }
   },
   "login": {
-    "welcome": "Bem vindo ao Setlistify",
+    "welcome": "Bem vindo ao BeatKey",
     "email_label": "E-mail",
     "email_placeholder": "seu@email.com",
     "password_label": "Senha",
@@ -58,7 +58,7 @@
     "go_to_login": "Ir para o Login"
   },
   "onboarding": {
-    "title": "Bem-vindo ao Setlistify!",
+    "title": "Bem-vindo ao BeatKey!",
     "step1": { "label": "Bem-vindo", "desc": "Seus objetivos" },
     "step2": { "label": "Perfil musical", "desc": "Seu estilo" },
     "step3": { "label": "Preferências", "desc": "Como você pratica?" },
@@ -136,7 +136,7 @@
     "select": "Selecione..."
   },
   "appLayout": {
-    "title": "Setlistify",
+    "title": "BeatKey",
     "defaultEmail": "usuario@email.com",
     "toggleMenu": "Abrir/fechar menu",
     "changeTheme": "Mudar tema",
@@ -201,7 +201,7 @@
     "orderOldest": "Mais antigo"
   },
   "musicCard": {
-    "whatsappHeader": "🔥 Olha essa música do meu repertório no *Setlistify*!",
+    "whatsappHeader": "🔥 Olha essa música do meu repertório no *BeatKey*!",
     "whatsappSong": "🎵 *{{title}}*{{songKey, select, undefined {} other { (Tom: {{songKey}})}}}{{bpm, select, undefined {} other { • {{bpm}} BPM}}}",
     "whatsappDuration": "⏱️ Duração: {{duration}}",
     "whatsappListen": "👉 Ouça agora: {{url}}",
@@ -306,7 +306,7 @@
     "notificationDeleteSuccess": "Setlist removida com sucesso!",
     "notificationDeleteErrorTitle": "Erro ao remover",
     "notificationDeleteError": "Erro ao remover setlist.",
-    "whatsappHeader": "🔥 Confira minha setlist exclusiva no *Setlistify*!",
+    "whatsappHeader": "🔥 Confira minha setlist exclusiva no *BeatKey*!",
     "whatsappTitle": "🎤 *{{title}}*",
     "whatsappTotalSongs": "🎼 Total de músicas: *{{qtd}}*",
     "whatsappSong": "🎵 {{index}}. {{title}}{{artist, select, undefined {} other { - {{artist}}}}}",
@@ -523,7 +523,7 @@
     "noSetlists": "Seus setlists aparecerão aqui",
     "myAchievements": "Minhas Conquistas ({{count}})",
     "noAchievements": "Nenhuma conquista encontrada.",
-    "highlights": "Destaques do Setlistify",
+    "highlights": "Destaques do BeatKey",
     "highlightsSyncChordsTitle": "Acesso a cifras sincronizadas",
     "highlightsSyncChordsDesc": "Visualize acordes em tempo real enquanto toca suas músicas favoritas.",
     "highlightsPadsTitle": "Pads e sons ambientes",

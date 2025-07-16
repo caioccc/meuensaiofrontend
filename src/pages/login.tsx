@@ -56,7 +56,7 @@ export default function LoginPage() {
           <LanguageSwitcher size="xs" />
         </div> */}
         <Title order={2} className={classes.title}>
-          {t('login.welcome', 'Bem vindo ao Setlistify')}
+          {t('login.welcome', 'Bem vindo ao BeatKey')}
         </Title>
 
         <Container size={420} my={40}>

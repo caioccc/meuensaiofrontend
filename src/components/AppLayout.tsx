@@ -94,7 +94,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
               <IconMenu2 size={28} />
             </ActionIcon>
             <Group>
-              <Title order={2}>{t('appLayout.title', 'Setlistify')}</Title>
+              <Title order={2}>{t('appLayout.title', 'BeatKey')}</Title>
             </Group>
           </Group>
 
@@ -271,7 +271,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
       </AppShell.Main>
       <AppShell.Footer>
         <Group h="100%" px="md" justify="space-between">
-          <Text size="sm">&copy; {new Date().getFullYear()} {t('appLayout.title', 'Setlistify')}</Text>
+          <Text size="sm">&copy; {new Date().getFullYear()} {t('appLayout.title', 'BeatKey')}</Text>
         </Group>
       </AppShell.Footer>
 

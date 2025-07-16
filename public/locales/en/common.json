@@ -31,7 +31,7 @@
     }
   },
   "login": {
-    "welcome": "Welcome to Setlistify",
+    "welcome": "Welcome to BeatKey",
     "email_label": "Email",
     "email_placeholder": "your@email.com",
     "password_label": "Password",
@@ -58,7 +58,7 @@
     "go_to_login": "Go to Login"
   },
   "onboarding": {
-    "title": "Welcome to Setlistify!",
+    "title": "Welcome to BeatKey!",
     "step1": { "label": "Welcome", "desc": "Your goals" },
     "step2": { "label": "Musical profile", "desc": "Your style" },
     "step3": { "label": "Preferences", "desc": "How do you practice?" },
@@ -136,7 +136,7 @@
     "select": "Select..."
   },
   "appLayout": {
-    "title": "Setlistify",
+    "title": "BeatKey",
     "defaultEmail": "user@email.com",
     "toggleMenu": "Open/close menu",
     "changeTheme": "Change theme",
@@ -201,7 +201,7 @@
     "orderOldest": "Oldest"
   },
   "musicCard": {
-    "whatsappHeader": "🔥 Check out this song from my repertoire on *Setlistify*!",
+    "whatsappHeader": "🔥 Check out this song from my repertoire on *BeatKey*!",
     "whatsappSong": "🎵 *{{title}}*{{songKey, select, undefined {} other { (Key: {{songKey}})}}}{{bpm, select, undefined {} other { • {{bpm}} BPM}}}",
     "whatsappDuration": "⏱️ Duration: {{duration}}",
     "whatsappListen": "👉 Listen now: {{url}}",
@@ -306,7 +306,7 @@
     "notificationDeleteSuccess": "Setlist removed successfully!",
     "notificationDeleteErrorTitle": "Error removing",
     "notificationDeleteError": "Error removing setlist.",
-    "whatsappHeader": "🔥 Check out my exclusive setlist on *Setlistify*!",
+    "whatsappHeader": "🔥 Check out my exclusive setlist on *BeatKey*!",
     "whatsappTitle": "🎤 *{{title}}*",
     "whatsappTotalSongs": "🎼 Total songs: *{{qtd}}*",
     "whatsappSong": "🎵 {{index}}. {{title}}{{artist, select, undefined {} other { - {{artist}}}}}",
@@ -511,7 +511,7 @@
     "noSetlists": "Your setlists will appear here",
     "myAchievements": "My Achievements ({{count}})",
     "noAchievements": "No achievements found.",
-    "highlights": "Setlistify Highlights",
+    "highlights": "BeatKey Highlights",
     "highlightsSyncChordsTitle": "Access to synchronized chords",
     "highlightsSyncChordsDesc": "View chords in real time while playing your favorite songs.",
     "highlightsPadsTitle": "Pads and ambient sounds",

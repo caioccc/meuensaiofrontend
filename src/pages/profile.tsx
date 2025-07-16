@@ -330,7 +330,7 @@ export default function ProfilePage() {
   // Função para compartilhar música
   function handleShareSong(song: Song) {
     const url = `${window.location.origin}/player?id=${song.id}`;
-    const shareText = `🎵 ${song.title} - ${song.artist}\nTom: ${song.key} | BPM: ${song.bpm} | Duração: ${song.duration}\nOuça no Setlistify: ${url}`;
+    const shareText = `🎵 ${song.title} - ${song.artist}\nTom: ${song.key} | BPM: ${song.bpm} | Duração: ${song.duration}\nOuça no BeatKey: ${url}`;
     if (navigator.share) {
       navigator.share({
         title: `${song.title} - ${song.artist}`,
@@ -812,7 +812,7 @@ export default function ProfilePage() {
 
         </Tabs>
 
-        {/* Destaques do Setlistify */}
+        {/* Destaques do BeatKey */}
         <Card shadow="sm" p="md" radius="md" withBorder mt="xl">
           <Title order={4} mb="md">{t('profilePage.highlights')}</Title>
           <Carousel slideSize="60%" height={180} align="start" slideGap="md" loop withIndicators>
