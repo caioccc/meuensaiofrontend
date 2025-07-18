@@ -485,7 +485,7 @@ export default function Player({ song }: PlayerProps) {
           )}
           {/* Bloco principal: vídeo, controles, volumes */}
           <Stack style={{ width: '100%' }}>
-            <Group gap="xl" align="center" style={{ marginBottom: 16, marginTop: 8 }}>
+            <Group className='self-center' gap="xl" align="center" style={{ marginBottom: 16, marginTop: 8 }}>
               {/* CONTROLES DE TRANSPOSIÇÃO MOBILE */}
               <Group gap={4} align="center">
                 {
@@ -528,13 +528,165 @@ export default function Player({ song }: PlayerProps) {
               <Text size="md" fw={600} color="#228be6">
                 {t('player.bpm')}: <span style={{ fontWeight: 700 }}>{song.bpm || '-'}</span>
               </Text>
-              <Text size="md" fw={600} color="#228be6">
-                {t('player.duration')}: <span style={{ fontWeight: 700 }}>{song.duration || '-'}</span>
-              </Text>
             </Group>
             <div className="player-main-content" style={{ width: '100%' }}>
               <div id="ytplayer" style={{ width: '100%', height: 220, borderRadius: 12, overflow: 'hidden', boxShadow: '0 2px 12px #0001' }} />
             </div>
+            {/* Bloco de acordes mobile: trilha horizontal animada mostrando anterior, atual e próximos diferentes */}
+            <Paper withBorder shadow="md" p="md" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 8, }}>
+              <Text size="sm" color="dimmed">
+                {new Date(currentTime * 1000).toISOString().substr(14, 5)} / {song.duration || '-'}
+              </Text>
+              {/* Trilha horizontal: acorde anterior (se houver), atual em destaque, próximos diferentes */}
+              {activeChordIdx !== -1 && transposedChords && transposedChords[activeChordIdx] ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', margin: '16px 0' }}>
+                  {/* Tap tempo dots pulsando */}
+                  <Group gap={8} mb={16} style={{ justifyContent: 'center', width: '100%' }}>
+                    {(() => {
+                      // Determina o número de tempos/barra (meter) do acorde
+                      const chord = transposedChords[activeChordIdx];
+                      let beats = 4;
+                      if (chord.meter) {
+                        // meter pode ser '4/4', '6/8', etc
+                        const meterParts = chord.meter.split('/');
+                        if (meterParts.length === 2 && !isNaN(Number(meterParts[0]))) {
+                          beats = Number(meterParts[0]);
+                        }
+                      } else if (chord.barLength) {
+                        beats = chord.barLength;
+                      } else if (chord.tempo) {
+                        beats = chord.tempo;
+                      }
+                      return Array.from({ length: beats }).map((_, i) => (
+                        <div
+                          key={i}
+                          style={{
+                            width: 14,
+                            height: 14,
+                            borderRadius: '50%',
+                            background: '#228be6',
+                            transition: 'background 0.1s',
+                            boxShadow: undefined
+                          }}
+                        />
+                      ));
+                    })()}
+                  </Group>
+                  {/* Trilha horizontal de acordes */}
+                  <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'center', gap: 8 }}>
+                    {/* Acorde anterior (se houver e diferente do atual) */}
+                    {activeChordIdx > 0 && (() => {
+                      // Busca o último acorde diferente do atual
+                      let prevIdx = activeChordIdx - 1;
+                      let prevChord = null;
+                      const currentNote = transposedChords[activeChordIdx].note_fmt || transposedChords[activeChordIdx].note;
+                      while (prevIdx >= 0) {
+                        const note = transposedChords[prevIdx].note_fmt || transposedChords[prevIdx].note;
+                        if (note !== currentNote) {
+                          prevChord = transposedChords[prevIdx];
+                          break;
+                        }
+                        prevIdx--;
+                      }
+                      return prevChord ? (
+                        <div
+                          className="chord-mobile-item prev"
+                          style={{
+                            minWidth: 24,
+                            minHeight: 24,
+                            padding: 4,
+                            borderRadius: 8,
+                            background: 'light-dark(#e3f0ff, #333)',
+                            color: 'light-dark(#0082ff, #fff)',
+                            border: '2px solid light-dark(#b6d6ff, 0.5)',
+                            boxShadow: '0 2px 8px light-dark(#0082ff22, 0.5)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: 700,
+                            fontSize: 24,
+                            letterSpacing: 1,
+                            margin: '0 2px',
+                            opacity: 0.7,
+                            zIndex: 1,
+                          }}
+                        >
+                          {prevChord.note_fmt || prevChord.note}
+                        </div>
+                      ) : null;
+                    })()}
+                    {/* Acorde atual em destaque */}
+                    <div
+                      className="chord-mobile-item active"
+                      style={{
+                        minWidth: 32,
+                        minHeight: 32,
+                        padding: 4,
+                        borderRadius: 8,
+                        background: '#0082ff',
+                        color: '#fff',
+                        border: '3px solid #0082ff',
+                        boxShadow: '0 4px 24px #0082ff55',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 700,
+                        fontSize: 24,
+                        letterSpacing: 2,
+                        margin: '0 2px',
+                        transform: 'scale(1.2)',
+                        transition: 'all 0.25s cubic-bezier(.4,2,.6,1)',
+                        zIndex: 2,
+                      }}
+                    >
+                      {transposedChords[activeChordIdx].note_fmt || transposedChords[activeChordIdx].note}
+                    </div>
+                    {/* Próximos acordes diferentes (até 3) */}
+                    {(() => {
+                      const nextDiffs = [];
+                      let lastNote = transposedChords[activeChordIdx].note_fmt || transposedChords[activeChordIdx].note;
+                      for (let i = activeChordIdx + 1; i < transposedChords.length && nextDiffs.length < 3; i++) {
+                        const n = transposedChords[i];
+                        const note = n.note_fmt || n.note;
+                        if (note !== lastNote) {
+                          nextDiffs.push(note);
+                          lastNote = note;
+                        }
+                      }
+                      return nextDiffs.map((note, idx) => (
+                        <div
+                          key={note + idx}
+                          className="chord-mobile-item next"
+                          style={{
+                            minWidth: 24,
+                            minHeight: 24,
+                            padding: 4,
+                            borderRadius: 8,
+                            background: 'light-dark(#e3f0ff, #333)',
+                            color: 'light-dark(#0082ff, #fff)',
+                            border: '2px solid light-dark(#b6d6ff, 0.5)',
+                            boxShadow: '0 2px 8px light-dark(#0082ff22, 0.5)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: 700,
+                            fontSize: 24,
+                            letterSpacing: 1,
+                            margin: '0 2px',
+                            opacity: 0.7,
+                            zIndex: 1,
+                          }}
+                        >
+                          {note}
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                </div>
+              ) : (
+                <Text size="md" color="dimmed">-</Text>
+              )}
+            </Paper>
             {/* Volumes e outros controles */}
             <Stack gap="md" className="player-controls-stack" style={{ width: '100%', marginTop: 24 }}>
               {/* Canal YouTube */}
@@ -619,77 +771,6 @@ export default function Player({ song }: PlayerProps) {
               }
             </Stack>
           </Stack>
-          {/* Bloco de acordes abaixo do vídeo no mobile */}
-          <Paper withBorder shadow="md" p="md" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 8 }}>
-            <Text fw={700} size="lg" mb="xs">{t('player.chords')}</Text>
-            <Text size="sm" color="dimmed" mb="xs">
-              {new Date(currentTime * 1000).toISOString().substr(14, 5)} / {song.duration || '-'}
-            </Text>
-            {activeChordIdx !== -1 && transposedChords && transposedChords[activeChordIdx] ? (
-              <Stack align="center" mb="sm" style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
-                {/* Tap tempo dots */}
-                <Group gap={8} mb={8} style={{ justifyContent: 'center', width: '100%' }}>
-                  {(() => {
-                    // Determina o número de tempos/barra (meter) do acorde
-                    const chord = transposedChords[activeChordIdx];
-                    let beats = 4;
-                    if (chord.meter) {
-                      // meter pode ser '4/4', '6/8', etc
-                      const meterParts = chord.meter.split('/');
-                      if (meterParts.length === 2 && !isNaN(Number(meterParts[0]))) {
-                        beats = Number(meterParts[0]);
-                      }
-                    } else if (chord.barLength) {
-                      beats = chord.barLength;
-                    } else if (chord.tempo) {
-                      beats = chord.tempo;
-                    }
-                    return Array.from({ length: beats }).map((_, i) => (
-                      <div
-                        key={i}
-                        style={{
-                          width: 14,
-                          height: 14,
-                          borderRadius: '50%',
-                          background: '#228be6',
-                          transition: 'background 0.1s',
-                          boxShadow: undefined
-                        }}
-                      />
-                    ));
-                  })()}
-                </Group>
-                <Stack align="center" gap={4} style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
-                  <Text size="xl" fw={800} style={{ fontSize: 32, letterSpacing: 2, textAlign: 'center' }}>{transposedChords[activeChordIdx].note_fmt || transposedChords[activeChordIdx].note}</Text>
-                </Stack>
-              </Stack>
-            ) : (
-              <Text size="md" color="dimmed">-</Text>
-            )}
-            {/* Próximos acordes diferentes */}
-            <Stack gap={2} mt="md" style={{ width: '100%' }}>
-              {(() => {
-                if (!transposedChords || activeChordIdx === -1) return null;
-                const current = transposedChords[activeChordIdx];
-                const nextDiffs = [];
-                let lastNote = current.note_fmt || current.note;
-                for (let i = activeChordIdx + 1; i < transposedChords.length && nextDiffs.length < 5; i++) {
-                  const n = transposedChords[i];
-                  const note = n.note_fmt || n.note;
-                  if (note !== lastNote) {
-                    nextDiffs.push(note);
-                    lastNote = note;
-                  }
-                }
-                return nextDiffs.map((note, idx) => (
-                  <>
-                    {idx > 0 && <Divider my={2} />}
-                    <Text key={note + idx} size="sm" color="gray.6" style={{ textAlign: 'center', opacity: 0.7 }}>{note}</Text>
-                  </>
-                ));
-              })()}
-            </Stack>
-          </Paper>
         </Stack>
       ) : (
         <Group align="flex-start" gap="xl" style={{ width: '100%', minHeight: 400 }}>
@@ -757,9 +838,6 @@ export default function Player({ song }: PlayerProps) {
               </Group>
               <Text size="md" fw={600} color="#228be6">
                 {t('player.bpm')}: <span style={{ fontWeight: 700 }}>{song.bpm || '-'}</span>
-              </Text>
-              <Text size="md" fw={600} color="#228be6">
-                {t('player.duration')}: <span style={{ fontWeight: 700 }}>{song.duration || '-'}</span>
               </Text>
             </Group>
             <div className="player-main-content" style={{ width: '100%' }}>

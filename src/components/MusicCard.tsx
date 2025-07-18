@@ -147,11 +147,11 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
       onMouseLeave={() => setHovered(false)}
     >
       <Card.Section>
-        <Image src={thumbnail_url} height={compact ? 70 : 160} alt={title} fallbackSrc="/no-image.png" />
+        <Image src={thumbnail_url} height={compact ? 70 : 200} alt={title} fallbackSrc="/no-image.png" />
       </Card.Section>
       <Group justify="space-between" mt="md" mb="xs">
         <Tooltip label={title} position="top" withArrow>
-          <Text fw={700} size={compact ? 'sm' : undefined} lineClamp={2}>{title}</Text>
+          <Text fw={500} size={isMobile ? 'sm' : 'sm'} lineClamp={1}>{title}</Text>
         </Tooltip>
       </Group>
       {/* Meatball menu no topo direito, visível ao hover */}
@@ -194,9 +194,9 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
       {/* Botão de play ocupa toda a linha inferior */}
       {!compact && (
       <Button
-        color="blue"
+        color="blue.7"
         variant="filled"
-        size="md"
+        size="xs"
         leftSection={<IconPlayerPlay size={18} />}
         style={{ position: 'absolute', bottom: 0, left: 0, right: 0, borderRadius: 0, zIndex: 2, height: 38 }}
         onClick={() => router.push({ pathname: '/player', query: { youtubeId: id, id } })}

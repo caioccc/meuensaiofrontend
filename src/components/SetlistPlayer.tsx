@@ -195,10 +195,10 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
       {/* Controles principais */}
       {isMobile ? (
         <Group mb="md" width="100%" align="center" justify="space-between">
-          <Button onClick={prev} disabled={currentIdx === 0} variant="subtle" size="md" px={8} style={{ minWidth: 0 }} leftSection={<IconPlayerTrackPrev size={20} />} >{t('setlistPlayer.previous')}</Button>
+          <Button onClick={prev} disabled={currentIdx === 0} variant="subtle" size="md" px={8} style={{ minWidth: 0 }} leftSection={<IconPlayerTrackPrev size={20} />} ></Button>
           <Button onClick={isPlaying ? pause : play} leftSection={isPlaying ? <IconPlayerPause size={18} /> : <IconPlayerPlay size={18} />}>{isPlaying ? t('setlistPlayer.pause') : t('setlistPlayer.play')}</Button>
-          <Button onClick={stop} variant="subtle" size="md" px={8} style={{ minWidth: 0 }} leftSection={<IconPlayerStop size={20} />} >{t('setlistPlayer.stop')}</Button>
-          <Button onClick={next} disabled={currentIdx === songs.length - 1} variant="subtle" size="md" px={8} style={{ minWidth: 0 }} leftSection={<IconPlayerTrackNext size={20} />} >{t('setlistPlayer.next')}</Button>
+          <Button onClick={stop} variant="subtle" size="md" px={8} style={{ minWidth: 0 }} leftSection={<IconPlayerStop size={20} />} ></Button>
+          <Button onClick={next} disabled={currentIdx === songs.length - 1} variant="subtle" size="md" px={8} style={{ minWidth: 0 }} leftSection={<IconPlayerTrackNext size={20} />} ></Button>
         </Group>
       ) : (
         <Group mb="md">
@@ -267,7 +267,7 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
             <div id="ytplayer" style={{ width: '100%', height: 220, borderRadius: 12, overflow: 'hidden', boxShadow: '0 2px 12px #0001' }} />
           </div>
           {/* Info TOM/BPM/Transposição */}
-          <Group gap="xl" align="center" style={{ marginBottom: 8, marginTop: 8 }}>
+          <Group className='self-center' gap="xl" align="center" style={{ marginBottom: 8, marginTop: 8 }}>
             {
               isPro && (
                 <Group gap={4} align="center">
@@ -292,7 +292,9 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
                     <Button size="xs" variant="subtle" onClick={handleTransposeUp} disabled={currentTransposition >= 14}>+</Button>
                   </Tooltip>
                   <Tooltip label={t('setlistPlayer.resetKey')}>
-                    <Button size="xs" variant="light" color="gray" onClick={handleTransposeReset} style={{ marginLeft: 4 }}>{t('setlistPlayer.resetKey')}</Button>
+                    <Button size="xs" variant="light" color="gray" onClick={handleTransposeReset} style={{ marginLeft: 4 }}>
+                      <IconRefresh size={16} />
+                    </Button>
                   </Tooltip>
                 </Group>
               )
@@ -304,45 +306,36 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
                 </Text>
               )
             }
-            <Text size="md" fw={600}>
+            <Text size="xs" fw={600}>
               {t('setlistPlayer.bpm')}: <span style={{ fontWeight: 700 }}>{currentSong?.bpm || '-'}</span>
             </Text>
-            <Text size="md" fw={600}>
-              {t('setlistPlayer.duration')}: <span style={{ fontWeight: 700 }}>{currentSong?.duration || '-'}</span>
-            </Text>
           </Group>
-          <Group gap="xs" align="center" mt="md">
-            <Tooltip label={t('setlistPlayer.youtubeVolume')}>
-              <IconBrandYoutube size={28} color="#e63946" />
-            </Tooltip>
-            <Slider min={0} max={100} value={ytVolume} onChange={setYtVolume} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
-          </Group>
-          {/* Bloco de acordes abaixo do vídeo */}
-          <Paper withBorder shadow="md" p="md" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 8 }}>
-            <Text fw={700} size="lg" mb="xs">{t('setlistPlayer.chords')}</Text>
-            <Text size="sm" color="dimmed" mb="xs">
-              {new Date(currentTime * 1000).toISOString().substr(14, 5)} / {currentSong?.duration || t('setlistPlayer.none')}
+          {/* Bloco de acordes mobile: trilha horizontal animada mostrando anterior, atual e próximos diferentes */}
+          <Paper withBorder shadow="md" p="md" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 8}}>
+            <Text size="sm" color="dimmed">
+              {new Date(currentTime * 1000).toISOString().substr(14, 5)} / {currentSong.duration || '-'}
             </Text>
+            {/* Trilha horizontal: acorde anterior (se houver), atual em destaque, próximos diferentes */}
             {activeChordIdx !== -1 && transposedChords && transposedChords[activeChordIdx] ? (
-              <Stack align="center" mb="sm" style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
-                {/* Tap tempo dots */}
-                <Group gap={8} mb={8} style={{ justifyContent: 'center', width: '100%' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', margin: '16px 0' }}>
+                {/* Tap tempo dots pulsando */}
+                <Group gap={8} mb={16} style={{ justifyContent: 'center', width: '100%' }}>
                   {(() => {
+                    // Determina o número de tempos/barra (meter) do acorde
                     const chord = transposedChords[activeChordIdx];
-                    // Detecta o compasso (meter) se existir, senão usa tempo ou 4
-                    // Exemplo: chord.meter = '6/8' ou '4/4'
-                    let dots = 4;
+                    let beats = 4;
                     if (chord.meter) {
-                      // Pega o numerador do compasso
-                      const match = /^(\d+)/.exec(chord.meter);
-                      if (match) {
-                        dots = parseInt(match[1], 10) || 4;
+                      // meter pode ser '4/4', '6/8', etc
+                      const meterParts = chord.meter.split('/');
+                      if (meterParts.length === 2 && !isNaN(Number(meterParts[0]))) {
+                        beats = Number(meterParts[0]);
                       }
-                    } else if (chord.tempo && chord.tempo > 0) {
-                      dots = chord.tempo;
+                    } else if (chord.barLength) {
+                      beats = chord.barLength;
+                    } else if (chord.tempo) {
+                      beats = chord.tempo;
                     }
-                    // Exibe as bolinhas conforme o compasso detectado
-                    return Array.from({ length: dots }).map((_, i) => (
+                    return Array.from({ length: beats }).map((_, i) => (
                       <div
                         key={i}
                         style={{
@@ -351,39 +344,134 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
                           borderRadius: '50%',
                           background: '#228be6',
                           transition: 'background 0.1s',
+                          boxShadow: undefined
                         }}
                       />
                     ));
                   })()}
                 </Group>
-                <Stack align="center" gap={4} style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
-              <Text size="xl" fw={800} style={{ fontSize: 32, letterSpacing: 2, textAlign: 'center' }}>{transposedChords[activeChordIdx].note_fmt || transposedChords[activeChordIdx].note}</Text>
-                </Stack>
-                <Divider my={8} style={{ width: '100%' }} />
-                {/* Próximos acordes diferentes centralizados */}
-                <Stack gap={2} mt="md" align="center" style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                {/* Trilha horizontal de acordes */}
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'center', gap: 8 }}>
+                  {/* Acorde anterior (se houver e diferente do atual) */}
+                  {activeChordIdx > 0 && (() => {
+                    // Busca o último acorde diferente do atual
+                    let prevIdx = activeChordIdx - 1;
+                    let prevChord = null;
+                    const currentNote = transposedChords[activeChordIdx].note_fmt || transposedChords[activeChordIdx].note;
+                    while (prevIdx >= 0) {
+                      const note = transposedChords[prevIdx].note_fmt || transposedChords[prevIdx].note;
+                      if (note !== currentNote) {
+                        prevChord = transposedChords[prevIdx];
+                        break;
+                      }
+                      prevIdx--;
+                    }
+                    return prevChord ? (
+                      <div
+                        className="chord-mobile-item prev"
+                        style={{
+                          minWidth: 24,
+                          minHeight: 24,
+                          padding: 4,
+                          borderRadius: 8,
+                          background: 'light-dark(#e3f0ff, #333)',
+                          color: 'light-dark(#0082ff, #fff)',
+                          border: '2px solid light-dark(#b6d6ff, 0.5)',
+                          boxShadow: '0 2px 8px light-dark(#0082ff22, 0.5)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 700,
+                          fontSize: 24,
+                          letterSpacing: 1,
+                          margin: '0 2px',
+                          opacity: 0.7,
+                          zIndex: 1,
+                        }}
+                      >
+                        {prevChord.note_fmt || prevChord.note}
+                      </div>
+                    ) : null;
+                  })()}
+                  {/* Acorde atual em destaque */}
+                  <div
+                    className="chord-mobile-item active"
+                    style={{
+                      minWidth: 32,
+                      minHeight: 32,
+                      padding: 4,
+                      borderRadius: 8,
+                      background: '#0082ff',
+                      color: '#fff',
+                      border: '3px solid #0082ff',
+                      boxShadow: '0 4px 24px #0082ff55',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 700,
+                      fontSize: 24,
+                      letterSpacing: 2,
+                      margin: '0 2px',
+                      transform: 'scale(1.2)',
+                      transition: 'all 0.25s cubic-bezier(.4,2,.6,1)',
+                      zIndex: 2,
+                    }}
+                  >
+                    {transposedChords[activeChordIdx].note_fmt || transposedChords[activeChordIdx].note}
+                  </div>
+                  {/* Próximos acordes diferentes (até 3) */}
                   {(() => {
-                    if (!transposedChords || activeChordIdx === -1) return null;
-                    const current = transposedChords[activeChordIdx];
                     const nextDiffs = [];
-                    let lastNote = current.note_fmt || current.note;
-                    for (let i = activeChordIdx + 1; i < transposedChords.length && nextDiffs.length < 5; i++) {
+                    let lastNote = transposedChords[activeChordIdx].note_fmt || transposedChords[activeChordIdx].note;
+                    for (let i = activeChordIdx + 1; i < transposedChords.length && nextDiffs.length < 3; i++) {
                       const n = transposedChords[i];
-                      if ((n.note_fmt || n.note) !== lastNote) {
-                        nextDiffs.push(n.note_fmt || n.note);
-                        lastNote = n.note_fmt || n.note;
+                      const note = n.note_fmt || n.note;
+                      if (note !== lastNote) {
+                        nextDiffs.push(note);
+                        lastNote = note;
                       }
                     }
                     return nextDiffs.map((note, idx) => (
-                      <Text key={idx} size="sm" color="dimmed" style={{ textAlign: 'center' }}>{note}</Text>
+                      <div
+                        key={note + idx}
+                        className="chord-mobile-item next"
+                        style={{
+                          minWidth: 24,
+                          minHeight: 24,
+                          padding: 4,
+                          borderRadius: 8,
+                          background: 'light-dark(#e3f0ff, #333)',
+                          color: 'light-dark(#0082ff, #fff)',
+                          border: '2px solid light-dark(#b6d6ff, 0.5)',
+                          boxShadow: '0 2px 8px light-dark(#0082ff22, 0.5)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 700,
+                          fontSize: 24,
+                          letterSpacing: 1,
+                          margin: '0 2px',
+                          opacity: 0.7,
+                          zIndex: 1,
+                        }}
+                      >
+                        {note}
+                      </div>
                     ));
                   })()}
-                </Stack>
-              </Stack>
+                </div>
+              </div>
             ) : (
-              <Text size="md" color="dimmed">{t('setlistPlayer.none')}</Text>
+              <Text size="md" color="dimmed">-</Text>
             )}
           </Paper>
+
+          <Group gap="xs" align="center" mt="md">
+            <Tooltip label={t('setlistPlayer.youtubeVolume')}>
+              <IconBrandYoutube size={28} color="#e63946" />
+            </Tooltip>
+            <Slider min={0} max={100} value={ytVolume} onChange={setYtVolume} style={{ flex: 1, marginLeft: 8, marginRight: 8 }} label={v => `${v}%`} />
+          </Group>
         </Stack>
       ) : (
         <Group align="flex-start" gap="xl" style={{ width: '100%', minHeight: 400 }}>

@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react/no-unescaped-entities */
 import LandingLayout from '@/components/LandingLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -25,15 +26,12 @@ import {
   IconHistory,
   IconMail,
   IconMapPin,
-  IconMusic,
   IconMusicStar,
   IconPlayerPlay,
   IconPlaylist,
   IconRocket,
   IconSparkles,
-  IconStar,
-  IconTrendingUp,
-  IconUsers
+  IconStar
 } from '@tabler/icons-react';
 import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
@@ -149,28 +147,28 @@ const LandingPage: React.FC = () => {
     },
   ];
 
-  const stats = [
-    {
-      value: '10K+',
-      label: 'stats.songs',
-      icon: IconMusic,
-    },
-    {
-      value: '2K+',
-      label: 'stats.users',
-      icon: IconUsers,
-    },
-    {
-      value: '5K+',
-      label: 'stats.setlists',
-      icon: IconPlaylist,
-    },
-    {
-      value: '99%',
-      label: 'stats.accuracy',
-      icon: IconTrendingUp,
-    },
-  ];
+  // const stats = [
+  //   {
+  //     value: '10K+',
+  //     label: 'stats.songs',
+  //     icon: IconMusic,
+  //   },
+  //   {
+  //     value: '2K+',
+  //     label: 'stats.users',
+  //     icon: IconUsers,
+  //   },
+  //   {
+  //     value: '5K+',
+  //     label: 'stats.setlists',
+  //     icon: IconPlaylist,
+  //   },
+  //   {
+  //     value: '99%',
+  //     label: 'stats.accuracy',
+  //     icon: IconTrendingUp,
+  //   },
+  // ];
 
   const plans = [
     {
@@ -517,10 +515,10 @@ const LandingPage: React.FC = () => {
                         </Text>
                         {plan.originalPrice && (
                           <Text className="text-lg text-gray-500 line-through"
-                          style={{
-                            textDecoration: 'line-through',
-                            color: '#6c757d'
-                          }}
+                            style={{
+                              textDecoration: 'line-through',
+                              color: '#6c757d'
+                            }}
                           >
                             {t(plan.originalPrice)}
                           </Text>

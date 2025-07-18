@@ -126,12 +126,36 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
       {isMobile ? (
         <>
           <Card.Section>
-            {hasImages ? (
-              <Image src={localSetlist.songs[0]?.thumbnail_url || ''} width={400} height={120} alt={localSetlist.name} style={{ width: '100%', height: 120, objectFit: 'cover' }} />
+            {hasImages && localSetlist.songs.length > 0 ? (
+              <Carousel
+                slideSize="100%"
+                slideGap="xs"
+                controlsOffset="xs"
+                withControls={false}
+                withIndicators
+                plugins={localSetlist.songs.length > 1 ? [autoplay.current] : []}
+                onMouseEnter={localSetlist.songs.length > 1 ? autoplay.current.stop : undefined}
+                onMouseLeave={localSetlist.songs.length > 1 ? () => autoplay.current && autoplay.current.play && autoplay.current.play() : undefined}
+              >
+                {localSetlist.songs.slice(0, 5).map((song) => (
+                  <Carousel.Slide key={song.id}>
+                    <Image src={song.thumbnail_url || ''} width={200} height={200} alt={song.title} style={{ borderRadius: 10, objectFit: 'cover', width: '100%', height: 200 }} />
+                  </Carousel.Slide>
+                ))}
+              </Carousel>
             ) : (
-              <Center style={{ width: '100%', height: 120, background: '#f3f3f3', borderRadius: 8 }}>
-                <IconMusic size={48} color="#bbb" />
-              </Center>
+              <Carousel slideSize="100%"
+                slideGap="xs"
+                controlsOffset="xs"
+                withControls={false}
+                withIndicators={false}
+              >
+                <Carousel.Slide key="default">
+                  <Center style={{ width: 200, height: 200, background: '#f3f3f3', borderRadius: 10 }}>
+                    <IconMusic size={64} color="#bbb" />
+                  </Center>
+                </Carousel.Slide>
+              </Carousel>
             )}
           </Card.Section>
           {/* Meatball menu no topo direito */}
@@ -179,8 +203,10 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
               </Menu.Item>
             </Menu.Dropdown>
           </Menu>
-          <Box style={{ padding: 12, paddingTop: 16, paddingBottom: 54 }}>
-            <Text mb={4}>{localSetlist.name}</Text>
+          <Box className='flex flex-col items-start flex-start justify-center mb-8 mt-2'>
+            <Text
+              style={{ textTransform: 'capitalize' }}
+              mb={4}>{localSetlist.name}</Text>
             {localSetlist.date && (
               <Text size="xs" color="dimmed" mb={4}>
                 {(() => {
@@ -191,16 +217,6 @@ export default function SetlistCard({ setlist, onRemoved }: { setlist: Setlist, 
               </Text>
             )}
             <Badge color="blue" variant="light" mb={8}>{localSetlist.songs.length} {t('setlistCard.songs')}</Badge>
-            <Box mt={4} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {localSetlist.songs.slice(0, 3).map((s, idx) => (
-                <Text key={s.id} size="sm" color="dimmed" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 220 }}>
-                  {`${idx + 1}. ${s.title.length > 35 ? s.title.slice(0, 35) + '…' : s.title}`}
-                </Text>
-              ))}
-              {localSetlist.songs.length > 3 && (
-                <Text size="sm" color="dimmed">...</Text>
-              )}
-            </Box>
           </Box>
           <Button
             color="blue"

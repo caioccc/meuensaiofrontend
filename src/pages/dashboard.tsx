@@ -253,7 +253,7 @@ const MusicDashboard: React.FC = () => {
           </Menu>
           {isMobile ? (
             hasImages && playlist.songs && playlist.songs[0]?.thumbnail_url ? (
-              <Image src={playlist.songs[0].thumbnail_url} width={400} height={120} alt={playlist.name} style={{ width: '100%', height: 120, objectFit: 'cover' }} />
+              <Image src={playlist.songs[0].thumbnail_url} width={400} height={400} alt={playlist.name} style={{ width: '100%', height: 200, objectFit: 'cover' }} />
             ) : (
               <div style={{ width: '100%', height: 120, background: '#f3f3f3', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <IconMusic size={48} color="#bbb" />
@@ -291,12 +291,12 @@ const MusicDashboard: React.FC = () => {
           {/* Lista de músicas, até 3 por card */}
           {playlist.songs && playlist.songs.length > 0 && (
             <Stack gap={0} mb={2}>
-              {playlist.songs.slice(0, 3).map((m, idx) => (
+              {playlist.songs.slice(0, 2).map((m, idx) => (
                 <Text key={idx} size="xs" c="dimmed" style={{ lineHeight: 1.2 }} lineClamp={1}>
                   {m.title}
                 </Text>
               ))}
-              {playlist.songs.length > 3 && (
+              {playlist.songs.length > 2 && (
                 <Text size="xs" c="dimmed">...</Text>
               )}
             </Stack>
