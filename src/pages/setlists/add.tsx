@@ -227,7 +227,7 @@ export default function AddSetlistPage() {
       }
       <Container size="100%" py="xl">
         <Breadcrumbs mb="md">
-          <Anchor onClick={() => router.push('/')}>{t('addSetlist.breadcrumbHome')}</Anchor>
+          <Anchor onClick={() => router.push('/dashboard')}>{t('addSetlist.breadcrumbHome')}</Anchor>
           <Anchor onClick={() => router.push('/setlists')}>{t('addSetlist.breadcrumbSetlists')}</Anchor>
           <Text>{t('addSetlist.breadcrumbAdd')}</Text>
         </Breadcrumbs>
@@ -361,7 +361,7 @@ export default function AddSetlistPage() {
             </Stepper.Step>
             {/* Step 3: Músicas */}
             <Stepper.Step label={t('addSetlist.stepSongsLabel')} description={t('addSetlist.stepSongsDesc')}>
-              <Group align="flex-start" style={{ height: isMobile ? '100%' : '60vh', minHeight: 340, alignItems: 'stretch' }}>
+              <Group align="flex-start" style={{ height: isMobile ? '100%' : '100%', minHeight: 340, alignItems: 'stretch' }}>
                 <div style={{ flex: 2, minWidth: 0, height: '100%' }}>
                   {source === 'saved' ? (
                     <>
@@ -469,7 +469,7 @@ export default function AddSetlistPage() {
                           <Button onClick={handleSearch} loading={searchLoading}>{t('addSetlist.search')}</Button>
                         </Group>
                       )}
-                      <ScrollArea h={360} mb="xs" viewportRef={searchResultsRef}>
+                      <ScrollArea h={'100%'} mb="xs" viewportRef={searchResultsRef}>
                         <Group gap="xs" style={{ flexWrap: 'wrap' }}>
                           {searchResults.map((song) => {
                             const isSelected = selected.find(s => s.youtube_id === song.youtube_id);

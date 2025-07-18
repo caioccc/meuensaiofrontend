@@ -9,6 +9,219 @@
   "previous": "Previous",
   "save": "Save",
   "cancel": "Cancel",
+  "enter": "Sign in",
+  "logout": "Logout",
+  "loading": "Loading...",
+  "error": "Error",
+  "success": "Success",
+  "not_found": "Page not found",
+  "not_found_message": "The page you are looking for does not exist or has been moved.",
+  "contact_us": "Contact us",
+  "privacy_policy": "Privacy Policy",
+  "terms_of_service": "Terms of Service",
+  "cookie_policy": "Cookie Policy",
+  "about": "About",
+  "faq": "FAQ",
+  "plans": "Plans",
+  "dashboard": "Dashboard",
+  "blog": "Blog",
+  "home": "Home",
+  "hi": "Hi",
+  "header": {
+    "home": "Home",
+    "features": "Features",
+    "features.youtube": "YouTube Extraction",
+    "features.player": "Smart Player",
+    "features.setlists": "Setlists",
+    "features.history": "History",
+    "pricing": "Pricing",
+    "testimonials": "Testimonials",
+    "contact": "Contact",
+    "login": "Login",
+    "register": "Sign Up",
+    "blog": "Blog"
+  },
+  "hero": {
+    "badge": "🎵 Revolutionize your musical practice",
+    "title": "Transform any YouTube song into a learning experience",
+    "subtitle": "Extract chords, BPM, and key automatically. Create smart setlists and practice with our synchronized player. All in one platform.",
+    "cta": "Start Free",
+    "demo": "Watch Demo"
+  },
+  "stats": {
+    "songs": "Songs Analyzed",
+    "users": "Active Users",
+    "setlists": "Setlists Created",
+    "accuracy": "Accuracy"
+  },
+  "features": {
+    "badge": "🚀 Powerful Features",
+    "title": "Everything you need to learn music",
+    "description": "Advanced music analysis and learning tools in an intuitive platform",
+    "autoExtraction": {
+      "title": "Automatic YouTube Extraction",
+      "desc": "Paste a YouTube link and automatically extract title, BPM, key, and chords from any song"
+    },
+    "bpmDetection": {
+      "title": "BPM Detection",
+      "desc": "Advanced algorithms to automatically detect the precise tempo of any song"
+    },
+    "chordDetection": {
+      "title": "Chord Recognition",
+      "desc": "Identify chords in real-time with high accuracy using AI"
+    },
+    "smartSetlists": {
+      "title": "Smart Setlists",
+      "desc": "Organize your songs in custom setlists with filters by key, BPM, and difficulty"
+    },
+    "learningPlayer": {
+      "title": "Learning Player",
+      "desc": "Synchronized player that shows chords at the right time in the song to facilitate learning"
+    },
+    "musicHistory": {
+      "title": "Music History",
+      "desc": "Track your progress and see which setlists each song is present in"
+    }
+  },
+  "howItWorks": {
+    "badge": "💡 How It Works",
+    "title": "See how BeatKey transforms your practice",
+    "description": "With just a few steps, turn any video into a complete music practice tool.",
+    "step1": {
+      "badge": "Step 1",
+      "title": "Choose your YouTube song",
+      "description": "Paste the link or search directly on BeatKey. We automatically detect title, artist, key, BPM, and chords."
+    },
+    "step2": {
+      "badge": "Step 2",
+      "title": "View chords in real time",
+      "description": "Watch chords appear in sync with the video, perfect for jamming like a chord karaoke."
+    },
+    "step3": {
+      "badge": "Step 3",
+      "title": "Create organized setlists",
+      "description": "Build personalized setlists for rehearsals, gigs or practice, all neatly organized."
+    },
+    "step4": {
+      "badge": "Step 4",
+      "title": "Export to PDF and level up",
+      "description": "Export setlists with chords in PDF and unlock achievements as you grow musically."
+    }
+  },
+  "testimonials": {
+    "badge": "⭐ Testimonials",
+    "title": "What our users say",
+    "description": "Thousands of musicians have already transformed their practice with BeatKey",
+    "user1": {
+      "name": "John Smith",
+      "role": "Guitarist",
+      "text": "BeatKey revolutionized how I learn songs. The chord accuracy is impressive!"
+    },
+    "user2": {
+      "name": "Mary Johnson",
+      "role": "Music Teacher",
+      "text": "I use BeatKey in my classes. Students love the synchronized player with chords."
+    },
+    "user3": {
+      "name": "Peter Williams",
+      "role": "Drummer",
+      "text": "Finally I can practice with the correct BPM. The tempo detection is perfect!"
+    }
+  },
+  "pricing": {
+    "badge": "💰 Pricing",
+    "title": "Plans for all levels",
+    "description": "Choose the plan that best fits your musical needs",
+    "recommended": "Recommended",
+    "save": "Save 17%",
+    "free": {
+      "name": "Free",
+      "price": "$0",
+      "description": "Perfect to get started",
+      "features": [
+        "Up to 20 songs",
+        "Basic chord extraction",
+        "2 setlist",
+        "Basic player"
+      ],
+      "cta": "Start Free"
+    },
+    "pro": {
+      "name": "Pro",
+      "price": "$9.99/month",
+      "description": "For serious musicians",
+      "features": [
+        "Unlimited songs",
+        "Advanced extraction",
+        "Unlimited setlists",
+        "Synchronized player",
+        "Complete history",
+        "Export setlists"
+      ],
+      "cta": "Subscribe Pro"
+    },
+    "pro_annual": {
+      "name": "Pro Annual",
+      "price": "$99/year",
+      "originalPrice": "$119.88/year",
+      "description": "Best value for the whole year",
+      "features": [
+        "All Pro features",
+        "17% discount",
+        "VIP support",
+        "Beta features"
+      ],
+      "cta": "Subscribe Annual"
+    }
+  },
+  "cta": {
+    "title": "Ready to revolutionize your musical practice?",
+    "description": "Join thousands of musicians who have already transformed their learning with BeatKey",
+    "button": "Start Now - Free"
+  },
+  "contact": {
+    "badge": "📞 Contact",
+    "title": "Get in touch",
+    "description": "Have questions? Our team is ready to help you",
+    "info": {
+      "title": "Contact information",
+      "phone": "Phone",
+      "location": "Location"
+    },
+    "form": {
+      "title": "Send a message",
+      "name": "Name",
+      "namePlaceholder": "Your full name",
+      "email": "Email",
+      "emailPlaceholder": "your@email.com",
+      "message": "Message",
+      "messagePlaceholder": "How can we help you?",
+      "submit": "Send Message"
+    }
+  },
+  "footer": {
+    "description": "The complete platform for AI-powered music analysis and learning.",
+    "features": {
+      "title": "Features",
+      "youtube": "YouTube Extraction",
+      "player": "Smart Player",
+      "setlists": "Setlists",
+      "history": "History"
+    },
+    "company": {
+      "title": "Company",
+      "about": "About",
+      "blog": "Blog",
+      "careers": "Careers",
+      "contact": "Contact"
+    },
+    "contact": {
+      "title": "Contact"
+    },
+    "rights": "All rights reserved.",
+    "privacy": "Privacy",
+    "terms": "Terms"
+  },
   "register": {
     "title": "Create Account",
     "name": "Name",

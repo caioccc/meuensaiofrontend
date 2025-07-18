@@ -206,10 +206,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
         <AppShell.Section grow>
           <NavLink
             component={Link}
-            href="/"
+            href="/dashboard"
             label={t('appLayout.home', 'Início')}
             leftSection={<IconLayoutDashboard size={18} />}
-            active={pathname === "/"}
+            active={pathname === "/dashboard"}
           />
           <NavLink
             component={Link}

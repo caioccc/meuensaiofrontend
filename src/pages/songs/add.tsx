@@ -157,7 +157,7 @@ export default function AddMusicPage() {
     <AppLayout>
       <Container size="100%" py="xl">
         <Breadcrumbs mb="md">
-          <Anchor onClick={() => router.push('/')}>{t('appLayout.home', 'Início')}</Anchor>
+          <Anchor onClick={() => router.push('/dashboard')}>{t('appLayout.home', 'Início')}</Anchor>
           <Anchor onClick={() => router.push('/songs')}>{t('songs.mySongs', 'Minhas músicas')}</Anchor>
           <Text>{t('addSong.title', 'Adicionar Música')}</Text>
         </Breadcrumbs>

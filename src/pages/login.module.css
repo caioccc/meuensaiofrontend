@@ -1,14 +1,18 @@
 .wrapper {
-  min-height: 900px;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  height: 100dvh;
   background-image: url('/background-image-login.svg');
+
+  @media (max-height: 700px) {
+    height: 100%;
+  }
 }
 
 .form {
   border-right: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-7));
-  min-height: 900px;
+  height: 100%;
   max-width: 450px;
   padding: 30px;
   padding-top: 80px;

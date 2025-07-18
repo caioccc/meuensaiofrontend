@@ -185,7 +185,7 @@ export default function SetlistPlayer({ setlistId }: SetlistPlayerProps) {
   return (
     <Stack style={{ position: 'relative' }}>
       <Breadcrumbs mb="md">
-        <Anchor onClick={() => router.push('/')}>{t('setlistPlayer.breadcrumbHome')}</Anchor>
+        <Anchor onClick={() => router.push('/dashboard')}>{t('setlistPlayer.breadcrumbHome')}</Anchor>
         <Anchor onClick={() => router.push('/setlists')}>{t('setlistPlayer.breadcrumbSetlists')}</Anchor>
         <Text>{t('setlistPlayer.breadcrumbPlayer')}</Text>
         <Text>{setlistName}</Text>

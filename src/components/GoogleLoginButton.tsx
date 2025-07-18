@@ -28,7 +28,7 @@ export function GoogleLoginButton() {
         const data = response.data;
         if (data.access) {
           login(data.access, data.refresh);
-          router.push('/');
+          router.push('/dashboard');
         } else {
           showNotification({
             title: 'Erro de autenticação',

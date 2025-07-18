@@ -110,7 +110,7 @@ export default function SetlistsPage() {
     <AppLayout>
       <Container size="100%">
         <Breadcrumbs mb="md">
-          <Anchor onClick={() => router.push('/')}>{t('setlistsPage.breadcrumbHome')}</Anchor>
+          <Anchor onClick={() => router.push('/dashboard')}>{t('setlistsPage.breadcrumbHome')}</Anchor>
           <Anchor onClick={() => router.push('/setlists')}>{t('setlistsPage.breadcrumbSetlists')}</Anchor>
         </Breadcrumbs>
         <Group justify="space-between" mb="md" align="center" style={{ width: '100%' }}>

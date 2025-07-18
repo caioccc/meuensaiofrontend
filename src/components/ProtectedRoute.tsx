@@ -6,7 +6,7 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
-const UNPROTECTED_PATHS = ["/login", "/register", "/success", "/forgot-password", "/reset-password", "terms", "/privacy-policy", "/cookie-policy", "/plans", "/pricing", "/about", "/contact", "/faq", "/confirm-email"];
+const UNPROTECTED_PATHS = ["/login", "/register", "/success", "/forgot-password", "/reset-password", "terms", "/privacy-policy", "/cookie-policy", "/plans", "/pricing", "/about", "/contact", "/faq", "/confirm-email", "/"];
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated, loading } = useAuth();

@@ -29,7 +29,7 @@ export default function PaymentSuccessPage() {
       const timer = setTimeout(() => setSeconds(s => s - 1), 1000);
       return () => clearTimeout(timer);
     }
-    if (seconds === 0) router.push('/');
+    if (seconds === 0) router.push('/dashboard');
   }, [loading, error, seconds, router]);
 
   return (
@@ -44,7 +44,7 @@ export default function PaymentSuccessPage() {
           ) : (
             <>
               <Text ta="center">{t('successPage.message', { seconds })}</Text>
-              <Button mt="md" onClick={() => router.push('/')}>{t('successPage.goHome')}</Button>
+              <Button mt="md" onClick={() => router.push('/dashboard')}>{t('successPage.goHome')}</Button>
             </>
           )}
         </Stack>

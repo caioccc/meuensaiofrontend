@@ -9,6 +9,221 @@
   "previous": "Anterior",
   "save": "Salvar",
   "cancel": "Cancelar",
+  "enter": "Entrar",
+  "logout": "Sair",
+  "loading": "Carregando...",
+  "error": "Erro",
+  "success": "Sucesso",
+  "not_found": "Página não encontrada",
+  "not_found_message": "Desculpe, a página que você está procurando não existe.",
+  "go_home": "Voltar para o início",
+  "contact_us": "Entre em contato",
+  "privacy_policy": "Política de Privacidade",
+  "terms_of_service": "Termos de Serviço",
+  "cookie_policy": "Política de Cookies",
+  "about": "Sobre",
+  "faq": "Perguntas Frequentes",
+  "plans": "Planos",
+  "dashboard": "Dashboard",
+  "blog": "Blog",
+  "home": "Início",
+  "hi": "Olá",
+  "welcome_back": "Bem-vindo de volta",
+  "header": {
+    "home": "Início",
+    "features": "Recursos",
+    "features.youtube": "Extração do YouTube",
+    "features.player": "Player Inteligente",
+    "features.setlists": "Setlists",
+    "features.history": "Histórico",
+    "pricing": "Preços",
+    "testimonials": "Depoimentos",
+    "contact": "Contato",
+    "login": "Login",
+    "register": "Cadastrar",
+    "blog": "Blog"
+  },
+  "hero": {
+    "badge": "🎵 Revolucione sua prática musical",
+    "title": "Transforme qualquer música do YouTube em uma experiência de aprendizado",
+    "subtitle": "Extraia acordes, BPM e tom automaticamente. Crie setlists inteligentes e pratique com nosso player sincronizado. Tudo em uma plataforma.",
+    "cta": "Comece Gratuitamente",
+    "demo": "Ver Demo"
+  },
+  "stats": {
+    "songs": "Músicas Analisadas",
+    "users": "Usuários Ativos",
+    "setlists": "Setlists Criadas",
+    "accuracy": "Precisão"
+  },
+  "features": {
+    "badge": "🚀 Recursos Poderosos",
+    "title": "Tudo que você precisa para aprender música",
+    "description": "Ferramentas avançadas de análise musical e aprendizado em uma plataforma intuitiva",
+    "autoExtraction": {
+      "title": "Extração Automática do YouTube",
+      "desc": "Cole um link do YouTube e extraia automaticamente título, BPM, tom e acordes de qualquer música"
+    },
+    "bpmDetection": {
+      "title": "Detecção de BPM",
+      "desc": "Algoritmos avançados para detectar o tempo preciso da música automaticamente"
+    },
+    "chordDetection": {
+      "title": "Reconhecimento de Acordes",
+      "desc": "Identifique acordes em tempo real com alta precisão usando IA"
+    },
+    "smartSetlists": {
+      "title": "Setlists Inteligentes",
+      "desc": "Organize suas músicas em setlists personalizadas com filtros por tom, BPM e dificuldade"
+    },
+    "learningPlayer": {
+      "title": "Player de Aprendizado",
+      "desc": "Player sincronizado que mostra acordes no tempo certo da música para facilitar o aprendizado"
+    },
+    "musicHistory": {
+      "title": "Histórico Musical",
+      "desc": "Acompanhe seu progresso e veja em quais setlists cada música está presente"
+    }
+  },
+  "howItWorks": {
+    "badge": "💡 Como Funciona",
+    "title": "Veja como o BeatKey transforma seu aprendizado musical",
+    "description": "Com poucos passos, você transforma qualquer vídeo em uma ferramenta de prática musical completa.",
+    "step1": {
+      "badge": "Passo 1",
+      "title": "Escolha sua música do YouTube",
+      "description": "Busque a música diretamente no BeatKey. Identificamos automaticamente título, tom (key), BPM e acordes principais."
+    },
+    "step2": {
+      "badge": "Passo 2",
+      "title": "Visualize os acordes em tempo real",
+      "description": "Acompanhe os acordes sincronizados com o vídeo, perfeitos para tocar junto como em um karaokê de cifras."
+    },
+    "step3": {
+      "badge": "Passo 3",
+      "title": "Crie setlists organizados",
+      "description": "Monte seus setlists personalizados para ensaios, shows ou estudos, com histórico e organização completa."
+    },
+    "step4": {
+      "badge": "Passo 4",
+      "title": "Exporte em PDF e evolua",
+      "description": "Exporte seus setlists com acordes em PDF e desbloqueie conquistas enquanto evolui como músico."
+    }
+  },
+  "testimonials": {
+    "badge": "⭐ Depoimentos",
+    "title": "O que nossos usuários dizem",
+    "description": "Milhares de músicos já transformaram sua prática com o BeatKey",
+    "user1": {
+      "name": "João Silva",
+      "role": "Guitarrista",
+      "text": "O BeatKey revolucionou minha forma de aprender músicas. A precisão dos acordes é impressionante!"
+    },
+    "user2": {
+      "name": "Maria Santos",
+      "role": "Professora de Música",
+      "text": "Uso o BeatKey em minhas aulas. Os alunos adoram o player sincronizado com acordes."
+    },
+    "user3": {
+      "name": "Pedro Costa",
+      "role": "Baterista",
+      "text": "Finalmente posso praticar com o BPM correto. A detecção de tempo é perfeita!"
+    }
+  },
+  "pricing": {
+    "badge": "💰 Preços",
+    "title": "Planos para todos os níveis",
+    "description": "Escolha o plano que melhor se adapta às suas necessidades musicais",
+    "recommended": "Recomendado",
+    "save": "Economize 17%",
+    "free": {
+      "name": "Gratuito",
+      "price": "R$ 0",
+      "description": "Perfeito para começar",
+      "features": [
+        "Até 20 músicas",
+        "Extração básica de acordes",
+        "2 setlist",
+        "Player básico"
+      ],
+      "cta": "Começar Grátis"
+    },
+    "pro": {
+      "name": "Pro",
+      "price": "R$ 19,90/mês",
+      "description": "Para músicos sérios",
+      "features": [
+        "Músicas ilimitadas",
+        "Setlists ilimitadas",
+        "Extração avançada",
+        "Player sincronizado",
+        "Histórico completo",
+        "Exportar setlists"
+      ],
+      "cta": "Assinar Pro"
+    },
+    "pro_annual": {
+      "name": "Pro Anual",
+      "price": "R$ 199/ano",
+      "originalPrice": "R$ 238,80/ano",
+      "description": "Melhor valor para o ano todo",
+      "features": [
+        "Todos os recursos Pro",
+        "Desconto de 17%",
+        "Suporte VIP",
+        "Recursos beta"
+      ],
+      "cta": "Assinar Anual"
+    }
+  },
+  "cta": {
+    "title": "Pronto para revolucionar sua prática musical?",
+    "description": "Junte-se a milhares de músicos que já transformaram seu aprendizado com o BeatKey",
+    "button": "Comece Agora - Grátis"
+  },
+  "contact": {
+    "badge": "📞 Contato",
+    "title": "Fale conosco",
+    "description": "Tem dúvidas? Nossa equipe está pronta para ajudar você",
+    "info": {
+      "title": "Informações de contato",
+      "phone": "Telefone",
+      "location": "Localização"
+    },
+    "form": {
+      "title": "Envie uma mensagem",
+      "name": "Nome",
+      "namePlaceholder": "Seu nome completo",
+      "email": "E-mail",
+      "emailPlaceholder": "seu@email.com",
+      "message": "Mensagem",
+      "messagePlaceholder": "Como podemos ajudar você?",
+      "submit": "Enviar Mensagem"
+    }
+  },
+  "footer": {
+    "description": "A plataforma completa para análise musical e aprendizado baseada em IA.",
+    "features": {
+      "title": "Recursos",
+      "youtube": "Extração do YouTube",
+      "player": "Player Inteligente",
+      "setlists": "Setlists",
+      "history": "Histórico"
+    },
+    "company": {
+      "title": "Empresa",
+      "about": "Sobre",
+      "blog": "Blog",
+      "careers": "Carreiras",
+      "contact": "Contato"
+    },
+    "contact": {
+      "title": "Contato"
+    },
+    "rights": "Todos os direitos reservados.",
+    "privacy": "Privacidade",
+    "terms": "Termos"
+  },
   "register": {
     "title": "Criar Conta",
     "name": "Nome",

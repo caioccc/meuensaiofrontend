@@ -48,7 +48,7 @@ export default function SetlistViewPage() {
     <AppLayout>
       <Container size="lg" py="xl">
         <Breadcrumbs mb="md">
-          <Anchor onClick={() => router.push('/')}>{t('setlistsPage.breadcrumbHome')}</Anchor>
+          <Anchor onClick={() => router.push('/dashboard')}>{t('setlistsPage.breadcrumbHome')}</Anchor>
           <Anchor onClick={() => router.push('/setlists')}>{t('setlistsPage.breadcrumbSetlists')}</Anchor>
           <Text>{setlist?.name}</Text>
         </Breadcrumbs>

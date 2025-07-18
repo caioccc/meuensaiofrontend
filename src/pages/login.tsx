@@ -19,7 +19,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push('/');
+      router.push('/dashboard');
     }
   }, [isAuthenticated, router]);
 
@@ -32,7 +32,7 @@ export default function LoginPage() {
         password: data.password,
       });
       login(res.data.access, res.data.refresh);
-      router.push('/');
+      router.push('/dashboard');
     } catch (err: any) {
       let msg = t('login.invalid_credentials', 'Usuário ou senha inválidos');
       if (err?.response?.data?.detail) {

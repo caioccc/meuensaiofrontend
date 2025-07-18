@@ -1,0 +1,35 @@
+
+.header {
+  height: 56px;
+  margin-bottom: 120px;
+  background: #fff;
+  border-bottom: 1px solid #ebebeb;
+}
+
+.inner {
+  height: 56px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
+.link {
+  display: block;
+  line-height: 1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #495057;
+  font-size: 15px;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+}
+.link:hover, .link:focus {
+  background: #0082ff22;
+  color: #0082ff;
+}
+
+.linkLabel {
+  margin-right: 5px;
+}

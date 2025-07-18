@@ -10,6 +10,7 @@ import type { AppProps } from 'next/app';
 import { Notifications } from '@mantine/notifications';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n';
+import '@/styles/globals.css';
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   return (
