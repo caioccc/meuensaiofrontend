@@ -52,7 +52,7 @@ const LandingPage: React.FC = () => {
     return () => window.removeEventListener('resize', checkWidth);
   }, []);
   const { t } = useTranslation();
-  const { refreshUser, user } = useAuth();
+  const { refreshUser } = useAuth();
   const router = useRouter();
 
   const features = [
@@ -516,7 +516,12 @@ const LandingPage: React.FC = () => {
                           {t(plan.price)}
                         </Text>
                         {plan.originalPrice && (
-                          <Text className="text-lg text-gray-500 line-through">
+                          <Text className="text-lg text-gray-500 line-through"
+                          style={{
+                            textDecoration: 'line-through',
+                            color: '#6c757d'
+                          }}
+                          >
                             {t(plan.originalPrice)}
                           </Text>
                         )}
