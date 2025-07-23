@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://beatkey.tech/</loc></url>
+  <url><loc>https://beatkey.tech/login</loc></url>
+  <url><loc>https://beatkey.tech/register</loc></url>
+  <url><loc>https://beatkey.tech/blog</loc></url>
+  <url><loc>https://app.beatkey.tech/</loc></url>
+  <url><loc>https://app.beatkey.tech/login</loc></url>
+  <url><loc>https://app.beatkey.tech/register</loc></url>
+  <url><loc>https://app.beatkey.tech/blog</loc></url>
+  <url><loc>https://meuensaiofrontend.vercel.app/</loc></url>
+  <url><loc>https://meuensaiofrontend.vercel.app/login</loc></url>
+  <url><loc>https://meuensaiofrontend.vercel.app/register</loc></url>
+  <url><loc>https://meuensaiofrontend.vercel.app/blog</loc></url>
+</urlset>

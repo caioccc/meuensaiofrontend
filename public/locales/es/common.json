@@ -27,6 +27,13 @@
   "blog": "Blog",
   "home": "Inicio",
   "hi": "Hola",
+  "seo": {
+    "title": "BeatKey - Organiza tus canciones y setlists",
+    "description": "Plataforma moderna para músicos: organiza canciones, setlists, exporta PDFs, accede a pads y cifrados avanzados.",
+    "keywords": "canciones, setlists, cifrados, pads, PDF, ensayo, banda, músicos",
+    "ogTitle": "BeatKey - Organiza tus canciones y setlists",
+    "ogDescription": "Plataforma moderna para músicos: organiza canciones, setlists, exporta PDFs, accede a pads y cifrados avanzados."
+  },
   "header": {
     "home": "Inicio",
     "features": "Características",

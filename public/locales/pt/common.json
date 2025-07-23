@@ -29,6 +29,13 @@
   "home": "Início",
   "hi": "Olá",
   "welcome_back": "Bem-vindo de volta",
+  "seo": {
+    "title": "BeatKey - Organize suas músicas e setlists",
+    "description": "Plataforma moderna para músicos: organize músicas, setlists, exporte PDFs, acesse pads e cifras avançadas.",
+    "keywords": "músicas, setlists, cifras, pads, PDF, ensaio, banda, músicos",
+    "ogTitle": "BeatKey - Organize suas músicas e setlists",
+    "ogDescription": "Plataforma moderna para músicos: organize músicas, setlists, exporte PDFs, acesse pads e cifras avançadas."
+  },
   "header": {
     "home": "Início",
     "features": "Recursos",

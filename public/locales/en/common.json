@@ -27,6 +27,13 @@
   "blog": "Blog",
   "home": "Home",
   "hi": "Hi",
+  "seo": {
+    "title": "BeatKey - Organize your songs and setlists",
+    "description": "A modern platform for musicians: organize songs, setlists, export PDFs, access pads and advanced chords.",
+    "keywords": "songs, setlists, chords, pads, PDF, rehearsal, band, musicians",
+    "ogTitle": "BeatKey - Organize your songs and setlists",
+    "ogDescription": "A modern platform for musicians: organize songs, setlists, export PDFs, access pads and advanced chords."
+  },
   "header": {
     "home": "Home",
     "features": "Features",

@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Sitemap: https://beatkey.tech/sitemap.xml
+Sitemap: https://app.beatkey.tech/sitemap.xml
+Sitemap: https://meuensaiofrontend.vercel.app/sitemap.xml
