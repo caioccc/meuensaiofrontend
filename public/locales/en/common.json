@@ -155,7 +155,7 @@
     },
     "pro": {
       "name": "Pro",
-      "price": "$9.99/month",
+      "price": "$2.90/month",
       "description": "For serious musicians",
       "features": [
         "Unlimited songs",
@@ -169,8 +169,8 @@
     },
     "pro_annual": {
       "name": "Pro Annual",
-      "price": "$99/year",
-      "originalPrice": "$119.88/year",
+      "price": "$29.90/year",
+      "originalPrice": "$34.80/year",
       "description": "Best value for the whole year",
       "features": [
         "All Pro features",

@@ -157,7 +157,7 @@
     },
     "pro": {
       "name": "Pro",
-      "price": "R$ 19,90/mês",
+      "price": "R$ 5,90/mês",
       "description": "Para músicos sérios",
       "features": [
         "Músicas ilimitadas",
@@ -171,8 +171,8 @@
     },
     "pro_annual": {
       "name": "Pro Anual",
-      "price": "R$ 199/ano",
-      "originalPrice": "R$ 238,80/ano",
+      "price": "R$ 59,90/ano",
+      "originalPrice": "R$ 70,80/ano",
       "description": "Melhor valor para o ano todo",
       "features": [
         "Todos os recursos Pro",
