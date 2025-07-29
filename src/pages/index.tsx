@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react/no-unescaped-entities */
 import LandingLayout from '@/components/LandingLayout';
+import ProLaunchModal, { useProLaunchModal } from '@/components/ProLaunchModal';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   Badge,
@@ -38,6 +39,7 @@ import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 const LandingPage: React.FC = () => {
+  const { opened, handleClose } = useProLaunchModal();
   const [showBg, setShowBg] = React.useState(true);
 
   React.useEffect(() => {
@@ -211,7 +213,9 @@ const LandingPage: React.FC = () => {
   }, []);
 
   return (
-    <LandingLayout>
+    <>
+      <ProLaunchModal opened={opened} onClose={handleClose} />
+      <LandingLayout>
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-[#fff]" id="hero">
         {/* Background só aparece se a tela for maior que 1110px */}
@@ -660,7 +664,8 @@ const LandingPage: React.FC = () => {
           </div>
         </Container>
       </section>
-    </LandingLayout>
+      </LandingLayout>
+    </>
   );
 };
 
