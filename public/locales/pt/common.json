@@ -460,7 +460,7 @@
   },
   "addSong": {
     "title": "Adicionar Música",
-    "placeholder": "Digite uma URL do YouTube ou pesquise por uma música",
+    "placeholder": "Digite o nome da música ou artista",
     "search": "Buscar",
     "searching": "Buscando...",
     "error": "Erro ao buscar música.",

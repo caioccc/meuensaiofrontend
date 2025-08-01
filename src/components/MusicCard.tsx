@@ -215,9 +215,9 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
       </Modal>
       {/* Modal de editar */}
       <Modal opened={editModalOpen} onClose={() => setEditModalOpen(false)} title={t('musicCard.modalEditTitle')} size={isMobile ? 'xl' : 'xl'} centered>
-        <Group align="flex-start" gap="xl">
+        <Group align="flex-start" gap={isMobile ? 'xs' : 'xl'}>
           {/* Formulário de edição */}
-          <Stack style={{ minWidth: 320, flex: 1 }}>
+          <Stack style={isMobile ? { width: '100%' } : { minWidth: 320, flex: 1 }}>
             <Text fw={600} mb="sm">{title}</Text>
             <TextInput
               label={t('musicCard.inputKeyLabel')}
@@ -241,14 +241,14 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
             </Group>
           </Stack>
           {/* Histórico/timeline */}
-          <Stack style={{ minWidth: 320, flex: 1, maxWidth: 420 }}>
-            <Text fw={600} mb="xs">{t('musicCard.historyTitle')}</Text>
+          <Stack style={isMobile ? { width: '100%' } : { minWidth: 320, flex: 1 }}>
+            <Text fw={600}>{t('musicCard.historyTitle')}</Text>
             {loadingHistory ? (
               <Loader />
             ) : history && history.setlists.length > 0 ? (
               <>
-                <Text size="sm" color="dimmed" mb="xs">{t('musicCard.historyCount', { count: history.setlists.length })}</Text>
-                <ScrollArea h={260}>
+                <Text size="sm" color="dimmed">{t('musicCard.historyCount', { count: history.setlists.length })}</Text>
+                <ScrollArea h={isMobile ? 100 : 400} type="auto" offsetScrollbars>
                   <Timeline active={0} bulletSize={24} lineWidth={2}>
                     {history.setlists.map((setlist, idx) => (
                       <Timeline.Item

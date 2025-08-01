@@ -326,7 +326,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
             )}
           </AppShell.Section>
         </AppShell.Navbar>
-        <AppShell.Main style={{ marginTop: '16px', marginBottom: '16px' }}>
+        <AppShell.Main style={isMobile ? { paddingLeft: 0, paddingRight: 0, paddingTop: 70, paddingBottom: 60 } : { marginTop: '16px', marginBottom: '16px' }}>
           {children}
         </AppShell.Main>
         <AppShell.Footer>

@@ -2,7 +2,7 @@
 import AppLayout from "@/components/AppLayout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useTranslation } from "react-i18next";
-import { ActionIcon, Button, Container, Grid, Group, LoadingOverlay, Modal, MultiSelect, Select, Stack, Text, TextInput, Title } from "@mantine/core";
+import { ActionIcon, Anchor, Breadcrumbs, Button, Container, Grid, Group, LoadingOverlay, Modal, MultiSelect, Select, Stack, Text, TextInput, Title } from "@mantine/core";
 import { useMediaQuery } from '@mantine/hooks';
 import { IconFilter, IconPlus, IconSearch } from "@tabler/icons-react";
 import { useRouter } from "next/router";
@@ -126,7 +126,11 @@ export default function DashboardPage() {
   return (
     <ProtectedRoute>
       <AppLayout>
-        <Container size="100%" py="md">
+        <Container size="100%">
+          <Breadcrumbs mb="md">
+            <Anchor onClick={() => router.push('/dashboard')}>{t('appLayout.home', 'Início')}</Anchor>
+            <Text>{t('songs.mySongs', 'Minhas músicas')}</Text>
+          </Breadcrumbs>
           <Group justify="space-between" mb="md" style={{ flexWrap: 'wrap' }}>
             <Title order={2}>{t('songs.mySongs', 'Minhas Músicas')}</Title>
             <Button

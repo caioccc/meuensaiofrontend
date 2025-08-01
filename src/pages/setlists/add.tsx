@@ -8,7 +8,8 @@ import {
   Card, Container, Divider,
   Group,
   Image,
-  LoadingOverlay, Modal, Paper, ScrollArea,
+  LoadingOverlay, Modal,
+  ScrollArea,
   Stack,
   Stepper,
   Text,
@@ -22,10 +23,10 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { IconPlaylist, IconPlus, IconSearch, IconX } from '@tabler/icons-react';
 import { ptBR } from 'date-fns/locale';
+import { useTranslation } from 'next-i18next';
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import { useTranslation } from 'next-i18next';
 import api from '../../../lib/axios';
 
 export default function AddSetlistPage() {
@@ -132,6 +133,7 @@ export default function AddSetlistPage() {
 
   // Salvar setlist
   const saveSetlist = async () => {
+    window.scrollTo(0, 0);
     setLoading(true);
     try {
       if (source === 'saved') {
@@ -151,7 +153,7 @@ export default function AddSetlistPage() {
       }
       showNotification({ color: 'green', message: t('addSetlist.successSave') });
       router.push('/setlists'); // Redireciona para a página de setlists
-    } catch (err: any){
+    } catch (err: any) {
       if (err.response?.status === 403 && err.response.data.detail?.includes('Plano gratuito')) {
         showNotification({
           color: 'red',
@@ -217,258 +219,260 @@ export default function AddSetlistPage() {
     <AppLayout>
       {
         loadingSongs && (
-          <LoadingOverlay visible={loadingSongs} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
+          <LoadingOverlay visible={loadingSongs} />
         )
       }
       {
         loading && (
-          <LoadingOverlay visible={loading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
+          <LoadingOverlay visible={loading} />
         )
       }
-      <Container size="100%" py="xl">
+      <Container size="100%">
         <Breadcrumbs mb="md">
           <Anchor onClick={() => router.push('/dashboard')}>{t('addSetlist.breadcrumbHome')}</Anchor>
           <Anchor onClick={() => router.push('/setlists')}>{t('addSetlist.breadcrumbSetlists')}</Anchor>
           <Text>{t('addSetlist.breadcrumbAdd')}</Text>
         </Breadcrumbs>
         <Title order={2} mb="lg">{t('addSetlist.title')}</Title>
-        <Paper shadow="md" p="xs" radius="md" withBorder>
-          <Stepper active={active} onStepClick={setActive}>
-            {/* Step 1: Fonte das músicas */}
-            <Stepper.Step label={t('addSetlist.stepSourceLabel')} description={t('addSetlist.stepSourceDesc')}>
-              <Group justify="center" gap="xl" mt="xl" style={{ justifyContent: 'center', width: '100%' }}>
-                {
-                  hasSongs && (
-                    <Card
-                      shadow={source === 'saved' ? 'md' : 'xs'}
-                      withBorder
-                      tabIndex={0}
-                      style={{
-                        width: 280,
-                        height: 180,
-                        cursor: 'pointer',
-                        borderColor: source === 'saved' ? '#228be6' : undefined,
-                        borderWidth: source === 'saved' ? 3 : 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        transition: 'border-width 0.2s',
-                      }}
-                      onClick={() => {
+        <Stepper active={active} onStepClick={setActive} orientation={isMobile ? 'vertical' : 'horizontal'} iconSize={isMobile ? 32 : 32}>
+          {/* Step 1: Fonte das músicas */}
+          <Stepper.Step label={t('addSetlist.stepSourceLabel')} description={t('addSetlist.stepSourceDesc')}>
+            <Group justify="center" gap="xl" mt="xl" style={{ justifyContent: 'center', width: '100%' }}>
+              {
+                hasSongs && (
+                  <Card
+                    shadow={source === 'saved' ? 'md' : 'xs'}
+                    withBorder
+                    tabIndex={0}
+                    style={{
+                      width: 280,
+                      height: 180,
+                      cursor: 'pointer',
+                      borderColor: source === 'saved' ? '#228be6' : undefined,
+                      borderWidth: source === 'saved' ? 3 : 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'border-width 0.2s',
+                    }}
+                    onClick={() => {
+                      setSource('saved');
+                      setSelected([]);
+                      setEnriched([]);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
                         setSource('saved');
                         setSelected([]);
                         setEnriched([]);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          setSource('saved');
-                          setSelected([]);
-                          setEnriched([]);
-                          setTimeout(() => {
-                            if (source === 'saved') setActive(1);
-                          }, 0);
-                        }
-                      }}
-                    >
-                      <IconPlaylist size={48} color={source === 'saved' ? '#228be6' : '#888'} />
-                      <Title order={4} mb="sm" mt="md">{t('addSetlist.sourceSavedTitle')}</Title>
-                      <Text ta="center">{t('addSetlist.sourceSavedDesc')}</Text>
-                    </Card>
-                  )
-                }
-                <Card
-                  shadow={source === 'new' ? 'md' : 'xs'}
-                  withBorder
-                  tabIndex={0}
-                  style={{
-                    width: 280,
-                    height: 180,
-                    cursor: 'pointer',
-                    borderColor: source === 'new' ? '#228be6' : undefined,
-                    borderWidth: source === 'new' ? 3 : 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'border-width 0.2s',
-                  }}
-                  onClick={() => {
+                        setTimeout(() => {
+                          if (source === 'saved') setActive(1);
+                        }, 0);
+                      }
+                    }}
+                  >
+                    <IconPlaylist size={48} color={source === 'saved' ? '#228be6' : '#888'} />
+                    <Title order={4} mb="sm" mt="md">{t('addSetlist.sourceSavedTitle')}</Title>
+                    <Text ta="center">{t('addSetlist.sourceSavedDesc')}</Text>
+                  </Card>
+                )
+              }
+              <Card
+                shadow={source === 'new' ? 'md' : 'xs'}
+                withBorder
+                tabIndex={0}
+                style={{
+                  width: 280,
+                  height: 180,
+                  cursor: 'pointer',
+                  borderColor: source === 'new' ? '#228be6' : undefined,
+                  borderWidth: source === 'new' ? 3 : 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'border-width 0.2s',
+                }}
+                onClick={() => {
+                  setSource('new');
+                  setSelected([]);
+                  setEnriched([]);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
                     setSource('new');
                     setSelected([]);
                     setEnriched([]);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      setSource('new');
-                      setSelected([]);
-                      setEnriched([]);
-                      setTimeout(() => {
-                        if (source === 'new') setActive(1);
-                      }, 0);
-                    }
-                  }}
-                >
-                  <IconPlus size={48} color={source === 'new' ? '#228be6' : '#888'} />
-                  <Title order={4} mb="sm" mt="md">{t('addSetlist.sourceNewTitle')}</Title>
-                  <Text ta="center">{t('addSetlist.sourceNewDesc')}</Text>
-                </Card>
-              </Group>
-              <Group mt="xl" style={{ justifyContent: 'flex-end' }}>
-                <Button onClick={() => { setActive(1); }} disabled={!source}>{t('addSetlist.next')}</Button>
-              </Group>
-            </Stepper.Step>
-            {/* Step 2: Nome do setlist */}
-            <Stepper.Step label={t('addSetlist.stepNameLabel')} description={t('addSetlist.stepNameDesc')}>
-              <Box
-                style={{
-                  maxWidth: 400,
-                  margin: '0 auto',
-                  width: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  marginBottom: '16px',
-                  paddingBottom: '8px',
-                  paddingLeft: '0',
-                  paddingRight: '0',
+                    setTimeout(() => {
+                      if (source === 'new') setActive(1);
+                    }, 0);
+                  }
                 }}
               >
-                <TextInput
-                  onKeyDown={(e) => e.key === 'Enter' && setActive(2)}
-                  label={t('addSetlist.nameLabel')}
-                  value={name}
-                  onChange={(e) => setName(e.currentTarget.value)}
-                  autoFocus
-                  required
+                <IconPlus size={48} color={source === 'new' ? '#228be6' : '#888'} />
+                <Title order={4} mb="sm" mt="md">{t('addSetlist.sourceNewTitle')}</Title>
+                <Text ta="center">{t('addSetlist.sourceNewDesc')}</Text>
+              </Card>
+            </Group>
+            <Group mt="xl" style={{ justifyContent: 'flex-end' }}>
+              <Button onClick={() => { setActive(1); }} disabled={!source}>{t('addSetlist.next')}</Button>
+            </Group>
+          </Stepper.Step>
+          {/* Step 2: Nome do setlist */}
+          <Stepper.Step label={t('addSetlist.stepNameLabel')} description={t('addSetlist.stepNameDesc')}>
+            <Box
+              style={{
+                maxWidth: 400,
+                margin: '0 auto',
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                marginBottom: '16px',
+                paddingBottom: '8px',
+                paddingLeft: '0',
+                paddingRight: '0',
+              }}
+            >
+              <TextInput
+                onKeyDown={(e) => e.key === 'Enter' && setActive(2)}
+                label={t('addSetlist.nameLabel')}
+                value={name}
+                onChange={(e) => setName(e.currentTarget.value)}
+                autoFocus
+                required
+              />
+              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+                <DatePicker
+                  label={t('addSetlist.dateLabel')}
+                  value={date}
+                  onChange={setDate}
+                  slotProps={{ textField: { fullWidth: true, size: 'small', margin: 'normal', placeholder: t('addSetlist.datePlaceholder') } }}
+                  format="dd/MM/yyyy"
                 />
-                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
-                  <DatePicker
-                    label={t('addSetlist.dateLabel')}
-                    value={date}
-                    onChange={setDate}
-                    slotProps={{ textField: { fullWidth: true, size: 'small', margin: 'normal', placeholder: t('addSetlist.datePlaceholder') } }}
-                    format="dd/MM/yyyy"
-                  />
-                </LocalizationProvider>
-                <TextInput label={t('addSetlist.description')} value={description} onChange={(e) => setDescription(e.currentTarget.value)} mt="md" />
-                <Group mt="md" style={{ justifyContent: 'flex-end' }}>
-                  <Button variant="default" onClick={() => setActive(0)}>{t('addSetlist.back')}</Button>
-                  <Button onClick={() => setActive(2)} disabled={!name}>{t('addSetlist.next')}</Button>
-                </Group>
-              </Box>
+              </LocalizationProvider>
+              <TextInput label={t('addSetlist.description')} value={description} onChange={(e) => setDescription(e.currentTarget.value)} mt="md" />
+              <Group mt="md" style={{ justifyContent: 'flex-end' }}>
+                <Button variant="default" onClick={() => setActive(0)}>{t('addSetlist.back')}</Button>
+                <Button onClick={() => setActive(2)} disabled={!name}>{t('addSetlist.next')}</Button>
+              </Group>
+            </Box>
 
-            </Stepper.Step>
-            {/* Step 3: Músicas */}
-            <Stepper.Step label={t('addSetlist.stepSongsLabel')} description={t('addSetlist.stepSongsDesc')}>
-              <Group align="flex-start" style={{ height: isMobile ? '100%' : '100%', minHeight: 340, alignItems: 'stretch' }}>
-                <div style={{ flex: 2, minWidth: 0, height: '100%' }}>
-                  {source === 'saved' ? (
-                    <>
-                      <TextInput
-                        leftSection={<IconSearch size={16} />}
-                        placeholder={t('addSetlist.searchSavedPlaceholder')}
-                        value={savedSearch}
-                        onChange={e => setSavedSearch(e.currentTarget.value)}
-                        mb="md"
-                      />
-                      <div id="scrollableSavedSongs" style={{ height: '360px', overflow: 'auto' }}>
-                        <InfiniteScroll
-                          dataLength={savedSongs.length}
-                          next={() => fetchSavedSongs()}
-                          hasMore={savedHasMore}
-                          loader={<LoadingOverlay visible={savedLoading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />}
-                          scrollableTarget="scrollableSavedSongs"
-                          style={{ overflow: 'visible' }}
-                        >
-                          <Group gap="xs" style={{ flexWrap: 'wrap' }}>
-                            {savedSongs.map(song => {
-                              const isSelected = selected.find(s => s.id === song.id);
-                              return (
-                                <Card
-                                  key={song.id}
-                                  shadow="xs"
-                                  onClick={() => isSelected ? removeSong(song.id) : setSelected([song, ...selected])}
-                                  withBorder
-                                  style={{
-                                    width: isMobile ? '100%' : 220,
-                                    marginBottom: 12,
-                                    borderColor: isSelected ? '#228be6' : undefined,
-                                    borderWidth: isSelected ? 2 : 1,
-                                    cursor: 'pointer',
-                                    position: 'relative',
-                                    transition: 'border 0.2s',
-                                  }}
-                                >
-                                  <Card.Section>
-                                    <Image src={song.thumbnail_url} height={120} alt={song.title} fallbackSrc="/no-image.png" />
-                                  </Card.Section>
-                                  <Tooltip label={song.title} position="top" withArrow>
-                                    <Text fw={500} mt={4} lineClamp={1}>{song.title}</Text>
-                                  </Tooltip>
-                                  <Text size="xs">{song.duration} | {song.view_count} {t('addSetlist.viewCount')}</Text>
-                                  {!isSelected && (
-                                    <Button
-                                      size="xs"
-                                      color="blue"
-                                      variant="light"
-                                      style={{
-                                        position: 'absolute',
-                                        bottom: 8,
-                                        right: 8,
-                                        zIndex: 2,
-                                        borderRadius: '50%',
-                                        padding: 0,
-                                        width: 32,
-                                        height: 32,
-                                        minWidth: 32,
-                                        minHeight: 32,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        boxShadow: '0 2px 8px rgba(34,139,230,0.08)'
-                                      }}
-                                      onClick={e => {
-                                        e.stopPropagation();
-                                        setSelected([song, ...selected]);
-                                      }}
-                                    >
-                                      <IconPlus size={18} />
-                                    </Button>
-                                  )}
-                                </Card>
-                              );
-                            })}
-                          </Group>
-                        </InfiniteScroll>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      {isMobile ? (
-                        <Stack mb="md">
-                          <TextInput
-                            leftSection={<IconSearch size={16} />}
-                            placeholder={t('addSetlist.searchNewPlaceholder')}
-                            value={search}
-                            onChange={(e) => setSearch(e.currentTarget.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                          />
-                          <Button onClick={handleSearch} loading={searchLoading} fullWidth>{t('addSetlist.search')}</Button>
-                        </Stack>
-                      ) : (
-                        <Group mb="md">
-                          <TextInput
-                            leftSection={<IconSearch size={16} />}
-                            placeholder={t('addSetlist.searchNewPlaceholder')}
-                            value={search}
-                            onChange={(e) => setSearch(e.currentTarget.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                            style={{ flex: 1 }}
-                          />
-                          <Button onClick={handleSearch} loading={searchLoading}>{t('addSetlist.search')}</Button>
+          </Stepper.Step>
+          {/* Step 3: Músicas */}
+          <Stepper.Step label={t('addSetlist.stepSongsLabel')} description={t('addSetlist.stepSongsDesc')}>
+            <Group align="flex-start" style={{ height: isMobile ? '100%' : '100%', minHeight: 340, alignItems: 'stretch' }} gap={0}>
+              <div style={{ flex: 2, minWidth: 0, height: '100%' }}>
+                {source === 'saved' ? (
+                  <>
+                    <TextInput
+                      leftSection={<IconSearch size={16} />}
+                      placeholder={t('addSetlist.searchSavedPlaceholder')}
+                      value={savedSearch}
+                      onChange={e => setSavedSearch(e.currentTarget.value)}
+                      mb="md"
+                    />
+                    <div id="scrollableSavedSongs" style={{ height: isMobile ? '289px' : '55dvh', overflow: 'auto', paddingRight: '12px' }}>
+                      <InfiniteScroll
+                        dataLength={savedSongs.length}
+                        next={() => fetchSavedSongs()}
+                        hasMore={savedHasMore}
+                        loader={<LoadingOverlay visible={savedLoading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />}
+                        scrollableTarget="scrollableSavedSongs"
+                        style={{ overflow: 'visible' }}
+                      >
+                        <Group gap="xs" style={{ flexWrap: 'wrap' }}>
+                          {savedSongs.map(song => {
+                            const isSelected = selected.find(s => s.id === song.id);
+                            return (
+                              <Card
+                                key={song.id}
+                                shadow="xs"
+                                onClick={() => isSelected ? removeSong(song.id) : setSelected([song, ...selected])}
+                                withBorder
+                                style={{
+                                  width: isMobile ? '100%' : 220,
+                                  marginBottom: 12,
+                                  borderColor: isSelected ? '#228be6' : undefined,
+                                  borderWidth: isSelected ? 2 : 1,
+                                  cursor: 'pointer',
+                                  position: 'relative',
+                                  transition: 'border 0.2s',
+                                }}
+                              >
+                                <Card.Section>
+                                  <Image src={song.thumbnail_url} height={isMobile ? 80 : 120} alt={song.title} fallbackSrc="/no-image.png" />
+                                </Card.Section>
+                                <Tooltip label={song.title} position="top" withArrow>
+                                  <Text fw={500} mt={4} lineClamp={1}>{song.title}</Text>
+                                </Tooltip>
+                                <Text size="xs">{song.duration} | {song.view_count} {t('addSetlist.viewCount')}</Text>
+                                {!isSelected && (
+                                  <Button
+                                    size="xs"
+                                    color="blue"
+                                    variant="light"
+                                    style={{
+                                      position: 'absolute',
+                                      bottom: 8,
+                                      right: 8,
+                                      zIndex: 2,
+                                      borderRadius: '50%',
+                                      padding: 0,
+                                      width: 32,
+                                      height: 32,
+                                      minWidth: 32,
+                                      minHeight: 32,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      boxShadow: '0 2px 8px rgba(34,139,230,0.08)'
+                                    }}
+                                    onClick={e => {
+                                      e.stopPropagation();
+                                      setSelected([song, ...selected]);
+                                    }}
+                                  >
+                                    <IconPlus size={18} />
+                                  </Button>
+                                )}
+                              </Card>
+                            );
+                          })}
                         </Group>
-                      )}
+                      </InfiniteScroll>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {isMobile ? (
+                      <Stack mb="md">
+                        <TextInput
+                          leftSection={<IconSearch size={16} />}
+                          placeholder={t('addSetlist.searchNewPlaceholder')}
+                          value={search}
+                          onChange={(e) => setSearch(e.currentTarget.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                        />
+                        <Button onClick={handleSearch} loading={searchLoading} fullWidth>{t('addSetlist.search')}</Button>
+                      </Stack>
+                    ) : (
+                      <Group mb="md">
+                        <TextInput
+                          leftSection={<IconSearch size={16} />}
+                          placeholder={t('addSetlist.searchNewPlaceholder')}
+                          value={search}
+                          onChange={(e) => setSearch(e.currentTarget.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                          style={{ flex: 1 }}
+                        />
+                        <Button onClick={handleSearch} loading={searchLoading}>{t('addSetlist.search')}</Button>
+                      </Group>
+                    )}
+                    <Box
+                      style={{ height: isMobile ? '289px' : '59dvh', overflow: isMobile ? 'auto' : 'hidden', paddingRight: '12px' }}
+                    >
                       <ScrollArea h={'100%'} mb="xs" viewportRef={searchResultsRef}>
                         <Group gap="xs" style={{ flexWrap: 'wrap' }}>
                           {searchResults.map((song) => {
@@ -533,48 +537,62 @@ export default function AddSetlistPage() {
                           })}
                         </Group>
                       </ScrollArea>
-                    </>
-                  )}
-                </div>
-                {/* Barra lateral de selecionadas: sempre visível (desktop) ou Card+Modal (mobile) */}
-                {isMobile ? (
-                  <>
-                    <Card
-                      shadow="xs"
-                      withBorder
+                    </Box>
+                  </>
+                )}
+              </div>
+              {/* Barra lateral de selecionadas: sempre visível (desktop) ou Card+Modal (mobile) */}
+              {isMobile ? (
+                <>
+                  <Card
+                    shadow="xs"
+                    withBorder
+                    style={{
+                      minWidth: 0,
+                      width: '100%',
+                      position: 'fixed',
+                      left: 0,
+                      bottom: 0,
+                      zIndex: 2000,
+                      borderRadius: 0,
+                      margin: 0,
+                      padding: 0,
+                      boxShadow: '0 -2px 12px rgba(0,0,0,0.08)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      borderTop: '1px solid #e9ecef',
+                      height: 60
+                    }}
+                    onClick={() => setShowSelectedModal(true)}
+                  >
+                    <Group justify="space-between" align="center" style={{ width: '100%', padding: '0 20px', flexDirection: 'row', height: '100%' }}>
+                      <Title order={4} style={{ margin: 0, textAlign: 'center', fontSize: 22 }}>
+                        {t('addSetlist.selected')}
+                      </Title>
+                      <Text size="sm" fw={800} style={{ textAlign: 'center', fontSize: 20 }}>
+                        ({selected.length})
+                      </Text>
+                    </Group>
+                  </Card>
+                  <Modal
+                    opened={showSelectedModal}
+                    onClose={() => setShowSelectedModal(false)}
+                    title={t('addSetlist.modalSelectedTitle', { count: selected.length })}
+                    centered
+                  >
+                    <Box
                       style={{
-                        minWidth: 0,
-                        width: '100%',
-                        position: 'fixed',
-                        left: 0,
-                        bottom: 0,
-                        zIndex: 2000,
-                        borderRadius: 0,
-                        margin: 0,
-                        padding: 0,
-                        boxShadow: '0 -2px 12px rgba(0,0,0,0.08)',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        borderTop: '1px solid #e9ecef',
-                        height: 36
+                        overflowY: 'auto',
+                        maxHeight: isMobile && '50dvh',
+                        minHeight: 0,
                       }}
-                      onClick={() => setShowSelectedModal(true)}
                     >
-                      <Group justify="space-between" align="center" style={{ width: '100%', padding: '0 20px' }}>
-                        <Title order={5} style={{ margin: 0 }}>{t('addSetlist.selected')}</Title>
-                        <Text size="sm" fw={800}>({selected.length})</Text>
-                      </Group>
-                    </Card>
-                    <Modal
-                      opened={showSelectedModal}
-                      onClose={() => setShowSelectedModal(false)}
-                      title={t('addSetlist.modalSelectedTitle', { count: selected.length })}
-                      size="md"
-                      centered
-                    >
-                      <Stack gap="sm" mb={24} >
+                      <Stack
+                        gap="sm"
+                        mb={24}
+                      >
                         {selected.length === 0 ? (
                           <Card shadow="xs" withBorder style={{ width: '100%', minWidth: 0, padding: 16, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                             <IconPlaylist size={40} color="#adb5bd" style={{ marginBottom: 8 }} />
@@ -583,7 +601,7 @@ export default function AddSetlistPage() {
                           </Card>
                         ) : (
                           selected.map((song) => (
-                            <Card key={song.id || song.youtube_id} shadow="xs" withBorder style={{ width: '100%', minWidth: 0, padding: 8 }}>
+                            <Card key={song.id || song.youtube_id} shadow="xs" withBorder style={{ width: '100%', minWidth: 231, padding: 8 }}>
                               <Group align="center" gap="md">
                                 <Image src={song.thumbnail_url} width={48} height={48} radius="sm" alt={song.title} />
                                 <div style={{ flex: 1 }}>
@@ -601,22 +619,35 @@ export default function AddSetlistPage() {
                           ))
                         )}
                       </Stack>
-                      <Group mt="md" style={{ flexDirection: 'column', gap: 8, width: '100%' }}>
-                        <Button variant="default" onClick={() => { setShowSelectedModal(false); setActive(1); }} fullWidth>{t('addSetlist.back')}</Button>
-                        <Button onClick={source === 'saved' ? () => { setShowSelectedModal(false); setActive(3); } : () => { setShowSelectedModal(false); enrichSongs(); }} loading={loading} disabled={selected.length === 0} fullWidth>{t('addSetlist.confirm')}</Button>
-                      </Group>
-                    </Modal>
-                    <div style={{ height: 56 }} /> {/* Espaço para não sobrepor conteúdo pelo card fixo */}
-                  </>
-                ) : (
-                  <>
-                    <Divider orientation="vertical" mx="xs" style={{ height: '100%' }} />
-                    <div style={{ flex: 1, minWidth: 260, maxWidth: 340, display: 'flex', flexDirection: 'column', height: '100%', position: 'relative' }}>
-                      <Group mb="xs" justify="space-between" align="center">
-                        <Title order={5} style={{ margin: 0 }}>{t('addSetlist.selected')}</Title>
-                        <Text size="sm" fw={800}>({selected.length})</Text>
-                      </Group>
-                      <ScrollArea h="calc(100% - 110px)" style={{ flex: 1, minHeight: 120, paddingBottom: 100 }}>
+                    </Box>
+                    <Group mt="md" style={{ flexDirection: 'column', gap: 8, width: '100%' }}>
+                      <Button variant="default" onClick={() => { setShowSelectedModal(false); setActive(1); }} fullWidth>{t('addSetlist.back')}</Button>
+                      <Button onClick={source === 'saved' ? () => { setShowSelectedModal(false); setActive(3); } : () => {
+                        setShowSelectedModal(false);
+                        window.scrollTo(0, 0);
+                        enrichSongs();
+                      }} loading={loading} disabled={selected.length === 0} fullWidth>{t('addSetlist.confirm')}</Button>
+                    </Group>
+                  </Modal>
+                  <div style={{ height: 56 }} /> {/* Espaço para não sobrepor conteúdo pelo card fixo */}
+                </>
+              ) : (
+                <>
+                  <Divider orientation="vertical" mx="xs" style={{ height: '100%' }} />
+                  <div style={{ flex: 1, minWidth: 260, maxWidth: 340, display: 'flex', flexDirection: 'column', height: '100%', position: 'relative' }}>
+                    <Group mb="xs" justify="space-between" align="center">
+                      <Title order={5} style={{ margin: 0 }}>{t('addSetlist.selected')}</Title>
+                      <Text size="sm" fw={800}>({selected.length})</Text>
+                    </Group>
+                    <Box
+                      style={{
+                        overflowY: 'auto',
+                        maxHeight: '59dvh',
+                        paddingRight: 12,
+                      }}
+                    >
+
+                      <ScrollArea style={{ flex: 1, minHeight: 120, paddingBottom: 100 }}>
                         <Stack gap="sm">
                           {selected.length === 0 ? (
                             <Card shadow="xs" withBorder style={{ width: '100%', minWidth: 0, padding: 16, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
@@ -645,71 +676,76 @@ export default function AddSetlistPage() {
                           )}
                         </Stack>
                       </ScrollArea>
-                      {/* Botões Voltar/Confirmar fixos no rodapé da barra lateral */}
-                      <Box style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', padding: 8, borderTop: '1px solid #f1f3f5' }}>
-                        <Group style={{ flexDirection: 'column', gap: 8, width: '100%' }}>
-                          <Button variant="default" onClick={() => setActive(1)} fullWidth>{t('addSetlist.back')}</Button>
-                          <Button onClick={source === 'saved' ? () => setActive(3) : enrichSongs} loading={loading} disabled={selected.length === 0} fullWidth>{t('addSetlist.confirm')}</Button>
-                        </Group>
-                      </Box>
-                    </div>
-                  </>
-                )}
-              </Group>
-            </Stepper.Step>
-            <Stepper.Step label={t('addSetlist.stepPreviewLabel')} description={t('addSetlist.stepPreviewDesc')}>
-              <Title order={4} mb="md">{t('addSetlist.previewTitle')}</Title>
-              <ScrollArea>
-                <Group gap="md" style={{ flexWrap: 'wrap' }}>
-                  {(source === 'saved' ? selected : enriched).map((song) => {
-                    const missingData = source === 'saved'
-                      ? !song.bpm || !song.key
-                      : !song.derivedBpm || !song.derivedKey;
-                    return (
-                      <Tooltip
-                        label={missingData ? t('addSetlist.missingData') : ''}
-                        color="red"
-                        withArrow
-                        disabled={!missingData}
-                        key={song.id || song.youtube_id}
+                    </Box>
+                    {/* Botões Voltar/Confirmar fixos no rodapé da barra lateral */}
+                    <Box style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', padding: 8, borderTop: '1px solid #f1f3f5', backgroundColor: '#fff' }}>
+                      <Group style={{ flexDirection: 'column', gap: 8, width: '100%' }}>
+                        <Button variant="default" onClick={() => setActive(1)} fullWidth>{t('addSetlist.back')}</Button>
+                        <Button onClick={source === 'saved' ? () => setActive(3) : enrichSongs} loading={loading} disabled={selected.length === 0} fullWidth>{t('addSetlist.confirm')}</Button>
+                      </Group>
+                    </Box>
+                  </div>
+                </>
+              )}
+            </Group>
+          </Stepper.Step>
+          <Stepper.Step label={t('addSetlist.stepPreviewLabel')} description={t('addSetlist.stepPreviewDesc')}>
+            <Title order={4} mb="md">{t('addSetlist.previewTitle')}</Title>
+            <Text mb="md">{t('addSetlist.modalSelectedTitle', { count: selected.length })}</Text>
+            <ScrollArea style={{
+              overflowY: 'auto',
+              maxHeight: isMobile && '45dvh',
+              paddingRight: isMobile && 12,
+            }}>
+              <Group gap="md" style={{ flexWrap: 'wrap' }}>
+                {(source === 'saved' ? selected : enriched).map((song) => {
+                  const missingData = source === 'saved'
+                    ? !song.bpm || !song.key
+                    : !song.derivedBpm || !song.derivedKey;
+                  return (
+                    <Tooltip
+                      label={missingData ? t('addSetlist.missingData') : ''}
+                      color="red"
+                      withArrow
+                      disabled={!missingData}
+                      key={song.id || song.youtube_id}
+                    >
+                      <Card
+                        shadow="md"
+                        mb="md"
+                        withBorder
+                        style={{
+                          width: isMobile ? '100%' : 220,
+                          marginBottom: 12,
+                          border: missingData ? '2px solid #fa5252' : undefined,
+                        }}
                       >
-                        <Card
-                          shadow="md"
-                          mb="md"
-                          withBorder
-                          style={{
-                            width: isMobile ? '100%' : 220,
-                            marginBottom: 12,
-                            border: missingData ? '2px solid #fa5252' : undefined,
-                          }}
-                        >
-                          <Image src={song.thumbnail_url} width={200} height={120} radius="sm" alt={song.title} />
-                          <Tooltip label={"" + song.title + ""} position="top" withArrow>
-                            <Text fw={600} mt={4} lineClamp={1}>{song.title}</Text>
-                          </Tooltip>
-                          <Text size="sm" color="dimmed">{song.channel_name}</Text>
-                          <Text size="xs">{song.duration} | {song.view_count}</Text>
-                          <Text size="xs">{t('addSetlist.bpm')}: {source === 'saved' ? song.bpm : song.derivedBpm}</Text>
-                          <Text size="xs">{t('addSetlist.key')}: {source === 'saved' ? song.key : song.derivedKey}</Text>
-                        </Card>
-                      </Tooltip>
-                    );
-                  })}
-                </Group>
-              </ScrollArea>
-              <Group mt="md" style={{ justifyContent: 'flex-end' }}>
-                <Button variant="default" onClick={() => setActive(2)}>{t('addSetlist.back')}</Button>
-                <Button
-                  onClick={saveSetlist}
-                  loading={loading}
-                  disabled={selected.length === 0}
-                >
-                  {t('addSetlist.save')}
-                </Button>
+                        <Image src={song.thumbnail_url} width={200} height={120} radius="sm" alt={song.title} />
+                        <Tooltip label={"" + song.title + ""} position="top" withArrow>
+                          <Text fw={600} mt={4} lineClamp={1}>{song.title}</Text>
+                        </Tooltip>
+                        <Text size="sm" color="dimmed">{song.channel_name}</Text>
+                        <Text size="xs">{song.duration} | {song.view_count}</Text>
+                        <Text size="xs">{t('addSetlist.bpm')}: {source === 'saved' ? song.bpm : song.derivedBpm}</Text>
+                        <Text size="xs">{t('addSetlist.key')}: {source === 'saved' ? song.key : song.derivedKey}</Text>
+                      </Card>
+                    </Tooltip>
+                  );
+                })}
               </Group>
-            </Stepper.Step>
-          </Stepper>
-        </Paper>
+            </ScrollArea>
+            <Group mt="md" style={{ justifyContent: 'flex-end' }}>
+              <Button variant="default" onClick={() => setActive(2)}>{t('addSetlist.back')}</Button>
+              <Button
+                onClick={saveSetlist}
+                loading={loading}
+                disabled={selected.length === 0}
+              >
+                {t('addSetlist.save')}
+              </Button>
+            </Group>
+          </Stepper.Step>
+        </Stepper>
       </Container>
     </AppLayout>
   );

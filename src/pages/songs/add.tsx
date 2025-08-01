@@ -3,12 +3,12 @@ import AppLayout from '@/components/AppLayout';
 import { useMediaQuery } from '@mantine/hooks';
 import { useEffect, useState } from 'react';
 
-import { Anchor, Breadcrumbs, Button, Card, Container, Grid, Group, Image, Loader, Paper, Select, Stack, Stepper, Text, TextInput, Title } from "@mantine/core";
+import { Anchor, Breadcrumbs, Button, Card, Container, Grid, Group, Image, Loader, Select, Stack, Stepper, Text, TextInput, Title } from "@mantine/core";
 import { notifications, showNotification } from '@mantine/notifications';
 import { IconCheck, IconChevronLeft, IconChevronRight, IconMusic, IconSearch, IconX } from "@tabler/icons-react";
+import { useTranslation } from 'next-i18next';
 import { useRouter } from "next/router";
 import api from "../../../lib/axios";
-import { useTranslation } from 'next-i18next';
 
 interface YoutubeResult {
   youtube_id: string;
@@ -155,154 +155,194 @@ export default function AddMusicPage() {
 
   return (
     <AppLayout>
-      <Container size="100%" py="xl">
+      <Container size="100%" py={isMobile ? 'xs' : 'xs'}>
         <Breadcrumbs mb="md">
           <Anchor onClick={() => router.push('/dashboard')}>{t('appLayout.home', 'Início')}</Anchor>
           <Anchor onClick={() => router.push('/songs')}>{t('songs.mySongs', 'Minhas músicas')}</Anchor>
           <Text>{t('addSong.title', 'Adicionar Música')}</Text>
         </Breadcrumbs>
         <Title order={2} mb="lg">{t('addSong.title', 'Adicionar Música')}</Title>
-        <Paper shadow="md" p="xl" radius="md" withBorder>
-          <Stepper active={active} onStepClick={setActive}>
-            <Stepper.Step label={t('addSong.search', 'Buscar')} description="YouTube">
-              <Text mb="xs">{t('addSong.placeholder', 'Busque por uma música no YouTube. Apenas o primeiro resultado será adicionado.')}</Text>
-              {isMobile ? (
-                <Stack>
-                  <TextInput
-                    placeholder={t('addSong.placeholder', 'Digite o nome da música ou artista')}
-                    value={search}
-                    onChange={e => setSearch(e.currentTarget.value)}
-                    disabled={loading}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  />
-                  <Button fullWidth leftSection={loading ? <Loader size={16} /> : <IconSearch size={16} />} onClick={handleSearch} loading={loading} disabled={!search.trim()}>
-                    {loading ? t('addSong.searching', 'Buscando...') : t('addSong.search', 'Buscar')}
-                  </Button>
-                </Stack>
-              ) : (
-                <Group>
-                  <TextInput
-                    placeholder={t('addSong.placeholder', 'Digite o nome da música ou artista')}
-                    value={search}
-                    onChange={e => setSearch(e.currentTarget.value)}
-                    style={{ flex: 1 }}
-                    disabled={loading}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  />
-                  <Button leftSection={loading ? <Loader size={16} /> : <IconSearch size={16} />} onClick={handleSearch} loading={loading} disabled={!search.trim()}>
-                    {loading ? t('addSong.searching', 'Buscando...') : t('addSong.search', 'Buscar')}
-                  </Button>
-                </Group>
-              )}
-            </Stepper.Step>
-            <Stepper.Step label={t('onboarding.select', 'Selecionar')} description={t('addSong.confirmTitle', 'Resultado')}>
-              <Text mb="xs">{t('addSong.confirmText', 'Selecione a música desejada dos resultados abaixo:')}</Text>
-              {loading ? <Loader /> : (
-                <Grid gutter="md">
-                  {results.map((r) => (
-                    <Grid.Col span={{ base: 12, sm: 12, md: 6, lg: 4, xl: 3 }} key={r.youtube_id}>
-                      <Card
-                        shadow={selected?.youtube_id === r.youtube_id ? "lg" : "sm"}
-                        padding="xs"
-                        radius="md"
-                        withBorder
-                        style={{ border: selected?.youtube_id === r.youtube_id ? '6px solid #228be6' : undefined, cursor: 'pointer' }}
-                        onClick={() => setSelected(r)}
-                      >
-                        <Card.Section>
-                          <Image src={r.thumbnail_url} height={120} alt={r.title} />
-                        </Card.Section>
-                        <Text fw={700} size="sm" mt="xs" lineClamp={2}>{r.title}</Text>
-                        <Text size="xs" color="dimmed">{r.channel_name}</Text>
-                        <Group gap={4} mt="xs">
-                          <Text size="xs">{r.duration}</Text>
-                          {r.view_count && <Text size="xs" color="dimmed">{r.view_count}</Text>}
-                          <Button component="a" href={r.link} target="_blank" size="xs" variant="subtle" leftSection={<IconMusic size={14} />}>YouTube</Button>
-                        </Group>
-                      </Card>
-                    </Grid.Col>
-                  ))}
-                </Grid>
-              )}
-            </Stepper.Step>
-            <Stepper.Step label={t('chords', 'Detalhes')} description="Preview">
-              {selected && (
-                <Stack>
-                  {isMobile ? (
-                    <Card withBorder shadow="sm" p="md">
-                      <Group align="center" gap="md">
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginRight: 8 }}>
-                          <Image src={selected.thumbnail_url} width={100} height={100} radius="sm" alt={selected.title} />
-                        </div>
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                          <Text>{selected.title}</Text>
-                          <Text size="xs" color="dimmed">{selected.channel_name}</Text>
-                          <Text size="xs">{t('duration', 'Duração')}: {selected.duration} | {selected.view_count}</Text>
-                        </div>
+        <Stepper active={active} onStepClick={setActive} iconSize={32} orientation={isMobile ? 'vertical' : 'horizontal'} breakpoint="sm">
+          <Stepper.Step label={t('addSong.search', 'Buscar')} description="YouTube">
+            <Text mb="xs">{t('addSong.placeholder', 'Busque por uma música no YouTube. Apenas o primeiro resultado será adicionado.')}</Text>
+            {isMobile ? (
+              <Stack>
+                <TextInput
+                  placeholder={t('addSong.placeholder', 'Digite o nome da música ou artista')}
+                  value={search}
+                  onChange={e => setSearch(e.currentTarget.value)}
+                  disabled={loading}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                />
+                <Button fullWidth leftSection={loading ? <Loader size={16} /> : <IconSearch size={16} />} onClick={handleSearch} loading={loading} disabled={!search.trim()}>
+                  {loading ? t('addSong.searching', 'Buscando...') : t('addSong.search', 'Buscar')}
+                </Button>
+              </Stack>
+            ) : (
+              <Group>
+                <TextInput
+                  placeholder={t('addSong.placeholder', 'Digite o nome da música ou artista')}
+                  value={search}
+                  onChange={e => setSearch(e.currentTarget.value)}
+                  style={{ flex: 1 }}
+                  disabled={loading}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                />
+                <Button leftSection={loading ? <Loader size={16} /> : <IconSearch size={16} />} onClick={handleSearch} loading={loading} disabled={!search.trim()}>
+                  {loading ? t('addSong.searching', 'Buscando...') : t('addSong.search', 'Buscar')}
+                </Button>
+              </Group>
+            )}
+          </Stepper.Step>
+          <Stepper.Step label={t('onboarding.select', 'Selecionar')} description={t('addSong.confirmTitle', 'Resultado')}>
+            <Text mb="xs">{t('addSong.confirmText', 'Selecione a música desejada dos resultados abaixo:')}</Text>
+            {loading ? <Loader /> : (
+              <Grid gutter="md">
+                {results.map((r) => (
+                  <Grid.Col span={{ base: 12, sm: 12, md: 6, lg: 4, xl: 3 }} key={r.youtube_id}>
+                    <Card
+                      shadow={selected?.youtube_id === r.youtube_id ? "lg" : "sm"}
+                      padding="xs"
+                      radius="md"
+                      withBorder
+                      style={{ border: selected?.youtube_id === r.youtube_id ? '6px solid #228be6' : undefined, cursor: 'pointer' }}
+                      onClick={() => setSelected(r)}
+                    >
+                      <Card.Section>
+                        <Image src={r.thumbnail_url} height={120} alt={r.title} />
+                      </Card.Section>
+                      <Text fw={700} size="sm" mt="xs" lineClamp={2}>{r.title}</Text>
+                      <Text size="xs" color="dimmed">{r.channel_name}</Text>
+                      <Group gap={4} mt="xs">
+                        <Text size="xs">{r.duration}</Text>
+                        {r.view_count && <Text size="xs" color="dimmed">{r.view_count}</Text>}
+                        <Button component="a" href={r.link} target="_blank" size="xs" variant="subtle" leftSection={<IconMusic size={14} />}>YouTube</Button>
                       </Group>
                     </Card>
-                  ) : (
-                    <Group align="center" gap="md">
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginRight: 8 }}>
-                        <Image src={selected.thumbnail_url} width={100} height={100} radius="sm" alt={selected.title} />
-                      </div>
+                  </Grid.Col>
+                ))}
+                {isMobile && active === 1 && selected && (
+                  <div
+                    style={{
+                      position: 'fixed',
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      zIndex: 1000,
+                      background: 'rgba(255,255,255,0.98)',
+                      boxShadow: '0 -2px 16px #0001',
+                      padding: '12px 16px',
+                      display: 'flex',
+                      gap: 8,
+                    }}
+                  >
+                    <Button
+                      fullWidth
+                      variant="default"
+                      leftSection={<IconChevronLeft size={16} />}
+                      onClick={() => setActive(a => Math.max(0, a - 1))}
+                      disabled={active === 0}
+                    >
+                      {t('onboarding.back', 'Voltar')}
+                    </Button>
+                    <Button
+                      fullWidth
+                      rightSection={<IconChevronRight size={16} />}
+                      onClick={handleNext}
+                      disabled={active === 0 || (active === 1 && !selected) || (active === 1 && fetchingDetails)}
+                      loading={fetchingDetails}
+                    >
+                      {t('onboarding.next', 'Próximo')}
+                    </Button>
+                  </div>
+                )}
+              </Grid>
+            )}
+          </Stepper.Step>
+          <Stepper.Step label={t('chords', 'Detalhes')} description="Preview">
+            {selected && (
+              <Stack>
+                {isMobile ? (
+                  <Card withBorder
+                    shadow="sm"
+                    padding="md"
+                    radius="md"
+                  >
+                    <Card.Section>
+                      <Image src={selected.thumbnail_url} height={120} radius="sm" alt={selected.title} />
+                    </Card.Section>
+                    <Group align="center" gap="md" mt="sm">
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                         <Text>{selected.title}</Text>
                         <Text size="xs" color="dimmed">{selected.channel_name}</Text>
                         <Text size="xs">{t('duration', 'Duração')}: {selected.duration} | {selected.view_count}</Text>
                       </div>
                     </Group>
-                  )}
-                  <Group grow>
-                    <TextInput
-                      label={t('bpm', 'BPM')}
-                      value={bpm ?? ""}
-                      readOnly
-                      description={t('musicCard.inputBpmPlaceholder', 'Detectado automaticamente. Você pode editar no player.')}
-                      leftSection={<IconMusic size={16} />} min={40} max={220}
-                    />
-                    <Select
-                      label={t('key', 'Tom')}
-                      data={KEY_OPTIONS}
-                      value={key}
-                      readOnly
-                      description={t('musicCard.inputKeyPlaceholder', 'Detectado automaticamente. Você pode editar no player.')}
-                      leftSection={<IconMusic size={16} />}
-                    />
+                  </Card>
+                ) : (
+                  <Group align="center" gap="md">
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginRight: 8 }}>
+                      <Image src={selected.thumbnail_url} width={100} height={100} radius="sm" alt={selected.title} />
+                    </div>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                      <Text>{selected.title}</Text>
+                      <Text size="xs" color="dimmed">{selected.channel_name}</Text>
+                      <Text size="xs">{t('duration', 'Duração')}: {selected.duration} | {selected.view_count}</Text>
+                    </div>
                   </Group>
-                </Stack>
-              )}
-            </Stepper.Step>
-          </Stepper>
-          {!isMobile && (
-            <Group mt="md" style={{ justifyContent: 'space-between' }}>
-              <Button variant="default" leftSection={<IconChevronLeft size={16} />} onClick={() => setActive(a => Math.max(0, a - 1))} disabled={active === 0}>{t('onboarding.back', 'Voltar')}</Button>
-              {active < 2 && <Button rightSection={<IconChevronRight size={16} />} onClick={handleNext} disabled={active === 0 || (active === 1 && !selected) || (active === 1 && fetchingDetails)} loading={fetchingDetails}>{t('onboarding.next', 'Próximo')}</Button>}
-              {active === 2 && (
-                <Button leftSection={loading ? <Loader size={16} /> : <IconCheck size={16} />} onClick={handleSave} loading={loading}>
-                  {t('addSong.add', 'Salvar música')}
+                )}
+                <Group grow>
+                  <TextInput
+                    label={t('bpm', 'BPM')}
+                    value={bpm ?? ""}
+                    readOnly
+                    description={t('musicCard.inputBpmPlaceholder', 'Detectado automaticamente. Você pode editar no player.')}
+                    leftSection={<IconMusic size={16} />} min={40} max={220}
+                  />
+                  <Select
+                    label={t('key', 'Tom')}
+                    data={KEY_OPTIONS}
+                    value={key}
+                    readOnly
+                    description={t('musicCard.inputKeyPlaceholder', 'Detectado automaticamente. Você pode editar no player.')}
+                    leftSection={<IconMusic size={16} />}
+                  />
+                </Group>
+              </Stack>
+            )}
+          </Stepper.Step>
+        </Stepper>
+        {!isMobile && (
+          <Group mt="md" style={{ justifyContent: 'space-between' }}>
+            {
+              active > 0 && (
+                <Button leftSection={<IconChevronLeft size={16} />} onClick={() => setActive(a => Math.max(0, a - 1))} disabled={active === 0}>
+                  {t('onboarding.back', 'Voltar')}
                 </Button>
-              )}
-            </Group>
-          )}
-          {isMobile && (
-            <Stack gap={8} mt="md">
-              {active === 2 && (
-                <Button fullWidth leftSection={loading ? <Loader size={16} /> : <IconCheck size={16} />} onClick={handleSave} loading={loading} mt="md">
-                  {t('addSong.add', 'Salvar música')}
-                </Button>
-              )}
-              {active < 2 && active > 0 && (
-                <Button fullWidth rightSection={<IconChevronRight size={16} />} onClick={handleNext} disabled={active === 0 || (active === 1 && !selected) || (active === 1 && fetchingDetails)} loading={fetchingDetails}>
-                  {t('onboarding.next', 'Próximo')}
-                </Button>
-              )}
+              )
+            }
+            {active > 0 && active < 2 && <Button rightSection={<IconChevronRight size={16} />} onClick={handleNext} disabled={active === 0 || (active === 1 && !selected) || (active === 1 && fetchingDetails)} loading={fetchingDetails}>{t('onboarding.next', 'Próximo')}</Button>}
+            {active === 2 && (
+              <Button leftSection={loading ? <Loader size={16} /> : <IconCheck size={16} />} onClick={handleSave} loading={loading}>
+                {t('addSong.add', 'Salvar música')}
+              </Button>
+            )}
+          </Group>
+        )}
+        {isMobile && (
+          <Stack gap={8} mt="md">
+            {active === 2 && (
+              <Button fullWidth leftSection={loading ? <Loader size={16} /> : <IconCheck size={16} />} onClick={handleSave} loading={loading} mt="md">
+                {t('addSong.add', 'Salvar música')}
+              </Button>
+            )}
+            {active > 1 && (
               <Button fullWidth variant="default" leftSection={<IconChevronLeft size={16} />} onClick={() => setActive(a => Math.max(0, a - 1))} disabled={active === 0}>
                 {t('onboarding.back', 'Voltar')}
               </Button>
-            </Stack>
-          )}
-        </Paper>
+            )}
+          </Stack>
+        )}
       </Container>
     </AppLayout>
   );

@@ -458,7 +458,7 @@
   },
   "addSong": {
     "title": "Add Song",
-    "placeholder": "Enter a YouTube URL or search for a song",
+    "placeholder": "Search for a song",
     "search": "Search",
     "searching": "Searching...",
     "error": "Error searching for song.",
