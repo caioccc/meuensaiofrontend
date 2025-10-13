@@ -1,3 +1,4 @@
+import { IconWaveSine } from "@tabler/icons-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import {
@@ -284,6 +285,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
               label={t('appLayout.setlists', 'Setlists')}
               leftSection={<IconTable size={18} />}
               active={pathname === "/setlists" || pathname.startsWith("/setlists/")}
+            />
+            <NavLink
+              component={Link}
+              href="/testar-tons"
+              label={t('appLayout.testTones', 'Teste de Tons')}
+              leftSection={<IconWaveSine size={18} />}
+              active={pathname === "/testar-tons"}
             />
             <NavLink
               component={Link}

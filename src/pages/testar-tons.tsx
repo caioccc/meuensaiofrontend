@@ -1,16 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import AppLayout from "@/components/AppLayout";
+import InfiniteScrollWrapper from "@/components/InfiniteScrollWrapper";
+import OrderSelect from "@/components/OrderSelect";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { useTranslation } from "react-i18next";
 import { ActionIcon, Anchor, Breadcrumbs, Button, Container, Grid, Group, LoadingOverlay, Modal, MultiSelect, Select, Stack, Text, TextInput, Title } from "@mantine/core";
 import { useMediaQuery } from '@mantine/hooks';
-import { IconFilter, IconPlus, IconSearch } from "@tabler/icons-react";
+import { IconFilter, IconSearch } from "@tabler/icons-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import MusicCard from "@/components/MusicCard";
-import OrderSelect from "@/components/OrderSelect";
-import api from "../../../lib/axios";
-import InfiniteScrollWrapper from "@/components/InfiniteScrollWrapper";
+import { useTranslation } from "react-i18next";
+import api from "../../lib/axios";
+
+import AudioDownloadStepper from '@/components/AudioDownloadStepper';
+import AudioTransposePlayer from '@/components/AudioTransposePlayer';
+import SongTestCard from '@/components/SongTestCard';
+// Supondo que você já tenha um serviço de autenticação e API configurado
 
 interface SongApi {
   id: number;
@@ -24,8 +28,10 @@ interface SongApi {
   key?: string;
   custom_bpm?: number | null;
   custom_key?: string | null;
-  audio_url?: string;
-  isDownloaded: boolean;
+}
+
+interface SongWithDownload extends SongApi {
+  isDownloaded?: boolean;
 }
 
 interface SetlistApi {
@@ -37,9 +43,24 @@ const KEY_OPTIONS = [
   "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
 ].map(k => ({ value: k, label: k }));
 
-export default function DashboardPage() {
+
+export async function downloadAudioFromYoutube(videoUrl: string): Promise<string> {
+  const res = await api.post('/youtube-audio/', { url: videoUrl });
+  if (res.data && res.data.audio_url) {
+    return res.data.audio_url;
+  }
+  throw new Error('Erro ao processar áudio do YouTube');
+}
+
+export default function TesteDeTons() {
+  const [selectedSong, setSelectedSong] = useState<any>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [stepperOpen, setStepperOpen] = useState(false);
+  const [playerModalOpen, setPlayerModalOpen] = useState(false);
+
+
   const { t } = useTranslation();
-  const [songs, setSongs] = useState<SongApi[]>([]);
+  const [songs, setSongs] = useState<SongWithDownload[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(""); // valor realmente buscado
   const [searchInput, setSearchInput] = useState(""); // valor do input
@@ -88,17 +109,21 @@ export default function DashboardPage() {
     if (selectedSetlists.length > 0) params.append("setlist", selectedSetlists.join(","));
     params.append("page", String(page));
     if (order) params.append("ordering", order);
-    api.get(`songs/?${params.toString()}`)
-      .then(res => {
-        if (append) {
-          setSongs(prev => [...prev, ...(res.data.results || res.data)]);
-        } else {
-          setSongs(res.data.results || res.data);
-        }
-        setTotalSongs(res.data.count || 0);
-        setHasMore(!!res.data.next);
-      })
-      .finally(() => setLoading(false));
+    const res = await api.get(`songs/?${params.toString()}`);
+    const songList: SongWithDownload[] = res.data.results || res.data;
+    // Agora, basta usar song.audio_url para saber se está disponível
+    const checked = songList.map(song => ({
+      ...song,
+      isDownloaded: !!song.audio_url,
+    }));
+    if (append) {
+      setSongs(prev => [...prev, ...checked]);
+    } else {
+      setSongs(checked);
+    }
+    setTotalSongs(res.data.count || 0);
+    setHasMore(!!res.data.next);
+    setLoading(false);
   };
 
   // Scroll infinito: carrega mais ao chegar no fim
@@ -114,7 +139,9 @@ export default function DashboardPage() {
   }, [search, artist, key, bpm, selectedSetlists, order]);
 
   useEffect(() => {
-    if (page > 1) {
+    if (page === 1) {
+      fetchSongs(false);
+    } else if (page > 1) {
       fetchSongs(true);
     }
     // eslint-disable-next-line
@@ -125,26 +152,44 @@ export default function DashboardPage() {
     { value: "created_at", label: t('songs.orderOldest', 'Mais antigo') },
   ];
 
+
+  // Ao selecionar música, processa áudio
+  // Novo fluxo: abrir o stepper ao clicar em baixar
+  const handleSelectSong = (song: any) => {
+    setSelectedSong(song);
+    setStepperOpen(true);
+  };
+
+  // Quando finalizar o stepper, salva a url para tocar e recarrega a lista
+  const handleStepperSuccess = (url: string) => {
+    setAudioUrl(url);
+    setStepperOpen(false);
+    setPage(1);
+    fetchSongs();
+  };
+
+  // Player Tone.js simples
+  useEffect(() => {
+    if (!audioUrl) return;
+    let audio;
+    import('tone').then(Tone => {
+      audio = new Tone.Player(audioUrl).toDestination();
+    });
+    return () => {
+      if (audio) audio.dispose();
+    };
+  }, [audioUrl]);
+
   return (
     <ProtectedRoute>
       <AppLayout>
         <Container size="100%">
           <Breadcrumbs mb="md">
             <Anchor onClick={() => router.push('/dashboard')}>{t('appLayout.home', 'Início')}</Anchor>
-            <Text>{t('songs.mySongs', 'Minhas músicas')}</Text>
+            <Text>{t('Teste de Tons', 'Teste de Tons')}</Text>
           </Breadcrumbs>
           <Group justify="space-between" mb="md" style={{ flexWrap: 'wrap' }}>
-            <Title order={2}>{t('songs.mySongs', 'Minhas Músicas')}</Title>
-            <Button
-              leftSection={<IconPlus />}
-              onClick={() => {
-                router.push("/songs/add");
-              }}
-              color="blue"
-              style={{ marginLeft: 'auto' }}
-            >
-              {t('songs.addSong', 'Adicionar Música')}
-            </Button>
+            <Title order={2}>{t('Teste de Tons', 'Teste de Tons')}</Title>
           </Group>
           <Group mb="md" gap="xs" align="center" style={{ width: '100%' }}>
             <Text size="sm" color="dimmed">
@@ -247,35 +292,46 @@ export default function DashboardPage() {
               <Grid>
                 {songs.map(song => (
                   <Grid.Col span={{ base: 12, sm: 6, md: 4, lg: 3 }} key={song.id}>
-                    <MusicCard
-                      id={song.id}
+                    <SongTestCard
                       title={song.title}
-                      duration={song.duration}
-                      bpm={song.bpm}
+                      artist={song.artist}
                       thumbnail_url={song.thumbnail_url}
-                      songKey={song.key}
-                      custom_bpm={song.custom_bpm}
-                      custom_key={song.custom_key}
+                      isDownloaded={song.isDownloaded}
                       audio_url={song.audio_url}
-                      isDownloaded={!!song.audio_url}
-                      onDelete={async () => {
-                        try {
-                          await api.delete(`songs/${song.id}/`);
-                          setSongs(songs => songs.filter(s => s.id !== song.id));
-                          // Notificação de sucesso
-                          if (typeof window !== 'undefined' && window?.showNotification) {
-                            window.showNotification({ color: 'green', message: t('songs.deleteSuccess', 'Música removida com sucesso!') });
-                          }
-                        } catch (e) {
-                          console.log(e);
-                          if (typeof window !== 'undefined' && window?.showNotification) {
-                            window.showNotification({ color: 'red', message: t('songs.deleteError', 'Erro ao remover música. Tente novamente.') });
-                          }
-                        }
+                      loading={selectedSong?.id === song.id && (stepperOpen || playerModalOpen)}
+                      onDownload={() => handleSelectSong(song)}
+                      onPlay={() => {
+                        setSelectedSong(song);
+                        setAudioUrl(song.audio_url || audioUrl);
+                        setPlayerModalOpen(true);
                       }}
                     />
                   </Grid.Col>
                 ))}
+                {/* Modal para tocar música com transposição */}
+                <Modal
+                  opened={playerModalOpen}
+                  onClose={() => {
+                    setPlayerModalOpen(false);
+                    setPage(1);
+                  }}
+                  title={selectedSong?.title || 'Tocar música'}
+                  centered
+                  size="xl"
+                >
+                  {audioUrl
+                    ? <AudioTransposePlayer audioUrl={audioUrl} song={selectedSong} />
+                    : <Text color="red">Áudio não disponível para esta música.</Text>
+                  }
+                </Modal>
+
+                {/* Stepper de processamento de áudio */}
+                <AudioDownloadStepper
+                  videoUrl={selectedSong?.chords_url || selectedSong?.link || ''}
+                  opened={stepperOpen}
+                  onClose={() => setStepperOpen(false)}
+                  onSuccess={handleStepperSuccess}
+                />
               </Grid>
             </InfiniteScrollWrapper>
           )}

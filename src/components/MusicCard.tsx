@@ -20,9 +20,22 @@ export interface MusicCardProps {
   view_count?: string;
   onDelete?: () => Promise<void>;
   compact?: boolean;
+  isDownloaded?: boolean;
+  audio_url?: string;
 }
 
-export default function MusicCard({ id, title, duration, bpm, thumbnail_url, songKey, onDelete, compact, custom_bpm, custom_key }: MusicCardProps & { custom_bpm?: number | null, custom_key?: string }) {
+export default function MusicCard({ id, title, duration, bpm, thumbnail_url, songKey, onDelete, compact, custom_bpm, custom_key, isDownloaded = false, audio_url }: MusicCardProps & { custom_bpm?: number | null, custom_key?: string, isDownloaded?: boolean, audio_url?: string }) {
+  const handleDirectDownload = () => {
+    if (audio_url) {
+      const link = document.createElement('a');
+      link.href = audio_url;
+      link.target = '_blank';
+      link.download = `${title}.mp3`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
   // Função para registrar ação no backend
   const recordAction = async (actionType: string, objectId?: string) => {
     try {
@@ -172,6 +185,11 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
             <Menu.Item leftSection={<IconBrandWhatsapp size={16} color="#25D366" />} onClick={handleShareWhatsapp}>
               {t('musicCard.menuWhatsapp')}
             </Menu.Item>
+            {isDownloaded && audio_url && (
+              <Menu.Item leftSection={<IconPlayerPlay size={16} />} onClick={handleDirectDownload}>
+                Download do áudio
+              </Menu.Item>
+            )}
             <Menu.Item leftSection={<IconTrash size={16} />} color="red" onClick={() => setModalOpen(true)}>
               {t('musicCard.menuRemove')}
             </Menu.Item>
@@ -180,6 +198,9 @@ export default function MusicCard({ id, title, duration, bpm, thumbnail_url, son
       )}
       {/* Badges responsivos, quebram linha se necessário */}
       <Group gap={4} wrap="wrap" style={{ rowGap: 4, columnGap: 4, marginBottom: compact ? 0 : 36 }}>
+        <Badge color={isDownloaded ? 'green' : 'gray'} variant={isDownloaded ? 'filled' : 'light'} mt={2} w={90}>
+          {isDownloaded ? 'Baixada' : 'Não baixada'}
+        </Badge>
         {bpm && (
           <Badge color={compact ? 'gray' : 'blue'} leftSection={<IconWaveSine size={14} />}>{t('musicCard.badgeBpm', { bpm })}</Badge>
         )}
