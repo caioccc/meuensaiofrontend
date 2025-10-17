@@ -6,7 +6,15 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
-const UNPROTECTED_PATHS = ["/login", "/register", "/success", "/forgot-password", "/reset-password", "terms", "/privacy-policy", "/cookie-policy", "/plans", "/pricing", "/about", "/contact", "/faq", "/confirm-email", "/"];
+const UNPROTECTED_PATHS = [
+  "/login",
+  "/tone",
+  "/tone-player",
+  "/tone-player/",
+  "/tone-player/[id]",
+  "/tone-player?id",
+  "/tone-player?id=[id]",
+  "/register", "/success", "/forgot-password", "/reset-password", "terms", "/privacy-policy", "/cookie-policy", "/plans", "/pricing", "/about", "/contact", "/faq", "/confirm-email", "/"];
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated, loading } = useAuth();
@@ -16,7 +24,12 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   useEffect(() => {
     if (typeof window !== "undefined") {
       if (loading) return; // Aguarda checagem do token
-      const isUnprotected = UNPROTECTED_PATHS.includes(router.pathname);
+      const isUnprotected = UNPROTECTED_PATHS.some(path => {
+        if (path === router.pathname) return true;
+        // Permite /tone-player?id=qualquer coisa
+        if (path.startsWith("/tone-player") && router.pathname.startsWith("/tone-player")) return true;
+        return false;
+      });
       if (!isAuthenticated && !isUnprotected) {
         router.replace("/login");
       } else {

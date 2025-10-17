@@ -11,6 +11,8 @@ const UNPROTECTED_ROUTES = [
   '/token/',
   '/token/refresh/',
   '/confirm-email/',
+  '/tone',
+  '/tone-player/',
   // Adicione outras rotas livres se necessário
 ];
 

@@ -22,7 +22,8 @@ export default function LandingLayout({ children }: { children: React.ReactNode 
     { link: '#features', label: 'header.features' },
     { link: '#pricing', label: 'header.pricing' },
     { link: '/blog', label: 'header.blog' },
-    { link: '#contact', label: 'header.contact' }
+    { link: '#contact', label: 'header.contact' },
+    { link: '/tone', label: 'Afinação e Tom' },
   ];
 
   const handleNavClick = (href: string) => {
