@@ -391,6 +391,29 @@ export default function TonePage() {
                     <Card.Section>
                       <Image src={selected.thumbnail_url} height={120} radius="sm" alt={selected.title} />
                     </Card.Section>
+                    {(selected.audio_url || selected.file_path) && (
+                      <Group
+                        align="center"
+                        spacing="sm"
+                        style={{
+                          background: '#e6f4ea',
+                          padding: 8,
+                          borderRadius: 8,
+                          border: '1px solid #cdebcf',
+                          maxWidth: 420,
+                        }}
+                      >
+                        <IconCheck color="green" />
+                        <div>
+                          <Text color="green" fw={600}>
+                            Áudio processado com sucesso!
+                          </Text>
+                          <Text size="xs" color="dimmed">
+                            Agora você pode buscar as cifras.
+                          </Text>
+                        </div>
+                      </Group>
+                    )}
                     <Group align="center" gap="md" mt="sm">
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                         <Text>{selected.title}</Text>
@@ -474,6 +497,27 @@ export default function TonePage() {
                     </Card.Section>
                     <Group align="center" gap="md" mt="sm">
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                        <Group
+                          align="center"
+                          spacing="sm"
+                          style={{
+                            background: '#e6f4ea',
+                            padding: 8,
+                            borderRadius: 8,
+                            border: '1px solid #cdebcf',
+                            maxWidth: 420,
+                          }}
+                        >
+                          <IconCheck color="green" />
+                          <div>
+                            <Text color="green" fw={600}>
+                              Áudio cifrado com sucesso!
+                            </Text>
+                            <Text size="xs" color="dimmed">
+                              Agora você pode seguir para o Player.
+                            </Text>
+                          </div>
+                        </Group>
                         <Text>{selected.title}</Text>
                         <Text size="xs" color="dimmed">{selected.channel_name}</Text>
                         <Text size="xs">{t('duration', 'Duração')}: {selected.duration} | {selected.view_count}</Text>
