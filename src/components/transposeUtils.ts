@@ -11,7 +11,10 @@ const FLAT_TO_SHARP: Record<string, string> = {
 
 export function transposeKey(originalKey: string, semitones: number): string {
   if (!originalKey) return '';
-  let key = originalKey.replace('M', '');
+  // Normaliza para identificar menor
+  let key = originalKey.replace('M', '').replace(':maj', '').replace(':min', 'm');
+  const isMinor = /m$/.test(key);
+  key = key.replace(/m$/, '');
   if (FLAT_TO_SHARP[key]) key = FLAT_TO_SHARP[key];
   const idx = NOTES.findIndex(
     n => n.toUpperCase() === key.toUpperCase()
@@ -19,5 +22,5 @@ export function transposeKey(originalKey: string, semitones: number): string {
   if (idx === -1) return originalKey;
   let newIdx = (idx + semitones) % 12;
   if (newIdx < 0) newIdx += 12;
-  return NOTES[newIdx];
+  return isMinor ? NOTES[newIdx] + 'm' : NOTES[newIdx];
 }

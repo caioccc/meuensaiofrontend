@@ -9,6 +9,7 @@ import { IconCheck, IconChevronLeft, IconChevronRight, IconMusic, IconSearch, Ic
 import { useTranslation } from 'next-i18next';
 import { useRouter } from "next/router";
 import api from '../../lib/axios';
+import { transposeKey } from '@/components/transposeUtils';
 
 interface YoutubeResult {
   youtube_id: string;
@@ -177,11 +178,12 @@ export default function TonePage() {
         // BPM
         if (chordInfo.derivedBpm) setBpm(chordInfo.derivedBpm);
         else if (res.data.derivedBpm) setBpm(res.data.derivedBpm);
-        // Tom: extrair só a nota (ex: F:maj -> F)
+        // Tom: extrair e normalizar usando transposeKey
         const rawKey = chordInfo.derivedKey || res.data.derivedKey;
         if (rawKey) {
-          const keyMatch = rawKey.match(/^[A-G]#?/);
-          setKey(keyMatch ? keyMatch[0] : rawKey);
+          // Usa transposeKey para normalizar (0 semitones = sem transposição)
+          setKey(transposeKey(rawKey, 0));
+          console.log('teste', rawKey, transposeKey(rawKey, 0));
         }
         // Acordes: extrair do chordInfo
         if (chordInfo.chords) setChords(chordInfo.chords);

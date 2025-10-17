@@ -18,11 +18,10 @@ export default function LandingLayout({ children }: { children: React.ReactNode 
   const isMobile = useMediaQuery('(max-width: 768px)');
 
   const links = [
-    { link: '#hero', label: 'header.home' },
-    { link: '#features', label: 'header.features' },
-    { link: '#pricing', label: 'header.pricing' },
-    { link: '/blog', label: 'header.blog' },
-    { link: '#contact', label: 'header.contact' },
+    { link: '/#hero', label: 'header.home' },
+    { link: '/#features', label: 'header.features' },
+    { link: '/#pricing', label: 'header.pricing' },
+    { link: '/#contact', label: 'header.contact' },
     { link: '/tone', label: 'Afinação e Tom' },
   ];
 
@@ -151,6 +150,43 @@ export default function LandingLayout({ children }: { children: React.ReactNode 
                 <Group gap={5} visibleFrom="sm">
                   {items}
                 </Group>
+                {/* Menu mobile colapsado */}
+                {isMobile && opened && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '55px',
+                    left: 0,
+                    width: '100%',
+                    background: '#fff',
+                    zIndex: 100,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                    padding: '16px 0',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                  }}>
+                    {items}
+                    <LanguageSwitcher size='sm' />
+                    {!user && (
+                      <Button
+                        variant="filled"
+                        style={{ background: '#0082ff', color: '#fff', fontWeight: 600, marginTop: 12 }}
+                        onClick={() => router.push('/login')}
+                      >
+                        {t('header.login', 'Login')}
+                      </Button>
+                    )}
+                    {user && (
+                      <Button
+                        variant="filled"
+                        style={{ background: '#495057', color: '#fff', fontWeight: 600, marginTop: 12 }}
+                        onClick={() => router.push('/dashboard')}
+                      >
+                        {t('enter', 'Entrar')}
+                      </Button>
+                    )}
+                  </div>
+                )}
                 {
                   !isMobile && (
                     <LanguageSwitcher size='sm' />
