@@ -286,13 +286,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
               leftSection={<IconTable size={18} />}
               active={pathname === "/setlists" || pathname.startsWith("/setlists/")}
             />
-            <NavLink
+            {/* <NavLink
               component={Link}
               href="/testar-tons"
               label={t('appLayout.testTones', 'Teste de Tons')}
               leftSection={<IconWaveSine size={18} />}
               active={pathname === "/testar-tons"}
-            />
+            /> */}
             <NavLink
               component={Link}
               href="/achievements"
